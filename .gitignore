@@ -1,0 +1,10 @@
+# Node.js modules
+node_modules/
+
+# Environment files
+*.env
+
+# Server files
+server/
+client\node_modules
+client\.env
