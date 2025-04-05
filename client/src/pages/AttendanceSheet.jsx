@@ -8,15 +8,16 @@ import { Sidebar } from '../components/dashboard/Sidebar';
 import { useToast } from '../components/ui/toast';
 
 const mockStudents = [
-  { id: 1, name: 'John Doe', roll: 'CS21B001', present: false, history: [true, true, false, true] },
-  { id: 2, name: 'Jane Smith', roll: 'CS21B002', present: false, history: [true, true, true, true] },
+  { id: 1, name: 'John Doe', roll: 'CS21B001', present: false, history: [true, true, false, true], semester: 4 },
+  { id: 2, name: 'Jane Smith', roll: 'CS21B002', present: false, history: [true, true, true, true], semester: 4 },
   // Add more students...
 ];
 
 const filters = {
   branch: ['CSE', 'IT', 'ECE', 'EE'],
   year: ['1st', '2nd', '3rd', '4th'],
-  section: ['A', 'B', 'C']
+  section: ['A', 'B', 'C'],
+  semester: [1, 2, 3, 4, 5, 6, 7, 8]
 };
 
 export function AttendanceSheet() {
@@ -28,7 +29,8 @@ export function AttendanceSheet() {
   const [activeFilters, setActiveFilters] = useState({
     branch: 'all',
     year: 'all',
-    section: 'all'
+    section: 'all',
+    semester: 'all'
   });
 
   useEffect(() => {
@@ -123,8 +125,9 @@ export function AttendanceSheet() {
     const matchesBranch = activeFilters.branch === 'all' || student.branch === activeFilters.branch;
     const matchesYear = activeFilters.year === 'all' || student.year === activeFilters.year;
     const matchesSection = activeFilters.section === 'all' || student.section === activeFilters.section;
-    
-    return matchesSearch && matchesBranch && matchesYear && matchesSection;
+    const matchesSemester = activeFilters.semester === 'all' || student.semester === Number(activeFilters.semester);
+
+    return matchesSearch && matchesBranch && matchesYear && matchesSection && matchesSemester;
   });
 
   return (
@@ -171,7 +174,7 @@ export function AttendanceSheet() {
           </div>
 
           {/* Enhanced Filter Controls */}
-          <div className="filter-controls grid grid-cols-3 gap-4 mb-4">
+          <div className="filter-controls grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             {Object.entries(filters).map(([key, options]) => (
               <select
                 key={key}
@@ -181,7 +184,9 @@ export function AttendanceSheet() {
               >
                 <option value="all">All {key}s</option>
                 {options.map(option => (
-                  <option key={option} value={option}>{option}</option>
+                  <option key={option} value={option}>
+                    {key === 'semester' ? `Semester ${option}` : option}
+                  </option>
                 ))}
               </select>
             ))}

@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { HolidayCalendar } from '../components/settings/HolidayCalendar';
 import { PolicyEditor } from '../components/settings/PolicyEditor';
+import { HeroShape } from '../components/ui/HeroShape';
 import { useToast } from '../components/ui/toast';
 
 export function Settings() {
@@ -13,7 +14,6 @@ export function Settings() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Enhanced animations
       gsap.from('.settings-card', {
         y: 20,
         opacity: 0,
@@ -22,7 +22,6 @@ export function Settings() {
         ease: 'power3.out'
       });
 
-      // Add hover animation
       gsap.to('.settings-card', {
         y: -5,
         duration: 0.2,
@@ -46,8 +45,10 @@ export function Settings() {
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar userRole="admin" />
       
-      <main className="flex-1 overflow-y-auto p-6" ref={containerRef}>
-        <div className="max-w-7xl mx-auto space-y-6">
+      <main className="flex-1 overflow-y-auto p-6 relative" ref={containerRef}>
+        <HeroShape className="absolute inset-0 opacity-5" />
+        
+        <div className="max-w-7xl mx-auto space-y-6 relative z-10">
           <header className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold">Settings</h1>

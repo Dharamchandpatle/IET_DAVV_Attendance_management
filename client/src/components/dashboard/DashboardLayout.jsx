@@ -25,10 +25,10 @@ export function DashboardLayout({ children, userRole }) {
     <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar userRole={userRole} />
       
-      <main className="flex-1 overflow-y-auto relative">
-        <HeroShape className="opacity-10" />
+      <main className="flex-1 overflow-y-auto relative bg-gray-50 dark:bg-gray-900 transition-colors">
+        <HeroShape className="absolute inset-0 opacity-5" />
         
-        <div className="p-6" ref={containerRef}>
+        <div className="p-6 relative z-10" ref={containerRef}>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
