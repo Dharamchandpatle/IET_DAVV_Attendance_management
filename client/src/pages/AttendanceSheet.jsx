@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import gsap from 'gsap';
-import { Filter, Save, Search } from 'lucide-react';
+import { Calendar, Save, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { AttendanceHistory } from '../components/attendance/AttendanceHistory';
 import { AttendanceStats } from '../components/attendance/AttendanceStats';
@@ -8,9 +8,23 @@ import { Sidebar } from '../components/dashboard/Sidebar';
 import { useToast } from '../components/ui/toast';
 
 const mockStudents = [
-  { id: 1, name: 'John Doe', roll: 'CS21B001', present: false, history: [true, true, false, true], semester: 4 },
-  { id: 2, name: 'Jane Smith', roll: 'CS21B002', present: false, history: [true, true, true, true], semester: 4 },
-  // Add more students...
+  { 
+    id: 1, 
+    name: 'John Doe', 
+    roll: 'CS21B001', 
+    present: false, 
+    history: [true, true, false, true], 
+    semester: 4,
+    branch: 'CSE',
+    year: '2nd',
+    section: 'A',
+    attendance: {
+      regular: 85,
+      events: 92,
+      overall: 88
+    }
+  },
+  // Add more students with similar structure
 ];
 
 const filters = {
@@ -25,6 +39,8 @@ export function AttendanceSheet() {
   const [students, setStudents] = useState(mockStudents);
   const [search, setSearch] = useState('');
   const [selectedDate] = useState(new Date());
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [attendanceType, setAttendanceType] = useState('regular');
   const containerRef = useRef(null);
   const [activeFilters, setActiveFilters] = useState({
     branch: 'all',
@@ -68,14 +84,6 @@ export function AttendanceSheet() {
     });
   };
 
-  const markAllPresent = () => {
-    setStudents(prev => prev.map(student => ({ ...student, present: true })));
-    show({
-      title: "Batch Update",
-      description: "All students marked as present"
-    });
-  };
-
   const handleBulkAttendance = async (present) => {
     try {
       setStudents(prev => prev.map(student => ({ ...student, present })));
@@ -95,7 +103,7 @@ export function AttendanceSheet() {
 
   const handleAttendanceSubmit = async () => {
     try {
-      // API call would go here
+      // API call would go here with attendanceType
       show({
         title: "Success",
         description: "Attendance submitted successfully",
@@ -137,23 +145,24 @@ export function AttendanceSheet() {
       <main className="flex-1 overflow-y-auto p-6" ref={containerRef}>
         <div className="max-w-7xl mx-auto space-y-6">
           <header className="flex justify-between items-center">
-            <div>
+            <div className="space-y-1">
               <h1 className="text-3xl font-bold">Mark Attendance</h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                {selectedDate.toLocaleDateString('en-US', { 
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                <Calendar className="w-5 h-5" />
+                <p>{selectedDate.toLocaleDateString('en-US', { 
                   weekday: 'long',
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric'
-                })}
-              </p>
+                })}</p>
+              </div>
             </div>
-            <AttendanceStats students={students} />
+            <AttendanceStats students={filteredStudents} />
           </header>
 
           {/* Search and Filters */}
-          <div className="flex gap-4 mb-6">
-            <div className="flex-1 relative">
+          <div className="flex flex-wrap gap-4 mb-6">
+            <div className="flex-1 relative min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
@@ -163,14 +172,17 @@ export function AttendanceSheet() {
                 className="w-full pl-10 pr-4 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700"
               />
             </div>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex items-center gap-2 px-4 py-2 border rounded-lg dark:border-gray-700"
+            <select
+              value={attendanceType}
+              onChange={(e) => setAttendanceType(e.target.value)}
+              className="p-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700"
             >
-              <Filter className="w-5 h-5" />
-              Filters
-            </motion.button>
+              <option value="regular">Regular Class</option>
+              <option value="college_event">College Event</option>
+              <option value="govt_event">Government Event</option>
+              <option value="holiday">Holiday</option>
+              <option value="other">Other</option>
+            </select>
           </div>
 
           {/* Enhanced Filter Controls */}
@@ -192,7 +204,7 @@ export function AttendanceSheet() {
             ))}
           </div>
 
-          {/* Batch Actions */}
+          {/* Quick Actions */}
           <div className="flex justify-between mb-4">
             <div className="space-x-2">
               <motion.button
@@ -223,14 +235,15 @@ export function AttendanceSheet() {
             </motion.button>
           </div>
 
-          {/* Attendance Table */}
+          {/* Enhanced Student List */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="border-b dark:border-gray-700">
                   <th className="text-left p-4">Roll No</th>
                   <th className="text-left p-4">Name</th>
-                  <th className="text-left p-4">Attendance History</th>
+                  <th className="text-left p-4">Details</th>
+                  <th className="text-left p-4">History</th>
                   <th className="text-left p-4">Status</th>
                 </tr>
               </thead>
@@ -243,6 +256,12 @@ export function AttendanceSheet() {
                   >
                     <td className="p-4">{student.roll}</td>
                     <td className="p-4">{student.name}</td>
+                    <td className="p-4">
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        <p>Branch: {student.branch}</p>
+                        <p>Overall: {student.attendance.overall}%</p>
+                      </div>
+                    </td>
                     <td className="p-4">
                       <AttendanceHistory history={student.history} />
                     </td>
