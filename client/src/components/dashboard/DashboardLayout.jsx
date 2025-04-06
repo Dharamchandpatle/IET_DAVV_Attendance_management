@@ -2,9 +2,10 @@ import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { useEffect, useRef } from 'react';
 import { HeroShape } from '../ui/HeroShape';
+import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { Sidebar } from './Sidebar';
 
-export function DashboardLayout({ children, userRole }) {
+export function DashboardLayout({ children, userRole, isLoading = false }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -12,8 +13,8 @@ export function DashboardLayout({ children, userRole }) {
       gsap.from('.dashboard-card', {
         y: 20,
         opacity: 0,
-        duration: 0.8,
-        stagger: 0.2,
+        duration: 0.6,
+        stagger: 0.15,
         ease: 'power3.out'
       });
     }, containerRef);
@@ -32,9 +33,21 @@ export function DashboardLayout({ children, userRole }) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="max-w-7xl mx-auto space-y-6"
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="max-w-7xl mx-auto space-y-6 page-content"
           >
-            {children}
+            {isLoading ? (
+              <LoadingSpinner size="small" label="Loading content..." />
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                {children}
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </main>

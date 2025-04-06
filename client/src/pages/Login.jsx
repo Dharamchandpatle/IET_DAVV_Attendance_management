@@ -4,6 +4,7 @@ import { Eye, EyeOff, LucideLoader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HeroShape } from '../components/ui/HeroShape';
+import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { useToast } from '../components/ui/toast';
 import { useAuth } from '../context/AuthContext';
 
@@ -13,6 +14,7 @@ export function Login() {
   const { show } = useToast();
   const containerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
 
@@ -22,8 +24,9 @@ export function Login() {
       gsap.from('.login-card', {
         y: 30,
         opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out'
+        duration: 0.6,
+        ease: 'power3.out',
+        onComplete: () => setIsPageLoading(false)
       });
 
       // Animate background grid
@@ -56,6 +59,7 @@ export function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setValidationErrors({});
     const formData = new FormData(e.target);
     const errors = validateForm(formData);
 
@@ -82,11 +86,15 @@ export function Login() {
     }
   };
 
+  if (isPageLoading) {
+    return <LoadingSpinner label="Loading..." />;
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 relative overflow-hidden" ref={containerRef}>
       {/* Animated Background */}
       <div className="absolute inset-0 bg-grid-pattern animate-grid opacity-10" />
-      <HeroShape />
+      <HeroShape className="absolute inset-0 opacity-5" />
       
       <motion.div
         className="login-card max-w-md w-full space-y-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-8 rounded-xl shadow-xl relative z-10"

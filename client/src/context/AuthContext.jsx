@@ -6,25 +6,48 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with true to prevent flash
   const navigate = useNavigate();
   const location = useLocation();
   const { show } = useToast();
+
+  // Check for existing session on mount
+  useState(() => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+    } catch (error) {
+      console.error('Error restoring auth state:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const login = useCallback(async (credentials) => {
     try {
       setIsLoading(true);
       const response = await mockLoginCall(credentials);
+      
+      // Store user in localStorage for persistence
+      localStorage.setItem('user', JSON.stringify(response.user));
       setUser(response.user);
       
       const destination = location.state?.from || getRoleBasedPath(response.user.role);
       navigate(destination, { replace: true });
       
+      show({
+        title: "Welcome Back",
+        description: "You have successfully logged in.",
+        type: "success"
+      });
+      
       return response.user;
     } catch (error) {
       show({
         title: "Login Failed",
-        description: error.message,
+        description: error.message || "Invalid credentials. Please try again.",
         type: "error"
       });
       throw error;
@@ -35,8 +58,14 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(() => {
     setUser(null);
+    localStorage.removeItem('user');
     navigate('/', { replace: true });
-  }, [navigate]);
+    show({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+      type: "success"
+    });
+  }, [navigate, show]);
 
   return (
     <AuthContext.Provider value={{ 
@@ -67,17 +96,24 @@ function getRoleBasedPath(role) {
 
 async function mockLoginCall(credentials) {
   // Mock API call - replace with actual implementation
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     setTimeout(() => {
+      // Simulate basic validation
+      if (!credentials.email || !credentials.password || !credentials.role) {
+        reject(new Error('Please fill in all required fields'));
+        return;
+      }
+
+      // Simulate successful login
       resolve({
         user: {
-          id: 1,
-          name: 'Test User',
-          role: credentials.role || 'student',
+          id: Math.random().toString(36).substr(2, 9),
+          name: credentials.email.split('@')[0],
+          role: credentials.role,
           email: credentials.email
         }
       });
-    }, 1000);
+    }, 1000); // Simulate network delay
   });
 }
 
