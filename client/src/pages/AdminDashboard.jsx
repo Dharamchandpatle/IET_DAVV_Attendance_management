@@ -3,10 +3,8 @@ import gsap from 'gsap';
 import { BookOpen, Settings, Upload, UserPlus, Users } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { AdminAnnouncements } from '../components/admin/AdminAnnouncements';
-import { BatchImport } from '../components/admin/BatchImport';
 import { DataTable } from '../components/admin/DataTable';
 import { DynamicFormModal } from '../components/admin/DynamicFormModal';
-import { PolicySettings } from '../components/admin/PolicySettings';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { KPIGrid } from '../components/dashboard/KPIGrid';
 
@@ -23,31 +21,25 @@ const adminActions = [
     id: 'add-student',
     title: 'Add Student',
     icon: UserPlus,
-    description: 'Register new student with auto-generated ID',
-    color: 'blue'
+    description: 'Register a new student in the system',
+    color: 'green'
   },
   {
     id: 'add-faculty',
     title: 'Add Faculty',
-    icon: Users,
-    description: 'Add new faculty member with role assignment',
-    color: 'green'
+    icon: UserPlus,
+    description: 'Add new faculty member',
+    color: 'blue'
   },
   {
-    id: 'add-course',
-    title: 'Add Course',
-    icon: BookOpen,
-    description: 'Create new course with department assignment',
-    color: 'purple'
-  },
-  {
-    id: 'bulk-import',
-    title: 'Bulk Import',
+    id: 'batch-import',
+    title: 'Batch Import',
     icon: Upload,
-    description: 'Import students/faculty via Excel',
+    description: 'Import multiple records at once',
     color: 'orange'
   },
   {
+    id: 'settings',
     title: 'System Settings',
     icon: Settings,
     description: 'Configure attendance rules & policies',
@@ -58,41 +50,63 @@ const adminActions = [
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('students');
   const [activeModal, setActiveModal] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const containerRef = useRef(null);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.admin-card', {
-        y: 20,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: 'power3.out'
-      });
-    }, containerRef);
+    const loadDashboardData = async () => {
+      try {
+        setIsLoading(true);
+        // Add your data fetching logic here
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated loading
+        setIsLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setIsLoading(false);
+      }
+    };
 
-    return () => ctx.revert();
+    loadDashboardData();
   }, []);
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'students':
-      case 'faculty':
-      case 'courses':
-        return <DataTable type={activeTab} />;
-      case 'import':
-        return <BatchImport />;
-      case 'settings':
-        return <PolicySettings />;
-      default:
-        return null;
+  useEffect(() => {
+    if (!isLoading && containerRef.current) {
+      const ctx = gsap.context(() => {
+        gsap.from('.admin-card', {
+          y: 20,
+          opacity: 0,
+          duration: 0.8,
+          stagger: 0.2,
+          ease: 'power3.out'
+        });
+      }, containerRef);
+
+      return () => ctx.revert();
     }
-  };
+  }, [isLoading]);
+
+  if (error) {
+    return (
+      <DashboardLayout userRole="admin">
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center text-red-500">
+            <p>Error loading dashboard: {error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
-    <DashboardLayout userRole="admin">
-      <div className="space-y-8">
-        {/* Header Section */}
+    <DashboardLayout userRole="admin" isLoading={isLoading}>
+      <div className="space-y-8" ref={containerRef}>
         <header className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Admin Dashboard</h1>
@@ -102,10 +116,8 @@ export function AdminDashboard() {
           </div>
         </header>
 
-        {/* KPI Section */}
         <KPIGrid userRole="admin" />
       
-        {/* Quick Actions Section */}
         <section>
           <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -114,11 +126,10 @@ export function AdminDashboard() {
                 key={action.id}
                 onClick={() => setActiveModal(action.id)}
                 className="group p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm 
-                         hover:shadow-md transition-all text-left relative overflow-hidden"
+                         hover:shadow-md transition-all text-left relative overflow-hidden admin-card"
                 whileHover={{ y: -5 }}
                 whileTap={{ scale: 0.98 }}
               >
-                {/* Animated Background */}
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 
                               transform translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
                 
@@ -132,21 +143,17 @@ export function AdminDashboard() {
           </div>
         </section>
 
-        {/* Main Management Section */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Activity */}
           <div className="col-span-2 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
             <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
             <DataTable type={activeTab} />
           </div>
 
-          {/* Announcements */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
             <AdminAnnouncements />
           </div>
         </section>
 
-        {/* Dynamic Form Modals */}
         <AnimatePresence>
           {activeModal && (
             <DynamicFormModal

@@ -109,16 +109,16 @@ export function FacultyProfile() {
       <div className="max-w-4xl mx-auto space-y-8" ref={containerRef}>
         {/* Profile Header */}
         <motion.div 
-          className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
+          className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300"
         >
           <div className="flex items-center gap-6">
-            <div className="relative">
+            <div className="relative group">
               <img 
                 src={facultyData.profileImage} 
                 alt="Profile" 
-                className="w-24 h-24 rounded-full object-cover"
+                className="w-24 h-24 rounded-full object-cover ring-2 ring-blue-500/20 group-hover:ring-blue-500 transition-all duration-300"
               />
-              <label className="absolute bottom-0 right-0 p-2 bg-blue-600 rounded-full cursor-pointer hover:bg-blue-700">
+              <label className="absolute bottom-0 right-0 p-2 bg-blue-600 rounded-full cursor-pointer hover:bg-blue-700 transform transition-all duration-300 hover:scale-110">
                 <Camera className="w-4 h-4 text-white" />
                 <input 
                   type="file" 
@@ -130,8 +130,10 @@ export function FacultyProfile() {
             </div>
             
             <div className="flex-1">
-              <h1 className="text-3xl font-bold">{facultyData.personalInfo.name}</h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">
+                {facultyData.personalInfo.name}
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 font-medium">
                 {facultyData.personalInfo.designation}
               </p>
               <p className="text-sm text-gray-500">
@@ -140,10 +142,10 @@ export function FacultyProfile() {
             </div>
 
             <motion.button
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsEditing(!isEditing)}
-              className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600"
+              className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
             >
               <Edit2 className="w-5 h-5" />
             </motion.button>
@@ -152,8 +154,12 @@ export function FacultyProfile() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Personal Information */}
-          <motion.div className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">Personal Information</h2>
+          <motion.div 
+            className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300"
+          >
+            <h2 className="text-xl font-semibold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">
+              Personal Information
+            </h2>
             {isEditing ? (
               <form onSubmit={handleProfileUpdate} className="space-y-4">
                 <input
@@ -207,7 +213,7 @@ export function FacultyProfile() {
           </motion.div>
 
           {/* Assigned Courses */}
-          <motion.div className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <motion.div className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300">
             <h2 className="text-xl font-semibold mb-4">Assigned Courses</h2>
             <div className="space-y-4">
               {facultyData.courses.map(course => (
@@ -232,7 +238,7 @@ export function FacultyProfile() {
           </motion.div>
 
           {/* Attendance Summary */}
-          <motion.div className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm md:col-span-2">
+          <motion.div className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm md:col-span-2 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Attendance Record</h2>
               <div className="flex items-center gap-2">

@@ -42,13 +42,12 @@ function AppContent() {
         name: "smoothPageTransition",
         effect: (targets) => {
           return gsap.timeline()
-            .set(targets, { opacity: 0, y: 20 })
+            .set(targets, { opacity: 0, y: 10 })
             .to(targets, { 
               opacity: 1, 
               y: 0, 
-              duration: 0.3,
+              duration: 0.2,
               ease: "power2.out",
-              stagger: 0.1,
               clearProps: "all" 
             });
         }
@@ -60,15 +59,15 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300" ref={pageTransitionRef}>
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="wait">
         <motion.div
           key={location.pathname}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
         >
-          <Suspense fallback={<LoadingSpinner />}>
+          <Suspense fallback={<LoadingSpinner fullScreen />}>
             <Routes location={location}>
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />

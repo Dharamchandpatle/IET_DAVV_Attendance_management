@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { BarChart3, BookOpen, GraduationCap, Users } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
 const kpiData = {
   admin: [
@@ -31,21 +32,30 @@ export function KPIGrid({ userRole = 'student' }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
-          className="dashboard-card bg-card p-6 rounded-xl shadow-sm"
-          whileHover={{ y: -5 }}
+          className="dashboard-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300"
+          whileHover={{ 
+            y: -5,
+            scale: 1.02,
+            transition: { duration: 0.2 }
+          }}
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <kpi.icon className="w-6 h-6 text-primary" />
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg transform transition-transform group-hover:scale-110">
+              <kpi.icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">{kpi.title}</p>
-              <h3 className="text-2xl font-bold">{kpi.value}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{kpi.title}</p>
+              <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">
+                {kpi.value}
+              </h3>
               {kpi.trend && (
-                <p className={`text-sm ${
-                  kpi.trend.startsWith('+') ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {kpi.trend} from last month
+                <p className={cn(
+                  "mt-1 text-sm font-medium",
+                  kpi.trend.startsWith('+') ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                )}>
+                  <span className="inline-flex items-center">
+                    {kpi.trend.startsWith('+') ? "↑" : "↓"} {kpi.trend} from last month
+                  </span>
                 </p>
               )}
             </div>

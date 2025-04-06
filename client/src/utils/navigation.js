@@ -1,60 +1,88 @@
 import gsap from 'gsap';
 
-export const navigateWithTransition = async (navigate, path, options = {}) => {
-  const {
-    duration = 0.3,
-    onBeforeNavigate,
-    onAfterNavigate
-  } = options;
+// Cache for preloaded routes
+const preloadedRoutes = new Set();
 
-  // Pre-load the target route module
-  const routeName = path.split('/')[1] || 'LandingPage';
-  const capitalized = routeName.charAt(0).toUpperCase() + routeName.slice(1);
+// Preload a route to make subsequent navigation faster
+export const preloadRoute = async (route) => {
+  if (preloadedRoutes.has(route)) return;
   
   try {
-    // Optional callback before navigation
-    if (onBeforeNavigate) {
-      await onBeforeNavigate();
-    }
-
-    // Fade out current page
-    await gsap.to('.page-content', {
-      opacity: 0,
-      y: -20,
-      duration: duration / 2,
-      ease: 'power2.inOut'
-    });
-
-    // Navigate to new route
-    navigate(path);
-
-    // Fade in new page
-    gsap.fromTo('.page-content',
-      { opacity: 0, y: 20 },
-      { 
-        opacity: 1, 
-        y: 0, 
-        duration: duration / 2,
-        delay: 0.1,
-        ease: 'power2.out',
-        clearProps: 'all'
-      }
-    );
-
-    // Optional callback after navigation
-    if (onAfterNavigate) {
-      onAfterNavigate();
-    }
+    // Add route to cache before starting preload
+    preloadedRoutes.add(route);
+    
+    // In a real app, this would prefetch the route data
+    await new Promise(resolve => setTimeout(resolve, 100));
   } catch (error) {
-    console.error('Navigation error:', error);
+    console.error('Failed to preload route:', error);
+    // Remove from cache if preload failed
+    preloadedRoutes.delete(route);
   }
 };
 
-// Helper to preload pages on hover/interaction
-export const preloadRoute = (routePath) => {
+// Smooth navigation with transitions
+export const navigateWithTransition = async (navigate, to, options = {}) => {
+  const {
+    duration = 0.3,
+    fadeOut = true,
+    type = 'fade'
+  } = options;
+
+  // Start exit animation
+  if (fadeOut) {
+    await gsap.to('.dashboard-content', {
+      opacity: 0,
+      y: 20,
+      duration: duration,
+      ease: 'power2.inOut'
+    });
+  }
+
+  // Navigate to new route
+  navigate(to);
+
+  // Entrance animation will be handled by the mounted component
+  // But we can preload the next route data
+  preloadRoute(to);
+};
+
+// Handle back/forward navigation
+export const handlePopState = (event) => {
+  // Smooth transition for browser back/forward
+  gsap.to('.dashboard-content', {
+    opacity: 0,
+    y: 20,
+    duration: 0.2,
+    ease: 'power2.inOut',
+    onComplete: () => {
+      gsap.to('.dashboard-content', {
+        opacity: 1,
+        y: 0,
+        duration: 0.3,
+        delay: 0.1
+      });
+    }
+  });
+};
+
+// Add popstate listener
+if (typeof window !== 'undefined') {
+  window.addEventListener('popstate', handlePopState);
+}
+
+// Clean up function to remove listener
+export const cleanup = () => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('popstate', handlePopState);
+  }
+};
+
+// Helper to preload routes
+export const preloadRouteOld = (routePath) => {
   const routeName = routePath.split('/')[1] || 'LandingPage';
   const capitalized = routeName.charAt(0).toUpperCase() + routeName.slice(1);
   
+  // Preload the chunk
   import(`../pages/${capitalized}.jsx`).catch(console.error);
 };
 

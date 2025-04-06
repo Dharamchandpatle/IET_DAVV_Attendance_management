@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
 import { Calendar, ChevronLeft, Clock, FileText, Home, Moon, Settings, Sun, User, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
-import { navigateWithTransition } from '../../utils/navigation';
+import { navigateWithTransition, preloadRoute } from '../../utils/navigation';
 
 const roleBasedNavItems = {
   admin: [
@@ -18,8 +18,8 @@ const roleBasedNavItems = {
     { title: 'Dashboard', path: '/faculty', icon: Home, end: true },
     { title: 'Profile', path: '/faculty/profile', icon: User },
     { title: 'Attendance', path: '/faculty/attendance', icon: Calendar },
-    { title: 'Exams', path: '/exams', icon: FileText },
-    { title: 'Leave Requests', path: '/leave-requests', icon: Clock },
+    { title: 'Exams', path: '/faculty/exams', icon: FileText },
+    { title: 'Leave Requests', path: '/faculty/leave-requests', icon: Clock },
   ],
   student: [
     { title: 'Dashboard', path: '/student', icon: Home, end: true },
@@ -35,9 +35,23 @@ export function Sidebar({ userRole = 'student' }) {
   const navigate = useNavigate();
   const navItems = roleBasedNavItems[userRole];
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [activeItem, setActiveItem] = useState(location.pathname);
+
+  // Preload routes on mount
+  useEffect(() => {
+    navItems.forEach(item => preloadRoute(item.path));
+  }, [navItems]);
 
   const handleNavigation = (path) => {
-    navigateWithTransition(navigate, path);
+    if (path === activeItem) return; // Prevent unnecessary navigation
+    setActiveItem(path);
+    navigateWithTransition(navigate, path, {
+      duration: 0.2,
+      onBeforeNavigate: () => {
+        // Preload the target route before navigation
+        preloadRoute(path);
+      }
+    });
   };
 
   const sidebarWidth = isCollapsed ? "w-20" : "w-64";
