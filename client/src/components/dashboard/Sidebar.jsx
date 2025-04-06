@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { Calendar, Clock, FileText, Home, Moon, Settings, Sun, User, Users } from 'lucide-react';
+import { Calendar, ChevronLeft, Clock, FileText, Home, Moon, Settings, Sun, User, Users } from 'lucide-react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { navigateWithTransition } from '../../utils/navigation';
@@ -33,59 +34,119 @@ export function Sidebar({ userRole = 'student' }) {
   const location = useLocation();
   const navigate = useNavigate();
   const navItems = roleBasedNavItems[userRole];
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleNavigation = (path) => {
     navigateWithTransition(navigate, path);
   };
 
+  const sidebarWidth = isCollapsed ? "w-20" : "w-64";
+  const itemVariants = {
+    open: {
+      width: "100%",
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 24,
+      },
+    },
+    collapsed: {
+      width: 48,
+      opacity: isCollapsed ? 1 : 0,
+      transition: {
+        duration: 0.2,
+      },
+    },
+  };
+
   return (
     <motion.aside
       initial={{ x: -200 }}
-      animate={{ x: 0 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg flex flex-col"
+      animate={{ 
+        x: 0,
+        width: isCollapsed ? 80 : 256,
+      }}
+      transition={{ 
+        type: 'spring', 
+        stiffness: 300, 
+        damping: 30,
+        width: { duration: 0.2 }
+      }}
+      className={`${sidebarWidth} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg flex flex-col relative`}
     >
+      {/* Collapse Toggle Button */}
+      <motion.button
+        className="absolute -right-3 top-6 w-6 h-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-md"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+      >
+        <ChevronLeft
+          className={`w-4 h-4 transition-transform duration-200 ${
+            isCollapsed ? "rotate-180" : ""
+          }`}
+        />
+      </motion.button>
+
+      {/* Logo Section */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="p-6"
+        className={`p-6 ${isCollapsed ? "px-4" : ""}`}
       >
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-          IET DAVV
+        <h2 className={`font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent
+          ${isCollapsed ? "text-xl text-center" : "text-2xl"}`}>
+          {isCollapsed ? "IET" : "IET DAVV"}
         </h2>
       </motion.div>
 
+      {/* Navigation Menu */}
       <nav className="flex-1 px-4 space-y-1">
         {navItems.map((item) => (
           <motion.button
             key={item.path}
             onClick={() => handleNavigation(item.path)}
-            className={({ isActive }) => `
-              nav-link flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
-              ${isActive 
+            variants={itemVariants}
+            initial="open"
+            animate={isCollapsed ? "collapsed" : "open"}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className={`nav-link w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
+              ${location.pathname === item.path || (item.end && location.pathname === item.path)
                 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium' 
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}
-            `}
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
-            {item.icon && <item.icon className="w-5 h-5" />}
-            <span>{item.title}</span>
+            <div className="flex items-center gap-3 min-w-max">
+              {item.icon && (
+                <item.icon className={`w-5 h-5 ${
+                  location.pathname === item.path
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-gray-500 dark:text-gray-400"
+                }`} />
+              )}
+              {!isCollapsed && <span>{item.title}</span>}
+            </div>
           </motion.button>
         ))}
       </nav>
 
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={toggleTheme}
-        className="mx-4 mb-6 p-2 flex items-center gap-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-      >
-        {theme === 'dark' ? 
-          <Sun className="w-5 h-5 text-yellow-500" /> : 
-          <Moon className="w-5 h-5 text-blue-500" />
-        }
-        <span>Toggle Theme</span>
-      </motion.button>
+      {/* Theme Toggle & User Menu */}
+      <div className={`border-t border-gray-200 dark:border-gray-700 p-4 ${isCollapsed ? "px-2" : ""}`}>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={toggleTheme}
+          className="w-full p-2 flex items-center gap-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
+          {theme === 'dark' ? 
+            <Sun className="w-5 h-5 text-yellow-500" /> : 
+            <Moon className="w-5 h-5 text-blue-500" />
+          }
+          {!isCollapsed && <span>Toggle Theme</span>}
+        </motion.button>
+      </div>
     </motion.aside>
   );
 }
