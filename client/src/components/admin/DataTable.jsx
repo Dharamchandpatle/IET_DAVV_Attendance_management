@@ -1,44 +1,31 @@
-import { ChevronDown, ChevronUp, Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { motion } from 'framer-motion';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
 
-export function DataTable({ type }) {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+export function DataTable({ type = 'students', data = [] }) {
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: 'asc'
+  });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        // Simulate API call - replace with actual API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Sample data - replace with actual API response
-        const mockData = Array.from({ length: 50 }, (_, i) => ({
-          id: i + 1,
-          name: `${type === 'students' ? 'Student' : 'Faculty'} ${i + 1}`,
-          email: `user${i + 1}@example.com`,
-          department: ['CSE', 'IT', 'ECE', 'ME'][Math.floor(Math.random() * 4)],
-          status: ['Active', 'Inactive'][Math.floor(Math.random() * 2)],
-          lastActive: new Date(Date.now() - Math.random() * 10000000000).toLocaleDateString()
-        }));
-        
-        setData(mockData);
-        setError(null);
-      } catch (err) {
-        setError('Failed to fetch data. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [type]);
+  const columns = {
+    students: [
+      { key: 'name', label: 'Name' },
+      { key: 'rollNo', label: 'Roll No.' },
+      { key: 'department', label: 'Department' },
+      { key: 'semester', label: 'Semester' },
+      { key: 'email', label: 'Email' },
+      { key: 'attendance', label: 'Attendance' }
+    ],
+    faculty: [
+      { key: 'name', label: 'Name' },
+      { key: 'facultyId', label: 'Faculty ID' },
+      { key: 'department', label: 'Department' },
+      { key: 'designation', label: 'Designation' },
+      { key: 'email', label: 'Email' },
+      { key: 'courses', label: 'Courses' }
+    ]
+  };
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -50,109 +37,105 @@ export function DataTable({ type }) {
 
   const sortedData = [...data].sort((a, b) => {
     if (!sortConfig.key) return 0;
-    
+
     const aVal = a[sortConfig.key];
     const bVal = b[sortConfig.key];
-    
+
     if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
     if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
     return 0;
   });
 
-  const filteredData = sortedData.filter(item =>
-    Object.values(item).some(val =>
-      val.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
-
-  const paginatedData = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
-  if (loading) return <LoadingSpinner />;
-  if (error) return <div className="text-red-500 text-center p-4">{error}</div>;
-
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              {['Name', 'Email', 'Department', 'Status', 'Last Active'].map((header) => (
-                <th
-                  key={header}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort(header.toLowerCase())}
-                >
-                  <div className="flex items-center gap-1">
-                    {header}
-                    {sortConfig.key === header.toLowerCase() && (
-                      sortConfig.direction === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
-                    )}
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b dark:border-gray-700">
+            {columns[type].map(({ key, label }) => (
+              <th 
+                key={key}
+                onClick={() => handleSort(key)}
+                className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
+              >
+                <div className="flex items-center gap-2">
+                  {label}
+                  <div className="flex flex-col">
+                    <ChevronUp 
+                      className={`w-3 h-3 ${
+                        sortConfig.key === key && sortConfig.direction === 'asc'
+                          ? 'text-blue-600'
+                          : 'text-gray-400'
+                      }`}
+                    />
+                    <ChevronDown 
+                      className={`w-3 h-3 -mt-1 ${
+                        sortConfig.key === key && sortConfig.direction === 'desc'
+                          ? 'text-blue-600'
+                          : 'text-gray-400'
+                      }`}
+                    />
                   </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-            {paginatedData.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.department}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    item.status === 'Active' 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
-                      : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
-                  }`}>
-                    {item.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.lastActive}</td>
-              </tr>
+                </div>
+              </th>
             ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Showing {Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} entries
-        </p>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="px-3 py-1 rounded border disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <button
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 rounded border disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+            <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          {sortedData.map((row, index) => (
+            <motion.tr
+              key={row.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="hover:bg-gray-50 dark:hover:bg-gray-800/50"
+            >
+              {columns[type].map(({ key }) => (
+                <td key={key} className="px-4 py-3 text-sm">
+                  {key === 'attendance' ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full ${
+                            row[key] >= 75 ? 'bg-green-500' :
+                            row[key] >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${row[key]}%` }}
+                        />
+                      </div>
+                      <span>{row[key]}%</span>
+                    </div>
+                  ) : key === 'courses' ? (
+                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+                      {row[key]} {row[key] === 1 ? 'course' : 'courses'}
+                    </span>
+                  ) : (
+                    row[key]
+                  )}
+                </td>
+              ))}
+              <td className="px-4 py-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {}} // Will be implemented later
+                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => {}} // Will be implemented later
+                    className="text-red-600 hover:text-red-700 text-sm font-medium"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </motion.tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

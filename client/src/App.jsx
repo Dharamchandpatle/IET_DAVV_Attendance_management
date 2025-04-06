@@ -9,7 +9,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { lazyLoad, prefetchRoutes } from './utils/routeLoader';
 
-// Lazy load all pages with optimized chunk naming
+// Lazy load all pages
 const LandingPage = lazyLoad('LandingPage');
 const Login = lazyLoad('Login');
 const Register = lazyLoad('Register');
@@ -69,6 +69,7 @@ function AppContent() {
         >
           <Suspense fallback={<LoadingSpinner fullScreen />}>
             <Routes location={location}>
+              {/* Public Routes */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -81,6 +82,8 @@ function AppContent() {
                     <Route path="students/*" element={<StudentsManagement />} />
                     <Route path="faculty/*" element={<FacultyManagement />} />
                     <Route path="settings" element={<Settings />} />
+                    <Route path="exams" element={<ExamManagement />} />
+                    <Route path="leave-requests" element={<LeaveRequests />} />
                     <Route path="*" element={<Navigate to="/admin" replace />} />
                   </Routes>
                 </ProtectedRoute>
