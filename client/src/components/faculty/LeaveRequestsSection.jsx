@@ -13,11 +13,11 @@ const mockStats = {
 const mockRequests = [
   {
     id: 1,
-    studentName: 'John Doe',
+    studentName: 'Dharamchand Patle ',
     studentId: 'ST2025001',
     startDate: '2025-04-08',
     endDate: '2025-04-10',
-    reason: 'Medical appointment',
+    reason: 'computer science',
     status: 'pending'
   },
   // Add more mock data as needed

@@ -8,8 +8,8 @@ export function AttendanceModal({ onClose, onSubmit }) {
   const [attendanceType, setAttendanceType] = useState('regular');
   const [eventDetails, setEventDetails] = useState('');
   const [students, setStudents] = useState([
-    { id: 1, name: 'John Doe', rollNo: 'CS21B001', present: false },
-    { id: 2, name: 'Jane Smith', rollNo: 'CS21B002', present: false },
+    { id: 1, name: 'Dharamchand Patle', rollNo: 'CS21B001', present: false },
+    { id: 2, name: 'Dharamchand Patle', rollNo: 'CS21B002', present: false },
     // Add more students as needed
   ]);
 

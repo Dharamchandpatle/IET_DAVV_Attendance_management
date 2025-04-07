@@ -45,10 +45,10 @@ export function StudentProfile() {
         const mockData = {
           profileImage: '/default-avatar.png',
           personalInfo: {
-            name: 'John Doe',
-            id: 'CS21B001',
-            email: 'john.doe@iet.davv.ac.in',
-            phone: '+91 9876543210',
+            name: 'Dharamchand Patle',
+            id: 'DE24799',
+            email: '24bcs091@ietdavv.edu.in',
+            phone: '+91 6263827162',
             address: '123 College Road, Indore',
             department: 'Computer Science',
             semester: '4th',

@@ -8,8 +8,34 @@ import { useToast } from '../ui/toast';
 const mockStudents = [
   { 
     id: 1, 
-    name: 'John Doe', 
-    roll: 'CS21B001', 
+    name: 'Dharamchand Patle', 
+    roll: 'DE24799', 
+    present: false,
+    attendance: {
+      regular: 85,
+      events: 90,
+      overall: 87
+    },
+    branch: 'CSE',
+    semester: 4
+  },
+  { 
+    id: 2, 
+    name: 'Rohan ', 
+    roll: 'DE24799', 
+    present: false,
+    attendance: {
+      regular: 85,
+      events: 90,
+      overall: 87
+    },
+    branch: 'CSE',
+    semester: 4
+  },
+  { 
+    id: 3, 
+    name: 'Rishiraj aatman', 
+    roll: 'DE24799', 
     present: false,
     attendance: {
       regular: 85,

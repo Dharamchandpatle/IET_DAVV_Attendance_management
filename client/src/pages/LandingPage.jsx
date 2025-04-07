@@ -10,18 +10,18 @@ import { HeroShape } from '../components/ui/HeroShape';
 gsap.registerPlugin(ScrollTrigger);
 
 const features = [
-  {
-    title: 'Smart Attendance Tracking',
-    description: 'Automated attendance tracking with real-time updates and analytics dashboards for better insights.'
-  },
-  {
-    title: 'Seamless Integration',
-    description: 'Works perfectly with existing academic systems and provides easy export options for reports.'
-  },
-  {
-    title: 'Mobile Friendly',
-    description: 'Mark and track attendance from any device with our responsive mobile-first design.'
-  }
+  // {
+  //   title: 'Smart Attendance Tracking',
+  //   description: 'Automated attendance tracking with real-time updates and analytics dashboards for better insights.'
+  // },
+  // {
+  //   title: 'Seamless Integration',
+  //   description: 'Works perfectly with existing academic systems and provides easy export options for reports.'
+  // },
+  // {
+  //   title: 'Mobile Friendly',
+  //   description: 'Mark and track attendance from any device with our responsive mobile-first design.'
+  // }
 ];
 
 export default function LandingPage() {
@@ -162,9 +162,9 @@ export default function LandingPage() {
                 >
                   Get Started
                 </motion.button>
-                <button className="custom-button-secondary">
+                {/* <button className="custom-button-secondary">
                   Learn More
-                </button>
+                </button> */}
               </div>
             </motion.div>
           </div>
@@ -210,14 +210,14 @@ export default function LandingPage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-20 bg-gray-50 dark:bg-gray-900">
+        {/* <section className="py-20 bg-gray-50 dark:bg-gray-900">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-4xl font-bold text-center mb-12 heading-gradient">
               Common Questions
             </h2>
             <FAQ />
           </div>
-        </section>
+        </section> */}
 
         {/* Footer */}
         <footer className="bg-white dark:bg-gray-800 py-12 border-t border-gray-200 dark:border-gray-700">

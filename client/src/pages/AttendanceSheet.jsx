@@ -6,26 +6,151 @@ import { AttendanceHistory } from '../components/attendance/AttendanceHistory';
 import { AttendanceStats } from '../components/attendance/AttendanceStats';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { useToast } from '../components/ui/toast';
-
 const mockStudents = [
   { 
     id: 1, 
-    name: 'John Doe', 
+    name: 'Dharamchand Patle', 
     roll: 'CS21B001', 
     present: false, 
-    history: [true, true, false, true], 
+    // history: [
+    //   { type: 'regular', present: true },
+    //   { type: 'regular', present: true },
+    //   { type: 'regular', present: false },
+    //   { type: 'college_event', present: true, details: 'Hackathon attended' },
+    //   { type: 'holiday', present: false, details: 'Republic Day' }
+    // ],
+    history: [
+      { type: 'regular', present: true },
+      { type: 'regular', present: true },
+      { type: 'regular', present: false },
+      { type: 'regular', present: true },
+      { type: 'regular', present: false }
+    ],
     semester: 4,
     branch: 'CSE',
     year: '2nd',
     section: 'A',
     attendance: {
-      regular: 85,
-      events: 92,
-      overall: 88
+      regular: 91,
+      events: 88,
+      overall: 90
     }
   },
-  // Add more students with similar structure
+  { 
+    id: 2, 
+    name: 'Rishiraj Atman', 
+    roll: 'CS21B002', 
+    present: false, 
+    history: [
+      { type: 'regular', present: true },
+      { type: 'regular', present: false },
+      { type: 'regular', present: true },
+      { type: 'regular', present: true },
+      { type: 'regular', present: true }
+    ],
+    semester: 4,
+    branch: 'CSE',
+    year: '2nd',
+    section: 'A',
+    attendance: {
+      regular: 76,
+      events: 95,
+      overall: 82
+    }
+  },
+  {
+    id: 3,
+    name: 'Rohan Ahirwar',
+    roll: 'CS21B003',
+    present: false,
+    history: [
+      { type: 'regular', present: true },
+      { type: 'regular', present: false },
+      { type: 'regular', present: true },
+      { type: 'regular', present: true },
+      { type: 'regular', present: false }
+    ],
+    semester: 4,
+    branch: 'CSE',
+    year: '2nd',
+    section: 'A',
+    attendance: {
+      regular: 65,
+      events: 80,
+      overall: 70
+    }
+  },
+  {
+    id: 3,
+    name: 'Rohan Ahirwar',
+    roll: 'CS21B003',
+    present: false,
+    history: [
+      { type: 'regular', present: true },
+      { type: 'regular', present: false },
+      { type: 'regular', present: true },
+      { type: 'regular', present: true },
+      { type: 'regular', present: false }
+    ],
+    semester: 4,
+    branch: 'CSE',
+    year: '2nd',
+    section: 'A',
+    attendance: {
+      regular: 65,
+      events: 80,
+      overall: 70
+    }
+  },
+  {
+    id: 3,
+    name: 'Rohan Ahirwar',
+    roll: 'CS21B003',
+    present: false,
+    history: [
+      { type: 'regular', present: true },
+      { type: 'regular', present: false },
+      { type: 'regular', present: true },
+      { type: 'regular', present: true },
+      { type: 'regular', present: false }
+    ],
+    semester: 4,
+    branch: 'CSE',
+    year: '2nd',
+    section: 'A',
+    attendance: {
+      regular: 65,
+      events: 80,
+      overall: 70
+    }
+  },
+  {
+    id: 3,
+    name: 'Rohan Ahirwar',
+    roll: 'CS21B003',
+    present: false,
+    history: [
+      { type: 'regular', present: true },
+      { type: 'regular', present: false },
+      { type: 'regular', present: true },
+      { type: 'regular', present: true },
+      { type: 'regular', present: false }
+    ],
+    semester: 4,
+    branch: 'CSE',
+    year: '2nd',
+    section: 'A',
+    attendance: {
+      regular: 65,
+      events: 80,
+      overall: 70
+    }
+  },
+  // ... Add more students as needed
 ];
+
+
+
 
 const filters = {
   branch: ['CSE', 'IT', 'ECE', 'EE'],

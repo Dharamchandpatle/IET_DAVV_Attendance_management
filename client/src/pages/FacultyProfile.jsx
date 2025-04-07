@@ -13,18 +13,20 @@ export function FacultyProfile() {
   const [facultyData, setFacultyData] = useState({
     profileImage: '/default-avatar.png',
     personalInfo: {
-      name: 'Dr. Sarah Johnson',
+      name: 'Dr. Vaibhav Jain sir',
       id: 'FAC001',
-      email: 'sarah.johnson@iet.davv.ac.in',
+      email: 'vjain@iet.davv.ac.in',
       phone: '+91 9876543210',
       address: 'Department of Computer Science',
       department: 'Computer Science & Engineering',
       designation: 'Associate Professor',
-      joiningDate: '2020-08-15'
+      joiningDate: '2010-08-15'
     },
     courses: [
       { id: 'CS101', name: 'Introduction to Programming', students: 60 },
-      { id: 'CS204', name: 'Data Structures', students: 55 }
+      { id: 'CS204', name: 'Data Structures', students: 55 },
+      { id: 'CS204', name: 'Data Base Management System', students: 96 },
+      { id: 'CS204', name: 'Data Structures', students: 85 },
     ],
     attendance: {
       present: 42,

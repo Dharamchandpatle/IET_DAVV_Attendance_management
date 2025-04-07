@@ -8,12 +8,62 @@ import { useToast } from '../components/ui/toast';
 const mockRequests = [
   { 
     id: 1, 
-    studentName: 'John Doe',
-    studentId: 'CS21B001',
+    studentName: 'Dharamchand Patle',
+    studentId: 'DE24799',
     fromDate: '2024-02-15',
     toDate: '2024-02-16',
-    reason: 'Medical appointment',
+    reason: 'Computer Science ',
     status: 'pending',
+    requestedOn: '2024-02-10'
+  },
+  { 
+    id: 2, 
+    studentName: 'Dharamchand Patle',
+    studentId: 'DE24799',
+    fromDate: '2024-02-15',
+    toDate: '2024-02-16',
+    reason: 'Computer Science ',
+    status: 'rejected',
+    requestedOn: '2024-02-10'
+  },
+  { 
+    id: 3, 
+    studentName: 'Dharamchand Patle',
+    studentId: 'DE24799',
+    fromDate: '2024-02-15',
+    toDate: '2024-02-16',
+    reason: 'Computer Science ',
+    status: 'approved',
+    requestedOn: '2024-02-10'
+  },
+  { 
+    id: 4, 
+    studentName: 'Dharamchand Patle',
+    studentId: 'DE24799',
+    fromDate: '2024-02-15',
+    toDate: '2024-02-16',
+    reason: 'Computer Science ',
+    status: 'pending',
+    requestedOn: '2024-02-10'
+  },
+  { 
+    id: 5, 
+    studentName: 'Dharamchand Patle',
+    studentId: 'DE24799',
+    fromDate: '2024-02-15',
+    toDate: '2024-02-16',
+    reason: 'Computer Science ',
+    status: 'rejected',
+    requestedOn: '2024-02-10'
+  },
+  { 
+    id: 6, 
+    studentName: 'Dharamchand Patle',
+    studentId: 'DE24799',
+    fromDate: '2024-02-15',
+    toDate: '2024-02-16',
+    reason: 'Computer Science ',
+    status: 'approved',
     requestedOn: '2024-02-10'
   },
   // Add more mock data...
