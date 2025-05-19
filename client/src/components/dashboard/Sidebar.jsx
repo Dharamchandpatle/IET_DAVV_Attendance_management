@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Calendar, ChevronLeft, Clock, FileText, Home, Moon, Settings, Sun, User, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import davvlogo from '../../assets/images/davvlogo.png';
 import { useTheme } from '../../context/ThemeContext';
 import { navigateWithTransition, preloadRoute } from '../../utils/navigation';
 
@@ -105,18 +106,20 @@ export function Sidebar({ userRole = 'student' }) {
 
       {/* Logo Section */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
         className={`p-6 ${isCollapsed ? "px-4" : ""}`}
       >
-        <div className="flex items-center justify-center">
+        <motion.div 
+          className="flex items-center justify-center cursor-pointer"
+          onClick={() => navigate('/')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
           <img 
-            src="/client/assest/images/davvlogo.png" 
+            src={davvlogo} 
             alt="IET DAVV Logo"
             className={`${isCollapsed ? "w-12 h-12" : "w-16 h-16"} object-contain transition-all duration-200`}
           />
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* Navigation Menu */}

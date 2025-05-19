@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { Eye, EyeOff, LucideLoader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import davvlogo from '../assets/images/davvlogo.png';
 import { HeroShape } from '../components/ui/HeroShape';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { useToast } from '../components/ui/toast';
@@ -127,11 +128,18 @@ export function Register() {
         transition={{ duration: 0.5 }}
       >
         <div className="text-center space-y-6">
-          <img 
-            src="/client/assest/images/davvlogo.png"
-            alt="IET DAVV Logo" 
-            className="w-24 h-24 mx-auto object-contain"
-          />
+          <motion.div
+            onClick={() => navigate('/')}
+            className="cursor-pointer inline-block"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <img 
+              src={davvlogo}
+              alt="IET DAVV Logo" 
+              className="w-24 h-24 mx-auto object-contain"
+            />
+          </motion.div>
           <div>
             <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Create Account

@@ -4,8 +4,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowDown } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import davvlogo from '../assets/images/davvlogo.png';
 import { HeroShape } from '../components/ui/HeroShape';
-
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -116,9 +116,9 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <div className="flex items-center gap-3">
               <img 
-                src="images/davvlogo.png"
+                src={davvlogo}
                 alt="IET DAVV Logo" 
-                className="w-12 h-12"
+                className="w-12 h-12 object-contain"
               />
               <h1 className="text-2xl font-extrabold heading-gradient">
                 IET DAVV AMS
