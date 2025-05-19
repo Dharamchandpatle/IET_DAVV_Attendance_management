@@ -45,6 +45,32 @@ const mockStudents = [
     branch: 'CSE',
     semester: 4
   },
+  { 
+    id: 4, 
+    name: 'Rishiraj aatman', 
+    roll: 'DE24799', 
+    present: false,
+    attendance: {
+      regular: 85,
+      events: 90,
+      overall: 87
+    },
+    branch: 'CSE',
+    semester: 4
+  },
+  { 
+    id: 5, 
+    name: 'Rishiraj aatman', 
+    roll: 'DE24799', 
+    present: false,
+    attendance: {
+      regular: 85,
+      events: 90,
+      overall: 87
+    },
+    branch: 'CSE',
+    semester: 4
+  },
   // ... add more mock data as needed
 ];
 

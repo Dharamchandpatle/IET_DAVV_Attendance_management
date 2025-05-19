@@ -4,8 +4,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowDown } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FAQ } from '../components/FAQ';
 import { HeroShape } from '../components/ui/HeroShape';
+
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -114,9 +114,16 @@ export default function LandingPage() {
             : 'bg-transparent'
         }`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <h1 className="text-2xl font-extrabold heading-gradient">
-              IET DAVV AMS
-            </h1>
+            <div className="flex items-center gap-3">
+              <img 
+                src="images/davvlogo.png"
+                alt="IET DAVV Logo" 
+                className="w-12 h-12"
+              />
+              <h1 className="text-2xl font-extrabold heading-gradient">
+                IET DAVV AMS
+              </h1>
+            </div>
             <div className="flex gap-4">
               <motion.button
                 whileHover={{ scale: 1.02 }}

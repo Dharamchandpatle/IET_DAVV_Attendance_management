@@ -1,66 +1,42 @@
-const { pool } = require('../config/database');
-const bcrypt = require('bcryptjs');
+const { pool } = require('../config/db');
 
 class User {
-  static async create({ name, email, password, role, department }) {
-    const hashedPassword = await bcrypt.hash(password, Number(process.env.BCRYPT_SALT_ROUNDS));
+  static async findByEmail(email) {
+    const [rows] = await pool.execute(
+      'SELECT * FROM users WHERE email = ?',
+      [email]
+    );
+    return rows[0];
+  }
+
+  static async create({ email, password, role, firstName, lastName }) {
     const [result] = await pool.execute(
-      'INSERT INTO users (name, email, password, role, department) VALUES (?, ?, ?, ?, ?)',
-      [name, email, hashedPassword, role, department]
+      'INSERT INTO users (email, password, role, first_name, last_name) VALUES (?, ?, ?, ?, ?)',
+      [email, password, role, firstName, lastName]
     );
     return result.insertId;
   }
 
-  static async findByEmail(email) {
-    const [rows] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
-    return rows[0];
-  }
-
   static async findById(id) {
-    const [rows] = await pool.execute('SELECT * FROM users WHERE id = ?', [id]);
+    const [rows] = await pool.execute(
+      'SELECT * FROM users WHERE id = ?',
+      [id]
+    );
     return rows[0];
   }
 
-  static async updateProfile(id, updates) {
-    const allowedUpdates = ['name', 'email', 'department'];
-    const filteredUpdates = Object.keys(updates)
-      .filter(key => allowedUpdates.includes(key))
-      .reduce((obj, key) => {
-        obj[key] = updates[key];
-        return obj;
-      }, {});
-
-    if (Object.keys(filteredUpdates).length === 0) return false;
-
-    const setClauses = Object.keys(filteredUpdates)
-      .map(key => `${key} = ?`)
-      .join(', ');
-    const values = [...Object.values(filteredUpdates), id];
-
-    const [result] = await pool.execute(
-      `UPDATE users SET ${setClauses} WHERE id = ?`,
-      values
-    );
-    return result.affectedRows > 0;
-  }
-
-  static async changePassword(id, oldPassword, newPassword) {
-    const user = await this.findById(id);
-    if (!user) throw new Error('User not found');
-
-    const isMatch = await bcrypt.compare(oldPassword, user.password);
-    if (!isMatch) throw new Error('Current password is incorrect');
-
-    const hashedPassword = await bcrypt.hash(newPassword, Number(process.env.BCRYPT_SALT_ROUNDS));
-    const [result] = await pool.execute(
+  static async updatePassword(id, password) {
+    await pool.execute(
       'UPDATE users SET password = ? WHERE id = ?',
-      [hashedPassword, id]
+      [password, id]
     );
-    return result.affectedRows > 0;
   }
 
-  static async validatePassword(user, password) {
-    return bcrypt.compare(password, user.password);
+  static async updateResetToken(email, token, expires) {
+    await pool.execute(
+      'UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE email = ?',
+      [token, expires, email]
+    );
   }
 }
 

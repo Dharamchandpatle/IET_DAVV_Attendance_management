@@ -4,13 +4,17 @@ import { Eye, EyeOff, LucideLoader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HeroShape } from '../components/ui/HeroShape';
+import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { useToast } from '../components/ui/toast';
+import { useAuth } from '../context/AuthContext';
 
 export function Register() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const { show } = useToast();
   const containerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
@@ -22,7 +26,8 @@ export function Register() {
         y: 30,
         opacity: 0,
         duration: 0.8,
-        ease: 'power3.out'
+        ease: 'power3.out',
+        onComplete: () => setIsPageLoading(false)
       });
 
       // Animate background grid
@@ -74,6 +79,7 @@ export function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setValidationErrors({});
     const formData = new FormData(e.target);
     const errors = validateForm(formData);
 
@@ -82,25 +88,31 @@ export function Register() {
       return;
     }
 
-    setIsLoading(true);
     try {
-      // API call would go here
-      show({
-        title: "Registration Successful",
-        description: "Your account has been created successfully. Please sign in.",
-        type: "success"
+      setIsLoading(true);
+      await register({
+        name: formData.get('name'),
+        email: formData.get('email'),
+        password: formData.get('password'),
+        confirmPassword: formData.get('confirmPassword'),
+        role: formData.get('role')
       });
-      navigate('/login');
     } catch (error) {
-      show({
-        title: "Registration Failed",
-        description: error.message || "An error occurred during registration.",
-        type: "error"
-      });
-    } finally {
-      setIsLoading(false);
+      // Server-side validation errors will be caught here
+      if (error.message) {
+        // If it's a specific field error
+        if (error.message.toLowerCase().includes('email')) {
+          setValidationErrors(prev => ({ ...prev, email: error.message }));
+        } else if (error.message.toLowerCase().includes('password')) {
+          setValidationErrors(prev => ({ ...prev, password: error.message }));
+        }
+      }
     }
   };
+
+  if (isPageLoading) {
+    return <LoadingSpinner label="Loading..." />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 relative overflow-hidden" ref={containerRef}>
@@ -114,13 +126,20 @@ export function Register() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div>
-          <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Create Account
-          </h2>
-          <p className="mt-2 text-center text-gray-600 dark:text-gray-400">
-            Join IET DAVV's Attendance Management System
-          </p>
+        <div className="text-center space-y-6">
+          <img 
+            src="/client/assest/images/davvlogo.png"
+            alt="IET DAVV Logo" 
+            className="w-24 h-24 mx-auto object-contain"
+          />
+          <div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Create Account
+            </h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              Join IET DAVV's Attendance Management System
+            </p>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">

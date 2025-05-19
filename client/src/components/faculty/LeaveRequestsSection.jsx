@@ -20,6 +20,24 @@ const mockRequests = [
     reason: 'computer science',
     status: 'pending'
   },
+  {
+    id: 2,
+    studentName: 'Dharamchand Patle ',
+    studentId: 'ST2025001',
+    startDate: '2025-04-08',
+    endDate: '2025-04-10',
+    reason: 'computer science',
+    status: 'pending'
+  },
+  {
+    id: 3,
+    studentName: 'Dharamchand Patle ',
+    studentId: 'ST2025001',
+    startDate: '2025-04-08',
+    endDate: '2025-04-10',
+    reason: 'computer science',
+    status: 'pending'
+  },
   // Add more mock data as needed
 ];
 

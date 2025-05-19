@@ -102,13 +102,20 @@ export function Login() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div>
-          <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Welcome Back
-          </h2>
-          <p className="mt-2 text-center text-gray-600 dark:text-gray-400">
-            Sign in to your account
-          </p>
+        <div className="text-center space-y-6">
+          <img 
+            src="/client/assest/images/davvlogo.png"
+            alt="IET DAVV Logo" 
+            className="w-24 h-24 mx-auto object-contain"
+          />
+          <div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Welcome Back
+            </h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              Sign in to your account
+            </p>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">

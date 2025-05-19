@@ -110,10 +110,13 @@ export function Sidebar({ userRole = 'student' }) {
         transition={{ delay: 0.2 }}
         className={`p-6 ${isCollapsed ? "px-4" : ""}`}
       >
-        <h2 className={`font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent
-          ${isCollapsed ? "text-xl text-center" : "text-2xl"}`}>
-          {isCollapsed ? "IET" : "IET DAVV"}
-        </h2>
+        <div className="flex items-center justify-center">
+          <img 
+            src="/client/assest/images/davvlogo.png" 
+            alt="IET DAVV Logo"
+            className={`${isCollapsed ? "w-12 h-12" : "w-16 h-16"} object-contain transition-all duration-200`}
+          />
+        </div>
       </motion.div>
 
       {/* Navigation Menu */}

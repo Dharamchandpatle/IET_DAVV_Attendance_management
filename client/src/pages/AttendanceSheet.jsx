@@ -81,8 +81,8 @@ const mockStudents = [
     }
   },
   {
-    id: 3,
-    name: 'Rohan Ahirwar',
+    id: 4,
+    name: 'Rahul Ahirwar',
     roll: 'CS21B003',
     present: false,
     history: [
@@ -103,8 +103,8 @@ const mockStudents = [
     }
   },
   {
-    id: 3,
-    name: 'Rohan Ahirwar',
+    id: 5,
+    name: 'Neelesh ',
     roll: 'CS21B003',
     present: false,
     history: [
@@ -125,8 +125,8 @@ const mockStudents = [
     }
   },
   {
-    id: 3,
-    name: 'Rohan Ahirwar',
+    id: 6,
+    name: 'Manish',
     roll: 'CS21B003',
     present: false,
     history: [
