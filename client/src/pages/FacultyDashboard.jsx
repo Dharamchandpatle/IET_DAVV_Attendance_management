@@ -52,6 +52,15 @@ export function FacultyDashboard() {
     }
   ], []);
 
+  // Initialize active section based on current route
+  useEffect(() => {
+    const path = window.location.pathname;
+    const section = dashboardSections.find(s => s.path === path);
+    if (section) {
+      setActiveSection(section.id);
+    }
+  }, []);
+
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
@@ -84,6 +93,15 @@ export function FacultyDashboard() {
     return () => ctx.revert();
   }, []);
 
+  // Update active section when URL changes
+  useEffect(() => {
+    const path = window.location.pathname;
+    const section = dashboardSections.find(s => s.path === path);
+    if (section && section.id !== activeSection) {
+      setActiveSection(section.id);
+    }
+  }, [window.location.pathname, dashboardSections, activeSection]);
+
   // Memoize active component to prevent unnecessary re-renders
   const ActiveComponent = useMemo(() => 
     dashboardSections.find(section => section.id === activeSection)?.component || AttendanceSection
@@ -92,9 +110,9 @@ export function FacultyDashboard() {
   const handleSectionChange = (sectionId) => {
     const section = dashboardSections.find(s => s.id === sectionId);
     if (section && section.path) {
-      navigate(section.path);
+      setActiveSection(sectionId);
+      navigate(section.path, { replace: true }); // Use replace to avoid navigation stack issues
     }
-    setActiveSection(sectionId);
   };
 
   return (

@@ -1,2 +1,5 @@
-server\node_modules
-server\.env
+# Environment variables
+.env
+
+# Node modules
+backend\node_modules
