@@ -4,6 +4,8 @@ const cors = require("cors");
 const db = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+const facultyRoutes = require("./routes/facultyRoutes");
 // const errorMiddleware = require("./middleware/errorMiddleware");
 const classAttendanceRoutes = require("./routes/classAttendanceRoutes");
 // const examAttendanceRoutes = require("./routes/examAttendanceRoutes");
@@ -24,6 +26,8 @@ app.get("/", (req, res) => {
 // API Routes
 app.use('/api/auth',authRoutes);
 app.use('/api/users',userRoutes );
+app.use('/api/students', studentRoutes);
+app.use('/api/faculty', facultyRoutes);
 app.use("/api/class-attendance", classAttendanceRoutes); // Class attendance ke liye
 // app.use("/api/exam-attendance", examAttendanceRoutes);   // Exam attendance ke liye
 
