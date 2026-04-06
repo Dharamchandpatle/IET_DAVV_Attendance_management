@@ -18,7 +18,6 @@ const StudentDashboard = lazyLoad('StudentDashboard');
 const FacultyDashboard = lazyLoad('FacultyDashboard');
 const StudentsManagement = lazyLoad('StudentsManagement');
 const FacultyManagement = lazyLoad('FacultyManagement');
-const Settings = lazyLoad('Settings');
 const AttendanceSheet = lazyLoad('AttendanceSheet');
 const ExamManagement = lazyLoad('ExamManagement');
 const LeaveRequests = lazyLoad('LeaveRequests');
@@ -81,9 +80,6 @@ function AppContent() {
                     <Route index element={<AdminDashboard />} />
                     <Route path="students/*" element={<StudentsManagement />} />
                     <Route path="faculty/*" element={<FacultyManagement />} />
-                    <Route path="settings" element={<Settings />} />
-                    <Route path="exams" element={<ExamManagement />} />
-                    <Route path="leave-requests" element={<LeaveRequests />} />
                     <Route path="*" element={<Navigate to="/admin" replace />} />
                   </Routes>
                 </ProtectedRoute>

@@ -1,20 +1,12 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import gsap from 'gsap';
-import { BookOpen, Settings, Upload, UserPlus, Users } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { AdminAnnouncements } from '../components/admin/AdminAnnouncements';
 import { DataTable } from '../components/admin/DataTable';
 import { DynamicFormModal } from '../components/admin/DynamicFormModal';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { KPIGrid } from '../components/dashboard/KPIGrid';
-
-const adminMenuItems = [
-  { label: 'Students', value: 'students', icon: Users },
-  { label: 'Faculty', value: 'faculty', icon: Users },
-  { label: 'Courses', value: 'courses', icon: BookOpen },
-  { label: 'Batch Import', value: 'import', icon: Upload },
-  { label: 'Settings', value: 'settings', icon: Settings },
-];
 
 const adminActions = [
   {
@@ -30,25 +22,11 @@ const adminActions = [
     icon: UserPlus,
     description: 'Add new faculty member',
     color: 'blue'
-  },
-  {
-    id: 'batch-import',
-    title: 'Batch Import',
-    icon: Upload,
-    description: 'Import multiple records at once',
-    color: 'orange'
-  },
-  {
-    id: 'settings',
-    title: 'System Settings',
-    icon: Settings,
-    description: 'Configure attendance rules & policies',
-    color: 'gray'
   }
 ];
 
 export function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState('students');
+  const activeTab = 'students';
   const [activeModal, setActiveModal] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);

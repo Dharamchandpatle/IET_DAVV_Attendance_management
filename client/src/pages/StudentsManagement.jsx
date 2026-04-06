@@ -2,18 +2,20 @@ import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { Plus, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { DEPARTMENTS } from '../components/admin/adminConstants';
 import { DataTable } from '../components/admin/DataTable';
 import { DynamicFormModal } from '../components/admin/DynamicFormModal';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useToast } from '../components/ui/toast';
 
 // Mock data for students
+const departmentValues = DEPARTMENTS.map((department) => department.value);
 const mockStudents = Array.from({ length: 20 }, (_, i) => ({
   id: i + 1,
   name: `Student ${i + 1}`,
   rollNo: `CS21B${String(i + 1).padStart(3, '0')}`,
   semester: Math.ceil(Math.random() * 8),
-  department: ['CSE', 'IT', 'ECE'][Math.floor(Math.random() * 3)],
+  department: departmentValues[Math.floor(Math.random() * departmentValues.length)],
   email: `student${i + 1}@iet.davv.ac.in`,
   attendance: Math.floor(Math.random() * (100 - 75) + 75)
 }));
@@ -44,10 +46,11 @@ export function StudentsManagement() {
     return () => ctx.revert();
   }, []);
 
-  const filteredStudents = students.filter(student => {
-    const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         student.rollNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         student.email.toLowerCase().includes(searchQuery.toLowerCase());
+  const query = searchQuery.trim().toLowerCase();
+  const matchesQuery = (value) => value?.toLowerCase().includes(query);
+
+  const filteredStudents = students.filter((student) => {
+    const matchesSearch = !query || [student.name, student.rollNo, student.email].some(matchesQuery);
     const matchesDepartment = selectedDepartment === 'all' || student.department === selectedDepartment;
     return matchesSearch && matchesDepartment;
   });
@@ -109,9 +112,11 @@ export function StudentsManagement() {
               className="p-2 rounded-lg border dark:border-gray-700 dark:bg-gray-800"
             >
               <option value="all">All Departments</option>
-              <option value="CSE">Computer Science</option>
-              <option value="IT">Information Technology</option>
-              <option value="ECE">Electronics & Communication</option>
+              {DEPARTMENTS.map((department) => (
+                <option key={department.value} value={department.value}>
+                  {department.label}
+                </option>
+              ))}
             </select>
           </div>
 

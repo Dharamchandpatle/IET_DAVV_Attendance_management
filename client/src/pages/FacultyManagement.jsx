@@ -2,18 +2,21 @@ import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { Filter, Plus, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { DEPARTMENTS, DESIGNATIONS } from '../components/admin/adminConstants';
 import { DataTable } from '../components/admin/DataTable';
 import { DynamicFormModal } from '../components/admin/DynamicFormModal';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useToast } from '../components/ui/toast';
 
 // Mock faculty data
+const departmentValues = DEPARTMENTS.map((department) => department.value);
+const designationValues = DESIGNATIONS.map((designation) => designation.value);
 const mockFaculty = Array.from({ length: 15 }, (_, i) => ({
   id: i + 1,
   name: `Dr. Faculty ${i + 1}`,
   facultyId: `FAC${String(i + 1).padStart(3, '0')}`,
-  department: ['CSE', 'IT', 'ECE'][Math.floor(Math.random() * 3)],
-  designation: ['Professor', 'Associate Professor', 'Assistant Professor'][Math.floor(Math.random() * 3)],
+  department: departmentValues[Math.floor(Math.random() * departmentValues.length)],
+  designation: designationValues[Math.floor(Math.random() * designationValues.length)],
   email: `faculty${i + 1}@iet.davv.ac.in`,
   courses: Math.floor(Math.random() * 3) + 1,
   joiningYear: 2020 + Math.floor(Math.random() * 4)
@@ -49,11 +52,12 @@ export function FacultyManagement() {
     return () => ctx.revert();
   }, []);
 
-  const filteredFaculty = faculty.filter(member => {
+  const query = filters.search.trim().toLowerCase();
+  const matchesQuery = (value) => value?.toLowerCase().includes(query);
+
+  const filteredFaculty = faculty.filter((member) => {
     const matchesSearch = 
-      member.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-      member.facultyId.toLowerCase().includes(filters.search.toLowerCase()) ||
-      member.email.toLowerCase().includes(filters.search.toLowerCase());
+      !query || [member.name, member.facultyId, member.email].some(matchesQuery);
     
     const matchesDepartment = filters.department === 'all' || member.department === filters.department;
     const matchesDesignation = filters.designation === 'all' || member.designation === filters.designation;
@@ -139,9 +143,11 @@ export function FacultyManagement() {
                   className="p-2 rounded-lg border dark:border-gray-700 dark:bg-gray-800"
                 >
                   <option value="all">All Departments</option>
-                  <option value="CSE">Computer Science</option>
-                  <option value="IT">Information Technology</option>
-                  <option value="ECE">Electronics & Communication</option>
+                  {DEPARTMENTS.map((department) => (
+                    <option key={department.value} value={department.value}>
+                      {department.label}
+                    </option>
+                  ))}
                 </select>
                 <select
                   value={filters.designation}
@@ -149,9 +155,11 @@ export function FacultyManagement() {
                   className="p-2 rounded-lg border dark:border-gray-700 dark:bg-gray-800"
                 >
                   <option value="all">All Designations</option>
-                  <option value="Professor">Professor</option>
-                  <option value="Associate Professor">Associate Professor</option>
-                  <option value="Assistant Professor">Assistant Professor</option>
+                  {DESIGNATIONS.map((designation) => (
+                    <option key={designation.value} value={designation.value}>
+                      {designation.label}
+                    </option>
+                  ))}
                 </select>
               </motion.div>
             )}

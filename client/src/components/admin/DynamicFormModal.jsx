@@ -2,58 +2,22 @@ import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '../ui/toast';
+import { FORM_FIELDS, FORM_META } from './adminConstants';
 
 export function DynamicFormModal({ type, onClose, onSubmit }) {
   const { show } = useToast();
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
 
-  const formFields = {
-    'add-student': [
-      { name: 'name', label: 'Full Name', type: 'text', required: true },
-      { name: 'department', label: 'Department', type: 'select', required: true,
-        options: [
-          { value: 'CSE', label: 'Computer Science' },
-          { value: 'IT', label: 'Information Technology' },
-          { value: 'ECE', label: 'Electronics & Communication' }
-        ]
-      },
-      { name: 'semester', label: 'Semester', type: 'select', required: true,
-        options: Array.from({ length: 8 }, (_, i) => ({
-          value: i + 1,
-          label: `Semester ${i + 1}`
-        }))
-      },
-      { name: 'email', label: 'Email Address', type: 'email', required: true },
-      { name: 'phone', label: 'Phone Number', type: 'tel', required: true },
-      { name: 'address', label: 'Address', type: 'text', required: true }
-    ],
-    'add-faculty': [
-      { name: 'name', label: 'Full Name', type: 'text', required: true },
-      { name: 'department', label: 'Department', type: 'select', required: true,
-        options: [
-          { value: 'CSE', label: 'Computer Science' },
-          { value: 'IT', label: 'Information Technology' },
-          { value: 'ECE', label: 'Electronics & Communication' }
-        ]
-      },
-      { name: 'designation', label: 'Designation', type: 'select', required: true,
-        options: [
-          { value: 'Professor', label: 'Professor' },
-          { value: 'Associate Professor', label: 'Associate Professor' },
-          { value: 'Assistant Professor', label: 'Assistant Professor' }
-        ]
-      },
-      { name: 'email', label: 'Email Address', type: 'email', required: true },
-      { name: 'phone', label: 'Phone Number', type: 'tel', required: true },
-      { name: 'specialization', label: 'Specialization', type: 'text', required: true }
-    ]
-  };
+  const fields = FORM_FIELDS[type];
+  const meta = FORM_META[type];
+
+  if (!fields || !meta) {
+    return null;
+  }
 
   const validateForm = () => {
     const newErrors = {};
-    const fields = formFields[type];
-
     fields.forEach(field => {
       if (field.required && !formData[field.name]) {
         newErrors[field.name] = `${field.label} is required`;
@@ -75,7 +39,11 @@ export function DynamicFormModal({ type, onClose, onSubmit }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit(formData);
+      if (typeof onSubmit === 'function') {
+        onSubmit(formData);
+      } else {
+        onClose();
+      }
     } else {
       show({
         title: "Validation Error",
@@ -111,7 +79,7 @@ export function DynamicFormModal({ type, onClose, onSubmit }) {
         {/* Modal Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">
-            {type === 'add-student' ? 'Add New Student' : 'Add New Faculty'}
+            {meta.title}
           </h2>
           <button 
             onClick={onClose}
@@ -123,7 +91,7 @@ export function DynamicFormModal({ type, onClose, onSubmit }) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {formFields[type].map((field) => (
+          {fields.map((field) => (
             <div key={field.name}>
               <label className="block text-sm font-medium mb-1" htmlFor={field.name}>
                 {field.label}
@@ -184,7 +152,7 @@ export function DynamicFormModal({ type, onClose, onSubmit }) {
               whileTap={{ scale: 0.98 }}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg"
             >
-              Add {type === 'add-student' ? 'Student' : 'Faculty'}
+              {meta.submitLabel}
             </motion.button>
           </div>
         </form>

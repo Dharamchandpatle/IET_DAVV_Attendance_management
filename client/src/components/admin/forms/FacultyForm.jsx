@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { DEPARTMENTS, DESIGNATIONS } from '../adminConstants';
 
 export function FacultyForm({ onSubmit }) {
   const [formData, setFormData] = useState({
@@ -39,15 +40,20 @@ export function FacultyForm({ onSubmit }) {
       <div className="grid grid-cols-2 gap-4">
         <select name="department" className="form-input" required>
           <option value="">Select Department</option>
-          <option value="CSE">Computer Science</option>
-          <option value="IT">Information Technology</option>
+          {DEPARTMENTS.map((department) => (
+            <option key={department.value} value={department.value}>
+              {department.label}
+            </option>
+          ))}
         </select>
 
         <select name="designation" className="form-input" required>
           <option value="">Select Designation</option>
-          <option value="Professor">Professor</option>
-          <option value="Associate Professor">Associate Professor</option>
-          <option value="Assistant Professor">Assistant Professor</option>
+          {DESIGNATIONS.map((designation) => (
+            <option key={designation.value} value={designation.value}>
+              {designation.label}
+            </option>
+          ))}
         </select>
       </div>
 

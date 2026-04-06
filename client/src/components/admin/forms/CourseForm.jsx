@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { DEPARTMENTS, SEMESTERS } from '../adminConstants';
 
 export function CourseForm({ onSubmit }) {
   return (
@@ -28,14 +29,19 @@ export function CourseForm({ onSubmit }) {
       <div className="grid grid-cols-2 gap-4">
         <select name="department" className="form-input" required>
           <option value="">Select Department</option>
-          <option value="CSE">Computer Science</option>
-          <option value="IT">Information Technology</option>
+          {DEPARTMENTS.map((department) => (
+            <option key={department.value} value={department.value}>
+              {department.label}
+            </option>
+          ))}
         </select>
 
         <select name="semester" className="form-input" required>
           <option value="">Select Semester</option>
-          {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
-            <option key={sem} value={sem}>Semester {sem}</option>
+          {SEMESTERS.map((semester) => (
+            <option key={semester.value} value={semester.value}>
+              {semester.label}
+            </option>
           ))}
         </select>
       </div>

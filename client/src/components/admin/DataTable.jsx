@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { TABLE_COLUMNS } from './adminConstants';
 
 export function DataTable({ type = 'students', data = [] }) {
   const [sortConfig, setSortConfig] = useState({
@@ -8,24 +9,7 @@ export function DataTable({ type = 'students', data = [] }) {
     direction: 'asc'
   });
 
-  const columns = {
-    students: [
-      { key: 'name', label: 'Name' },
-      { key: 'rollNo', label: 'Roll No.' },
-      { key: 'department', label: 'Department' },
-      { key: 'semester', label: 'Semester' },
-      { key: 'email', label: 'Email' },
-      { key: 'attendance', label: 'Attendance' }
-    ],
-    faculty: [
-      { key: 'name', label: 'Name' },
-      { key: 'facultyId', label: 'Faculty ID' },
-      { key: 'department', label: 'Department' },
-      { key: 'designation', label: 'Designation' },
-      { key: 'email', label: 'Email' },
-      { key: 'courses', label: 'Courses' }
-    ]
-  };
+  const columns = TABLE_COLUMNS[type] ?? TABLE_COLUMNS.students;
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -35,23 +19,25 @@ export function DataTable({ type = 'students', data = [] }) {
     setSortConfig({ key, direction });
   };
 
-  const sortedData = [...data].sort((a, b) => {
-    if (!sortConfig.key) return 0;
+  const sortedData = useMemo(() => {
+    if (!sortConfig.key) return data;
 
-    const aVal = a[sortConfig.key];
-    const bVal = b[sortConfig.key];
+    return [...data].sort((a, b) => {
+      const aVal = a[sortConfig.key];
+      const bVal = b[sortConfig.key];
 
-    if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-    if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
-    return 0;
-  });
+      if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [data, sortConfig]);
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
           <tr className="border-b dark:border-gray-700">
-            {columns[type].map(({ key, label }) => (
+            {columns.map(({ key, label }) => (
               <th 
                 key={key}
                 onClick={() => handleSort(key)}
@@ -92,7 +78,7 @@ export function DataTable({ type = 'students', data = [] }) {
               transition={{ delay: index * 0.05 }}
               className="hover:bg-gray-50 dark:hover:bg-gray-800/50"
             >
-              {columns[type].map(({ key }) => (
+              {columns.map(({ key }) => (
                 <td key={key} className="px-4 py-3 text-sm">
                   {key === 'attendance' ? (
                     <div className="flex items-center gap-2">

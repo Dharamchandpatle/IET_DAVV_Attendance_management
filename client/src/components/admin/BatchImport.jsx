@@ -8,15 +8,32 @@ export function BatchImport() {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState(null);
 
+  const isExcelFile = (candidate) => [
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  ].includes(candidate?.type);
+
+  const handleFileSelect = (selectedFile) => {
+    if (!selectedFile) return;
+
+    if (!isExcelFile(selectedFile)) {
+      show({
+        title: 'Invalid File',
+        description: 'Please select an Excel file (.xlsx or .xls)',
+        type: 'error'
+      });
+      return;
+    }
+
+    setFile(selectedFile);
+    show({ title: 'File Selected', description: 'Excel file ready for import' });
+  };
+
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
     const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile?.type === 'application/vnd.ms-excel' || 
-        droppedFile?.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-      setFile(droppedFile);
-      show({ title: 'File Selected', description: 'Excel file ready for import' });
-    }
+    handleFileSelect(droppedFile);
   };
 
   return (
@@ -39,7 +56,12 @@ export function BatchImport() {
         >
           <Upload className="w-4 h-4 mr-2" />
           Browse Files
-          <input type="file" className="hidden" accept=".xlsx,.xls" onChange={(e) => setFile(e.target.files[0])} />
+          <input
+            type="file"
+            className="hidden"
+            accept=".xlsx,.xls"
+            onChange={(e) => handleFileSelect(e.target.files[0])}
+          />
         </motion.label>
       </div>
 

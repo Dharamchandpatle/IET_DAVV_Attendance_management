@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
-import { Calendar, ChevronLeft, Clock, FileText, Home, Moon, Settings, Sun, User, Users } from 'lucide-react';
+import { Calendar, ChevronLeft, Clock, FileText, Home, LogOut, Moon, Sun, User, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import davvlogo from '../../assets/images/davvlogo.png';
+import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { navigateWithTransition, preloadRoute } from '../../utils/navigation';
 
@@ -11,9 +12,6 @@ const roleBasedNavItems = {
     { title: 'Dashboard', path: '/admin', icon: Home, end: true },
     { title: 'Students', path: '/admin/students', icon: Users },
     { title: 'Faculty', path: '/admin/faculty', icon: Users },
-    { title: 'Exams', path: '/exams', icon: FileText },
-    { title: 'Leave Requests', path: '/leave-requests', icon: Clock },
-    { title: 'Settings', path: '/settings', icon: Settings },
   ],
   faculty: [
     { title: 'Dashboard', path: '/faculty', icon: Home, end: true },
@@ -32,6 +30,7 @@ const roleBasedNavItems = {
 
 export function Sidebar({ userRole = 'student' }) {
   const { theme, toggleTheme } = useTheme();
+  const { logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const navItems = roleBasedNavItems[userRole];
@@ -175,6 +174,16 @@ export function Sidebar({ userRole = 'student' }) {
             <Moon className="w-5 h-5 text-blue-500" />
           }
           {!isCollapsed && <span>Toggle Theme</span>}
+        </motion.button>
+
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={logout}
+          className="mt-3 w-full p-2 flex items-center gap-3 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+        >
+          <LogOut className="w-5 h-5" />
+          {!isCollapsed && <span>Logout</span>}
         </motion.button>
       </div>
     </motion.aside>
