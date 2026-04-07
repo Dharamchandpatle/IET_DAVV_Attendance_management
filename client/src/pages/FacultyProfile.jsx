@@ -9,7 +9,7 @@ export function FacultyProfile() {
   const [isEditing, setIsEditing] = useState(false);
 
   const [facultyData, setFacultyData] = useState({
-    profileImage: '/default-avatar.png',
+    profileImage: '/icon.svg',
     personalInfo: {
       name: 'Dr. Vaibhav Jain sir',
       id: 'FAC001',

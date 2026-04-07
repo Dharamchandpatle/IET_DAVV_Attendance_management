@@ -6,7 +6,7 @@ import { AttendanceHistory } from '../components/student/AttendanceHistory';
 import { useToast } from '../components/ui/toast';
 
 const mockProfile = {
-  profileImage: '/default-avatar.png',
+  profileImage: '/icon.svg',
   personalInfo: {
     name: 'Dharamchand Patle',
     id: 'DE24799',

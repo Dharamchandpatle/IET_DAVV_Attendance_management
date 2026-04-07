@@ -39,7 +39,7 @@ export function StudentDashboard() {
           >
             <div className="flex items-center gap-4">
               <img
-                src="/default-avatar.png"
+                src="/icon.svg"
                 alt="Profile"
                 className="w-12 h-12 rounded-full"
               />
