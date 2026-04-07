@@ -16,15 +16,18 @@ const attendanceData = {
 };
 
 export function AttendanceView() {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const percentage = Math.round((attendanceData.present / attendanceData.total) * 100);
+  const [currentMonth, setCurrentMonth] = useState(() => new Date());
+  const monthLabel = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const totalClasses = attendanceData.total || 0;
+  const percentage = totalClasses
+    ? Math.round((attendanceData.present / totalClasses) * 100)
+    : 0;
+  const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+  const monthKey = String(currentMonth.getMonth() + 1).padStart(2, '0');
+  const yearKey = currentMonth.getFullYear();
 
   const navigateMonth = (direction) => {
-    setCurrentMonth(prev => {
-      const newDate = new Date(prev);
-      newDate.setMonth(prev.getMonth() + direction);
-      return newDate;
-    });
+    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + direction, 1));
   };
 
   const getStatusClass = (date) => {
@@ -88,9 +91,7 @@ export function AttendanceView() {
               >
                 <ChevronLeft className="w-5 h-5" />
               </motion.button>
-              <span className="font-medium">
-                {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-              </span>
+              <span className="font-medium">{monthLabel}</span>
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -109,16 +110,17 @@ export function AttendanceView() {
                 {day}
               </div>
             ))}
-            {Array.from({ length: 31 }, (_, i) => {
-              const date = `2024-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`;
+            {Array.from({ length: daysInMonth }, (_, i) => {
+              const day = i + 1;
+              const date = `${yearKey}-${monthKey}-${String(day).padStart(2, '0')}`;
               return (
                 <motion.button
-                  key={i}
+                  key={date}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   className={`p-2 text-center rounded-lg relative ${getStatusClass(date)}`}
                 >
-                  {i + 1}
+                  {day}
                   {attendanceData.dates[date]?.details && (
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" />
                   )}

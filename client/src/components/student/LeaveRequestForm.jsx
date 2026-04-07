@@ -3,7 +3,10 @@ import { Calendar, Image, Upload, X } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '../ui/toast';
 
-export function LeaveRequestForm({ onSubmit, isSubmitting }) {
+const MAX_FILES = 5;
+const MAX_SIZE = 5 * 1024 * 1024;
+
+export function LeaveRequestForm({ onSubmit, isSubmitting = false }) {
   const { show } = useToast();
   const [formData, setFormData] = useState({
     fromDate: '',
@@ -34,9 +37,10 @@ export function LeaveRequestForm({ onSubmit, isSubmitting }) {
   };
 
   const handleFiles = (files) => {
-    const validFiles = files.filter(file => {
+    const validFiles = [];
+    files.forEach(file => {
       const isValid = file.type.startsWith('image/') || file.type === 'application/pdf';
-      const isSizeValid = file.size <= 5 * 1024 * 1024; // 5MB limit
+      const isSizeValid = file.size <= MAX_SIZE;
       if (!isValid) {
         show({
           title: "Invalid file type",
@@ -51,12 +55,13 @@ export function LeaveRequestForm({ onSubmit, isSubmitting }) {
           type: "error"
         });
       }
-      return isValid && isSizeValid;
+      if (isValid && isSizeValid) validFiles.push(file);
     });
 
+    if (!validFiles.length) return;
     setFormData(prev => ({
       ...prev,
-      attachments: [...prev.attachments, ...validFiles].slice(0, 5) // Limit to 5 files
+      attachments: [...prev.attachments, ...validFiles].slice(0, MAX_FILES)
     }));
   };
 
@@ -90,7 +95,14 @@ export function LeaveRequestForm({ onSubmit, isSubmitting }) {
       }
     });
 
-    onSubmit(submitData);
+    await Promise.resolve(onSubmit?.(submitData));
+    if (!onSubmit) {
+      show({
+        title: "Request Submitted",
+        description: "Your leave request has been submitted successfully.",
+        type: "success"
+      });
+    }
   };
 
   return (

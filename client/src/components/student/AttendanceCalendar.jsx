@@ -21,6 +21,8 @@ export function AttendanceCalendar({ semester }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState(null);
   const currentMonthData = attendanceDates[semester] || {};
+  const monthLabel = selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const daysInMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
 
   const getStatusClass = (date) => {
     const entry = currentMonthData[date];
@@ -44,9 +46,7 @@ export function AttendanceCalendar({ semester }) {
 
   const handleDateClick = (date, entry) => {
     setSelectedDate(new Date(date));
-    if (entry?.details) {
-      setSelectedEvent(entry);
-    }
+    setSelectedEvent(entry?.details ? entry : null);
   };
 
   return (
@@ -54,7 +54,7 @@ export function AttendanceCalendar({ semester }) {
       {/* Month Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">
-          {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+          {monthLabel}
         </h3>
         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <Calendar className="w-4 h-4" />
@@ -69,17 +69,18 @@ export function AttendanceCalendar({ semester }) {
             {day}
           </div>
         ))}
-        {Array.from({ length: 31 }, (_, i) => {
-          const date = `2024-02-${String(i + 1).padStart(2, '0')}`;
+        {Array.from({ length: daysInMonth }, (_, i) => {
+          const day = i + 1;
+          const date = `2024-02-${String(day).padStart(2, '0')}`;
           const entry = currentMonthData[date];
           return (
             <motion.button
-              key={i + 1}
+              key={date}
               whileHover={{ scale: 1.1 }}
               className={`p-2 rounded-lg relative ${getStatusClass(date)}`}
               onClick={() => handleDateClick(date, entry)}
             >
-              {i + 1}
+              {day}
               {entry?.details && (
                 <div className="absolute -top-1 -right-1">
                   <Info className="w-3 h-3" />

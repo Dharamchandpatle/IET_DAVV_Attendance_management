@@ -1,78 +1,37 @@
 import { motion } from 'framer-motion';
 import { Camera, Edit2, Mail, Phone, School, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { AttendanceHistory } from '../components/student/AttendanceHistory';
 import { useToast } from '../components/ui/toast';
 
+const mockProfile = {
+  profileImage: '/default-avatar.png',
+  personalInfo: {
+    name: 'Dharamchand Patle',
+    id: 'DE24799',
+    email: '24bcs091@ietdavv.edu.in',
+    phone: '+91 6263827162',
+    address: '123 College Road, Indore',
+    department: 'Computer Science',
+    semester: '4th',
+    section: 'A'
+  },
+  academicInfo: {
+    attendance: 85,
+    cgpa: 8.5,
+    totalClasses: 100,
+    attendedClasses: 85
+  },
+  attendanceHistory: [true, true, false, true, true]
+};
+
 export function StudentProfile() {
   const { show } = useToast();
-  
-  const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState({
-    profileImage: '/default-avatar.png',
-    personalInfo: {
-      name: '',
-      id: '',
-      email: '',
-      phone: '',
-      address: '',
-      department: '',
-      semester: '',
-      section: ''
-    },
-    academicInfo: {
-      attendance: 0,
-      cgpa: 0,
-      totalClasses: 0,
-      attendedClasses: 0
-    },
-    attendanceHistory: []
-  });
-
-  // Fetch student data
-  useEffect(() => {
-    const fetchStudentData = async () => {
-      try {
-        setIsLoading(true);
-        // API call would go here
-        // For now using mock data
-        const mockData = {
-          profileImage: '/default-avatar.png',
-          personalInfo: {
-            name: 'Dharamchand Patle',
-            id: 'DE24799',
-            email: '24bcs091@ietdavv.edu.in',
-            phone: '+91 6263827162',
-            address: '123 College Road, Indore',
-            department: 'Computer Science',
-            semester: '4th',
-            section: 'A'
-          },
-          academicInfo: {
-            attendance: 85,
-            cgpa: 8.5,
-            totalClasses: 100,
-            attendedClasses: 85
-          },
-          attendanceHistory: [true, true, false, true, true]
-        };
-
-        setProfileData(mockData);
-      } catch (error) {
-        show({
-          title: "Error",
-          description: "Failed to load profile data",
-          type: "error"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchStudentData();
-  }, [show]);
+  const [profileData, setProfileData] = useState(mockProfile);
+  const info = profileData.personalInfo;
+  const academics = profileData.academicInfo;
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -105,13 +64,13 @@ export function StudentProfile() {
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    const formData = Object.fromEntries(new FormData(e.target));
     
     try {
       // API call would go here
       const updatedInfo = {
-        phone: formData.get('phone'),
-        address: formData.get('address')
+        phone: formData.phone,
+        address: formData.address
       };
 
       setProfileData(prev => ({
@@ -136,16 +95,6 @@ export function StudentProfile() {
       });
     }
   };
-
-  if (isLoading) {
-    return (
-      <DashboardLayout userRole="student">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      </DashboardLayout>
-    );
-  }
 
   return (
     <DashboardLayout userRole="student">
@@ -175,10 +124,10 @@ export function StudentProfile() {
             </div>
             
             <div className="flex-1">
-              <h1 className="text-3xl font-bold">{profileData.personalInfo.name}</h1>
+              <h1 className="text-3xl font-bold">{info.name}</h1>
               <p className="text-gray-600 dark:text-gray-400 flex items-center gap-2">
                 <School className="w-4 h-4" />
-                {profileData.personalInfo.department} • {profileData.personalInfo.semester} Semester
+                {info.department} • {info.semester} Semester
               </p>
             </div>
 
@@ -204,7 +153,7 @@ export function StudentProfile() {
                 <input
                   type="tel"
                   name="phone"
-                  defaultValue={profileData.personalInfo.phone}
+                  defaultValue={info.phone}
                   className="form-input"
                   placeholder="Phone Number"
                   required
@@ -213,7 +162,7 @@ export function StudentProfile() {
                 <input
                   type="text"
                   name="address"
-                  defaultValue={profileData.personalInfo.address}
+                  defaultValue={info.address}
                   className="form-input"
                   placeholder="Address"
                   required
@@ -242,15 +191,15 @@ export function StudentProfile() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <User className="w-5 h-5 text-gray-400" />
-                  <span>ID: {profileData.personalInfo.id}</span>
+                  <span>ID: {info.id}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-gray-400" />
-                  <span>{profileData.personalInfo.email}</span>
+                  <span>{info.email}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="w-5 h-5 text-gray-400" />
-                  <span>{profileData.personalInfo.phone}</span>
+                  <span>{info.phone}</span>
                 </div>
               </div>
             )}
@@ -270,11 +219,11 @@ export function StudentProfile() {
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: `${profileData.academicInfo.attendance}%` }}
+                      animate={{ width: `${academics.attendance}%` }}
                       className="bg-blue-600 h-2 rounded-full"
                     />
                   </div>
-                  <span className="font-bold">{profileData.academicInfo.attendance}%</span>
+                  <span className="font-bold">{academics.attendance}%</span>
                 </div>
               </div>
               
@@ -285,7 +234,7 @@ export function StudentProfile() {
                   animate={{ scale: 1 }}
                   className="text-2xl font-bold"
                 >
-                  {profileData.academicInfo.cgpa}
+                  {academics.cgpa}
                 </motion.p>
               </div>
             </div>

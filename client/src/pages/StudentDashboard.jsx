@@ -1,79 +1,34 @@
 import { motion } from 'framer-motion';
-import { AlertCircle, Calendar, ChevronDown, ClipboardList, Clock, FileText } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { Calendar, ChevronDown, Clock, FileText } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { AttendanceCalendar } from '../components/student/AttendanceCalendar';
 import { ClassSchedule } from '../components/student/ClassSchedule';
 import { LeaveRequestForm } from '../components/student/LeaveRequestForm';
 
+const subjectAttendance = [
+  { subject_name: 'DBMS', total_classes: 40, attended_classes: 36, percentage: 90 },
+  { subject_name: 'Data Structures', total_classes: 38, attended_classes: 35, percentage: 92 },
+  { subject_name: 'Operating Systems', total_classes: 42, attended_classes: 38, percentage: 90 },
+  { subject_name: 'Computer Networks', total_classes: 36, attended_classes: 30, percentage: 83 },
+  { subject_name: 'Software Engineering', total_classes: 35, attended_classes: 32, percentage: 91 }
+];
+
 export function StudentDashboard() {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedSemester, setSelectedSemester] = useState(4);
-  const [subjectAttendance, setSubjectAttendance] = useState([]);
-  const [error, setError] = useState(null);
-  const kpiTemplate = useMemo(() => ([
-    { title: 'Attendance', value: '0%', icon: Calendar },
+  const overallAttendance = subjectAttendance.length
+    ? Math.round(subjectAttendance.reduce((acc, subject) => acc + subject.percentage, 0) / subjectAttendance.length)
+    : 0;
+  const studentKPIs = [
+    { title: 'Attendance', value: `${overallAttendance}%`, icon: Calendar },
     { title: 'Classes Today', value: '4', icon: Clock },
-    { title: 'Upcoming Exams', value: '2', icon: ClipboardList },
-    { title: 'Leave Requests', value: '1', icon: FileText },
-  ]), []);
-
-  useEffect(() => {
-    let isActive = true;
-
-    const fetchDashboardData = async () => {
-      setIsLoading(true);
-      try {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        const baseData = [
-          { subject_name: 'DBMS', total_classes: 40, attended_classes: 36, percentage: 90 },
-          { subject_name: 'Data Structures', total_classes: 38, attended_classes: 35, percentage: 92 },
-          { subject_name: 'Operating Systems', total_classes: 42, attended_classes: 38, percentage: 90 },
-          { subject_name: 'Computer Networks', total_classes: 36, attended_classes: 30, percentage: 83 },
-          { subject_name: 'Software Engineering', total_classes: 35, attended_classes: 32, percentage: 91 }
-        ];
-
-        const adjusted = baseData.map(subject => ({
-          ...subject,
-          attended_classes: subject.attended_classes + Math.floor(Math.random() * 5),
-          total_classes: subject.total_classes + Math.floor(Math.random() * 5)
-        }));
-
-        if (!isActive) return;
-        setSubjectAttendance(adjusted);
-        setError(null);
-      } catch (error) {
-        if (!isActive) return;
-        console.error('Failed to fetch dashboard data:', error);
-        setError('Failed to load attendance data. Please try again later.');
-      } finally {
-        if (isActive) setIsLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-
-    return () => {
-      isActive = false;
-    };
-  }, [selectedSemester]);
-
-  const overallAttendance = useMemo(() => {
-    if (!subjectAttendance.length) return 0;
-    const total = subjectAttendance.reduce((acc, subject) => acc + subject.percentage, 0);
-    return Math.round(total / subjectAttendance.length);
-  }, [subjectAttendance]);
-
-  const studentKPIs = useMemo(() => (
-    kpiTemplate.map(kpi => (
-      kpi.title === 'Attendance' ? { ...kpi, value: `${overallAttendance}%` } : kpi
-    ))
-  ), [kpiTemplate, overallAttendance]);
+    { title: 'Leave Requests', value: '1', icon: FileText }
+  ];
 
   return (
-    <DashboardLayout userRole="student" isLoading={isLoading}>
+    <DashboardLayout userRole="student">
       <div className="space-y-6">
         {/* Profile Quick Access */}
         <div className="flex justify-between items-center">
@@ -111,7 +66,7 @@ export function StudentDashboard() {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {studentKPIs.map((kpi, index) => (
             <motion.div
               key={kpi.title}
@@ -141,12 +96,7 @@ export function StudentDashboard() {
         >
           <h2 className="text-xl font-semibold mb-4">Subject-wise Attendance</h2>
           
-          {error ? (
-            <div className="flex items-center gap-2 text-red-600 dark:text-red-400 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              <AlertCircle className="w-5 h-5" />
-              <p>{error}</p>
-            </div>
-          ) : subjectAttendance.length === 0 ? (
+          {subjectAttendance.length === 0 ? (
             <p className="text-center text-gray-600 dark:text-gray-400 py-8">
               No attendance data available
             </p>
@@ -214,7 +164,7 @@ export function StudentDashboard() {
             className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
           >
             <h2 className="text-xl font-semibold mb-4">Leave Requests</h2>
-            <LeaveRequestForm semester={selectedSemester} />
+            <LeaveRequestForm />
           </motion.div>
 
           {/* Class Schedule */}

@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { Clock } from 'lucide-react';
-import { useMemo } from 'react';
 
 const scheduleData = {
   4: [ // Semester 4 schedule
@@ -16,7 +15,7 @@ const scheduleData = {
 };
 
 export function ClassSchedule({ semester }) {
-  const schedule = useMemo(() => scheduleData[semester] || [], [semester]);
+  const schedule = scheduleData[semester] || [];
 
   return (
     <div className="space-y-4">

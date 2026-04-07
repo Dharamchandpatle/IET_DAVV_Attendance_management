@@ -1,57 +1,40 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Calendar } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { LeaveRequestForm } from '../components/student/LeaveRequestForm';
 import { useToast } from '../components/ui/toast';
 
+const mockRequests = [
+  { 
+    id: 1, 
+    date: '2024-02-15', 
+    fromDate: '2024-02-15',
+    toDate: '2024-02-16',
+    reason: 'Medical Appointment', 
+    status: 'pending',
+    type: 'medical'
+  },
+  { 
+    id: 2, 
+    date: '2024-02-10', 
+    fromDate: '2024-02-10',
+    toDate: '2024-02-10',
+    reason: 'Family Function', 
+    status: 'approved',
+    type: 'personal'
+  },
+];
+
+const statusStyles = {
+  approved: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
+  rejected: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
+  pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+};
+
 export function LeaveRequest() {
   const { show } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
-  const [leaveRequests, setLeaveRequests] = useState([]);
-
-  useEffect(() => {
-    const fetchLeaveRequests = async () => {
-      setIsLoading(true);
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const mockData = [
-          { 
-            id: 1, 
-            date: '2024-02-15', 
-            fromDate: '2024-02-15',
-            toDate: '2024-02-16',
-            reason: 'Medical Appointment', 
-            status: 'pending',
-            type: 'medical'
-          },
-          { 
-            id: 2, 
-            date: '2024-02-10', 
-            fromDate: '2024-02-10',
-            toDate: '2024-02-10',
-            reason: 'Family Function', 
-            status: 'approved',
-            type: 'personal'
-          },
-        ];
-        
-        setLeaveRequests(mockData);
-      } catch (error) {
-        console.error('Failed to fetch leave requests:', error);
-        show({
-          title: "Error",
-          description: "Failed to load leave requests",
-          type: "error"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchLeaveRequests();
-  }, [show]);
+  const [leaveRequests, setLeaveRequests] = useState(mockRequests);
 
   const stats = useMemo(() => {
     return leaveRequests.reduce((acc, req) => {
@@ -62,50 +45,30 @@ export function LeaveRequest() {
   }, [leaveRequests]);
 
   const handleLeaveSubmit = async (formData) => {
-    try {
-      const payload = formData instanceof FormData
-        ? Object.fromEntries(formData.entries())
-        : formData;
+    const payload = formData instanceof FormData
+      ? Object.fromEntries(formData.entries())
+      : formData;
 
-      const newRequest = {
-        id: Date.now(),
-        date: new Date().toISOString().split('T')[0],
-        fromDate: payload.fromDate,
-        toDate: payload.toDate,
-        reason: payload.reason,
-        type: payload.type || 'personal',
-        status: 'pending'
-      };
+    const newRequest = {
+      id: Date.now(),
+      date: new Date().toISOString().split('T')[0],
+      fromDate: payload.fromDate,
+      toDate: payload.toDate,
+      reason: payload.reason,
+      type: payload.type || 'personal',
+      status: 'pending'
+    };
 
-      setLeaveRequests(prev => [newRequest, ...prev]);
-      
-      show({
-        title: "Request Submitted",
-        description: "Your leave request has been submitted successfully.",
-        type: "success"
-      });
-    } catch (error) {
-      show({
-        title: "Error",
-        description: "Failed to submit leave request",
-        type: "error"
-      });
-    }
-  };
-
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case 'approved':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-      case 'rejected':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
-      default:
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-    }
+    setLeaveRequests(prev => [newRequest, ...prev]);
+    show({
+      title: "Request Submitted",
+      description: "Your leave request has been submitted successfully.",
+      type: "success"
+    });
   };
 
   return (
-    <DashboardLayout userRole="student" isLoading={isLoading}>
+    <DashboardLayout userRole="student">
       <div className="space-y-6">
         <header className="flex justify-between items-center">
           <div>
@@ -171,7 +134,7 @@ export function LeaveRequest() {
                           {request.reason}
                         </p>
                       </div>
-                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusStyle(request.status)}`}>
+                      <span className={`px-2 py-1 text-xs rounded-full ${statusStyles[request.status] || statusStyles.pending}`}>
                         {request.status}
                       </span>
                     </div>
