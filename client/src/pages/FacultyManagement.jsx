@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
-import gsap from 'gsap';
 import { Filter, Plus, Search } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DEPARTMENTS, DESIGNATIONS } from '../components/admin/adminConstants';
 import { DataTable } from '../components/admin/DataTable';
 import { DynamicFormModal } from '../components/admin/DynamicFormModal';
@@ -23,7 +22,6 @@ const mockFaculty = Array.from({ length: 15 }, (_, i) => ({
 }));
 
 export function FacultyManagement() {
-  const containerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -36,20 +34,8 @@ export function FacultyManagement() {
   const { show } = useToast();
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.faculty-card', {
-        y: 20,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: 'power3.out'
-      });
-    }, containerRef);
-
     // Simulate loading
     setTimeout(() => setIsLoading(false), 1000);
-
-    return () => ctx.revert();
   }, []);
 
   const query = filters.search.trim().toLowerCase();
@@ -83,7 +69,7 @@ export function FacultyManagement() {
 
   return (
     <DashboardLayout userRole="admin" isLoading={isLoading}>
-      <div className="space-y-6" ref={containerRef}>
+      <div className="space-y-6">
         <header className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Faculty Management</h1>
@@ -102,9 +88,7 @@ export function FacultyManagement() {
           </motion.button>
         </header>
 
-        <motion.div
-          className="faculty-card bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
-        >
+        <motion.div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
           {/* Search and Filters */}
           <div className="space-y-4 mb-6">
             <div className="flex flex-wrap gap-4 items-center">

@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import gsap from 'gsap';
 import { X } from 'lucide-react';
 import { useToast } from '../ui/toast';
 
@@ -15,13 +14,7 @@ export function NewExamForm({ onClose }) {
       title: "Exam Scheduled",
       description: "New exam has been scheduled successfully"
     });
-
-    gsap.to('.exam-form', {
-      y: -20,
-      opacity: 0,
-      duration: 0.3,
-      onComplete: onClose
-    });
+    onClose();
   };
 
   return (

@@ -1,24 +1,10 @@
 import { motion } from 'framer-motion';
-import gsap from 'gsap';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export function ExamCalendar({ onDateSelect }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
-
-  useEffect(() => {
-    gsap.from('.calendar-day', {
-      scale: 0.9,
-      opacity: 0,
-      duration: 0.5,
-      stagger: {
-        grid: [7, 5],
-        from: "start",
-        amount: 0.5
-      }
-    });
-  }, [currentMonth]);
 
   const navigateMonth = (direction) => {
     setCurrentMonth(prev => {

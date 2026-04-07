@@ -1,8 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import gsap from 'gsap';
 import { Calendar, Check, Clock, FileText, Users } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { AttendanceSection } from '../components/faculty/AttendanceSection';
 import { ExamManagementSection } from '../components/faculty/ExamManagementSection';
@@ -15,51 +14,40 @@ const kpiData = [
   { title: 'Attendance Marked', value: '85%', icon: Check },
 ];
 
+const dashboardSections = [
+  {
+    id: 'attendance',
+    title: 'Mark Attendance',
+    description: 'Record today\'s attendance',
+    icon: Calendar,
+    color: 'blue',
+    component: AttendanceSection,
+    path: '/faculty/attendance'
+  },
+  {
+    id: 'leave-requests',
+    title: 'Leave Requests',
+    description: 'Review pending requests',
+    icon: Clock,
+    color: 'green',
+    component: LeaveRequestsSection,
+    path: '/faculty/leave-requests'
+  },
+  {
+    id: 'exams',
+    title: 'Exam Management',
+    description: 'Schedule and manage exams',
+    icon: FileText,
+    color: 'purple',
+    component: ExamManagementSection,
+    path: '/faculty/exams'
+  }
+];
+
 export function FacultyDashboard() {
-  const [activeSection, setActiveSection] = useState('attendance');
   const [isLoading, setIsLoading] = useState(true);
-  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
-  const containerRef = useRef(null);
   const navigate = useNavigate();
-
-  const dashboardSections = useMemo(() => [
-    {
-      id: 'attendance',
-      title: 'Mark Attendance',
-      description: 'Record today\'s attendance',
-      icon: Calendar,
-      color: 'blue',
-      component: AttendanceSection,
-      path: '/faculty/attendance'
-    },
-    {
-      id: 'leave-requests',
-      title: 'Leave Requests',
-      description: 'Review pending requests',
-      icon: Clock,
-      color: 'green',
-      component: LeaveRequestsSection,
-      path: '/faculty/leave-requests'
-    },
-    {
-      id: 'exams',
-      title: 'Exam Management',
-      description: 'Schedule and manage exams',
-      icon: FileText,
-      color: 'purple',
-      component: ExamManagementSection,
-      path: '/faculty/exams'
-    }
-  ], []);
-
-  // Initialize active section based on current route
-  useEffect(() => {
-    const path = window.location.pathname;
-    const section = dashboardSections.find(s => s.path === path);
-    if (section) {
-      setActiveSection(section.id);
-    }
-  }, []);
+  const location = useLocation();
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -78,46 +66,27 @@ export function FacultyDashboard() {
 
     loadDashboardData();
 
-    // Setup GSAP animations
-    const ctx = gsap.context(() => {
-      gsap.from('.dashboard-card', {
-        y: 20,
-        opacity: 0,
-        duration: 0.4,
-        stagger: 0.1,
-        ease: 'power2.out',
-        clearProps: 'all'
-      });
-    }, containerRef);
-
-    return () => ctx.revert();
   }, []);
 
-  // Update active section when URL changes
-  useEffect(() => {
-    const path = window.location.pathname;
-    const section = dashboardSections.find(s => s.path === path);
-    if (section && section.id !== activeSection) {
-      setActiveSection(section.id);
-    }
-  }, [window.location.pathname, dashboardSections, activeSection]);
+  const activeSection = useMemo(() => {
+    const match = dashboardSections.find(section => section.path === location.pathname);
+    return match?.id || 'attendance';
+  }, [location.pathname]);
 
-  // Memoize active component to prevent unnecessary re-renders
-  const ActiveComponent = useMemo(() => 
-    dashboardSections.find(section => section.id === activeSection)?.component || AttendanceSection
-  , [activeSection, dashboardSections]);
+  const ActiveComponent = useMemo(() => {
+    return dashboardSections.find(section => section.id === activeSection)?.component || AttendanceSection;
+  }, [activeSection]);
 
   const handleSectionChange = (sectionId) => {
     const section = dashboardSections.find(s => s.id === sectionId);
     if (section && section.path) {
-      setActiveSection(sectionId);
-      navigate(section.path, { replace: true }); // Use replace to avoid navigation stack issues
+      navigate(section.path, { replace: true });
     }
   };
 
   return (
     <DashboardLayout userRole="faculty" isLoading={isLoading}>
-      <div className="space-y-8" ref={containerRef}>
+      <div className="space-y-8">
         {/* KPI Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {kpiData.map((kpi, index) => (

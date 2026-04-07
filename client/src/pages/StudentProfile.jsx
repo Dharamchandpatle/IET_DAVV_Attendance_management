@@ -1,16 +1,12 @@
 import { motion } from 'framer-motion';
-import gsap from 'gsap';
 import { Camera, Edit2, Mail, Phone, School, User } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { AttendanceHistory } from '../components/student/AttendanceHistory';
 import { useToast } from '../components/ui/toast';
-import { useAuth } from '../context/AuthContext';
 
 export function StudentProfile() {
-  const { user } = useAuth();
   const { show } = useToast();
-  const containerRef = useRef(null);
   
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -64,13 +60,6 @@ export function StudentProfile() {
         };
 
         setProfileData(mockData);
-        gsap.from('.profile-section', {
-          y: 30,
-          opacity: 0,
-          duration: 0.8,
-          stagger: 0.2,
-          ease: 'power3.out'
-        });
       } catch (error) {
         show({
           title: "Error",
@@ -160,7 +149,7 @@ export function StudentProfile() {
 
   return (
     <DashboardLayout userRole="student">
-      <div className="max-w-4xl mx-auto space-y-8" ref={containerRef}>
+      <div className="max-w-4xl mx-auto space-y-8">
         {/* Profile Header */}
         <motion.div 
           className="profile-section relative bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"

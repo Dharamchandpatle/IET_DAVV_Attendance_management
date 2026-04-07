@@ -42,19 +42,12 @@ export function Login() {
     return () => ctx.revert();
   }, []);
 
-  const validateForm = (formData) => {
+  const validateForm = ({ role, email, password }) => {
     const errors = {};
-    if (!formData.get('role')) {
-      errors.role = 'Please select a role';
-    }
-    if (!formData.get('email')) {
-      errors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.get('email'))) {
-      errors.email = 'Please enter a valid email';
-    }
-    if (!formData.get('password')) {
-      errors.password = 'Password is required';
-    }
+    if (!role) errors.role = 'Please select a role';
+    if (!email) errors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(email)) errors.email = 'Please enter a valid email';
+    if (!password) errors.password = 'Password is required';
     return errors;
   };
 
@@ -62,7 +55,12 @@ export function Login() {
     e.preventDefault();
     setValidationErrors({});
     const formData = new FormData(e.target);
-    const errors = validateForm(formData);
+    const values = {
+      role: formData.get('role'),
+      email: formData.get('email'),
+      password: formData.get('password')
+    };
+    const errors = validateForm(values);
 
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
@@ -71,11 +69,7 @@ export function Login() {
 
     setIsLoading(true);
     try {
-      await login({
-        email: formData.get('email'),
-        password: formData.get('password'),
-        role: formData.get('role')
-      });
+      await login(values);
     } catch (error) {
       show({
         title: "Login Failed",

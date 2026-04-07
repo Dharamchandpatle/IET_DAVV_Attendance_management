@@ -1,33 +1,23 @@
 import { motion } from 'framer-motion';
-import gsap from 'gsap';
 import { Calendar, Clock, FileText, Users } from 'lucide-react';
-import { useEffect } from 'react';
 
 export function AttendanceStats({ students }) {
   const presentCount = students.filter(s => s.present).length;
   const totalCount = students.length;
   const percentage = Math.round((presentCount / totalCount) * 100) || 0;
 
-  // Calculate aggregate stats
-  const stats = students.reduce((acc, student) => {
-    acc.regularClasses += student.attendance?.regular || 0;
-    acc.eventAttendance += student.attendance?.events || 0;
-    acc.totalStudents++;
-    return acc;
-  }, { regularClasses: 0, eventAttendance: 0, totalStudents: 0 });
+  const stats = students.reduce(
+    (acc, student) => {
+      acc.regular += student.attendance?.regular || 0;
+      acc.events += student.attendance?.events || 0;
+      acc.count += 1;
+      return acc;
+    },
+    { regular: 0, events: 0, count: 0 }
+  );
 
-  const averageRegular = Math.round(stats.regularClasses / stats.totalStudents) || 0;
-  const averageEvents = Math.round(stats.eventAttendance / stats.totalStudents) || 0;
-
-  useEffect(() => {
-    // Animate stats on update
-    gsap.to('.stat-number', {
-      scale: 1.2,
-      duration: 0.2,
-      yoyo: true,
-      repeat: 1
-    });
-  }, [presentCount]);
+  const averageRegular = Math.round(stats.regular / stats.count) || 0;
+  const averageEvents = Math.round(stats.events / stats.count) || 0;
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

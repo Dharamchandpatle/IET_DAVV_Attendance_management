@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Calendar, Check, CheckCheck, Search, X } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AttendanceStats } from '../attendance/AttendanceStats';
 import { useToast } from '../ui/toast';
@@ -77,19 +77,19 @@ const mockStudents = [
 export function AttendanceSection() {
   const [students, setStudents] = useState(mockStudents);
   const [search, setSearch] = useState('');
-  const [selectedDate] = useState(new Date());
+  const selectedDate = useMemo(() => new Date(), []);
   const [attendanceType, setAttendanceType] = useState('regular');
   const [selectedBranch, setSelectedBranch] = useState('all');
   const { show } = useToast();
   const navigate = useNavigate();
 
+  const query = search.trim().toLowerCase();
   const filteredStudents = students.filter(student =>
-    (student.name.toLowerCase().includes(search.toLowerCase()) ||
-    student.roll.toLowerCase().includes(search.toLowerCase())) &&
+    (!query || student.name.toLowerCase().includes(query) || student.roll.toLowerCase().includes(query)) &&
     (selectedBranch === 'all' || student.branch === selectedBranch)
   );
 
-  const handleMarkAttendance = useCallback((studentId) => {
+  const handleMarkAttendance = (studentId) => {
     setStudents(prev => prev.map(student => {
       if (student.id === studentId) {
         return { ...student, present: !student.present };
@@ -102,9 +102,9 @@ export function AttendanceSection() {
       description: "Student's attendance has been marked successfully",
       type: "success"
     });
-  }, [show]);
+  };
 
-  const handleBatchMark = useCallback((present) => {
+  const handleBatchMark = (present) => {
     setStudents(prev => prev.map(student => ({
       ...student,
       present: present
@@ -115,7 +115,7 @@ export function AttendanceSection() {
       description: `All students marked as ${present ? 'present' : 'absent'}`,
       type: "success"
     });
-  }, [show]);
+  };
 
   const handleSubmitAttendance = () => {
     show({
@@ -123,7 +123,7 @@ export function AttendanceSection() {
       description: "Attendance submitted successfully",
       type: "success"
     });
-    navigate('/faculty/dashboard');
+    navigate('/faculty');
   };
 
   return (

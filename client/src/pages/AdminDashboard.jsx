@@ -1,7 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import gsap from 'gsap';
 import { UserPlus } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AdminAnnouncements } from '../components/admin/AdminAnnouncements';
 import { DataTable } from '../components/admin/DataTable';
 import { DynamicFormModal } from '../components/admin/DynamicFormModal';
@@ -30,39 +29,22 @@ export function AdminDashboard() {
   const [activeModal, setActiveModal] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const containerRef = useRef(null);
 
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
         setIsLoading(true);
-        // Add your data fetching logic here
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated loading
-        setIsLoading(false);
+        await new Promise(resolve => setTimeout(resolve, 600));
+        setError(null);
       } catch (err) {
         setError(err.message);
+      } finally {
         setIsLoading(false);
       }
     };
 
     loadDashboardData();
   }, []);
-
-  useEffect(() => {
-    if (!isLoading && containerRef.current) {
-      const ctx = gsap.context(() => {
-        gsap.from('.admin-card', {
-          y: 20,
-          opacity: 0,
-          duration: 0.8,
-          stagger: 0.2,
-          ease: 'power3.out'
-        });
-      }, containerRef);
-
-      return () => ctx.revert();
-    }
-  }, [isLoading]);
 
   if (error) {
     return (
@@ -84,7 +66,7 @@ export function AdminDashboard() {
 
   return (
     <DashboardLayout userRole="admin" isLoading={isLoading}>
-      <div className="space-y-8" ref={containerRef}>
+      <div className="space-y-8">
         <header className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Admin Dashboard</h1>

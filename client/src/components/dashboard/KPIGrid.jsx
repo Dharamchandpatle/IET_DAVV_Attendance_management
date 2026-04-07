@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { BarChart3, BookOpen, GraduationCap, Users } from 'lucide-react';
-import { cn } from '../../lib/utils';
 
 const kpiData = {
   admin: [
@@ -49,10 +48,13 @@ export function KPIGrid({ userRole = 'student' }) {
                 {kpi.value}
               </h3>
               {kpi.trend && (
-                <p className={cn(
-                  "mt-1 text-sm font-medium",
-                  kpi.trend.startsWith('+') ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
-                )}>
+                <p
+                  className={`mt-1 text-sm font-medium ${
+                    kpi.trend.startsWith('+')
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-red-600 dark:text-red-400"
+                  }`}
+                >
                   <span className="inline-flex items-center">
                     {kpi.trend.startsWith('+') ? "↑" : "↓"} {kpi.trend} from last month
                   </span>

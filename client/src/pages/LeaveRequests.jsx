@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
-import gsap from 'gsap';
 import { Clock, Search } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { useToast } from '../components/ui/toast';
 
@@ -79,27 +78,11 @@ export function LeaveRequests() {
   const { show } = useToast();
   const [requests, setRequests] = useState(mockRequests);
   const [search, setSearch] = useState('');
-  const containerRef = useRef(null);
 
   const [filters, setFilters] = useState({
     status: 'all',
-    dateRange: 'all',
-    department: 'all'
+    dateRange: 'all'
   });
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.leave-request-card', {
-        y: 20,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.1,
-        ease: 'power3.out'
-      });
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, []);
 
   const handleStatusUpdate = async (id, newStatus) => {
     try {
@@ -129,14 +112,11 @@ export function LeaveRequests() {
     }
   };
 
-  const handleFilter = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  };
-
   const filteredRequests = requests.filter(request => {
-    const matchesSearch = 
-      request.studentName.toLowerCase().includes(search.toLowerCase()) ||
-      request.studentId.toLowerCase().includes(search.toLowerCase());
+    const query = search.trim().toLowerCase();
+    const matchesSearch = !query ||
+      request.studentName.toLowerCase().includes(query) ||
+      request.studentId.toLowerCase().includes(query);
     
     const matchesStatus = 
       filters.status === 'all' || request.status === filters.status;
@@ -148,17 +128,17 @@ export function LeaveRequests() {
     return matchesSearch && matchesStatus && matchesDate;
   });
 
-  const stats = {
+  const stats = useMemo(() => ({
     pending: requests.filter(r => r.status === 'pending').length,
     approved: requests.filter(r => r.status === 'approved').length,
     rejected: requests.filter(r => r.status === 'rejected').length
-  };
+  }), [requests]);
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-      <Sidebar />
+      <Sidebar userRole="faculty" />
       
-      <main className="flex-1 overflow-y-auto p-6" ref={containerRef}>
+      <main className="flex-1 overflow-y-auto p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           <header className="flex justify-between items-center">
             <div>

@@ -1,11 +1,10 @@
 import { motion } from 'framer-motion';
 import { Calendar, ChevronLeft, Clock, FileText, Home, LogOut, Moon, Sun, User, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import davvlogo from '../../assets/images/davvlogo.png';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { navigateWithTransition, preloadRoute } from '../../utils/navigation';
 
 const roleBasedNavItems = {
   admin: [
@@ -31,34 +30,9 @@ const roleBasedNavItems = {
 export function Sidebar({ userRole = 'student' }) {
   const { theme, toggleTheme } = useTheme();
   const { logout } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
   const navItems = roleBasedNavItems[userRole];
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [activeItem, setActiveItem] = useState(location.pathname);
-
-  // Update active item when location changes
-  useEffect(() => {
-    setActiveItem(location.pathname);
-  }, [location.pathname]);
-
-  // Preload routes on mount
-  useEffect(() => {
-    navItems.forEach(item => preloadRoute(item.path));
-  }, [navItems]);
-
-  const handleNavigation = (path) => {
-    if (path === activeItem) return; // Prevent unnecessary navigation
-    setActiveItem(path);
-    navigateWithTransition(navigate, path, {
-      duration: 0.2,
-      replace: true, // Use replace to avoid navigation stack issues
-      onBeforeNavigate: () => {
-        // Preload the target route before navigation
-        preloadRoute(path);
-      }
-    });
-  };
 
   const sidebarWidth = isCollapsed ? "w-20" : "w-64";
   const itemVariants = {
@@ -79,6 +53,13 @@ export function Sidebar({ userRole = 'student' }) {
       },
     },
   };
+
+  const navLinkClass = (isActive) => (
+    `nav-link w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ` +
+    (isActive
+      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium'
+      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700')
+  );
 
   return (
     <motion.aside
@@ -130,34 +111,26 @@ export function Sidebar({ userRole = 'student' }) {
       {/* Navigation Menu */}
       <nav className="flex-1 px-4 space-y-1">
         {navItems.map((item) => (
-          <motion.button
+          <NavLink
             key={item.path}
-            onClick={() => handleNavigation(item.path)}
-            variants={itemVariants}
-            initial="open"
-            animate={isCollapsed ? "collapsed" : "open"}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className={`nav-link w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
-              ${(location.pathname === item.path || 
-                (item.end && location.pathname === item.path) ||
-                (!item.end && location.pathname.startsWith(item.path)))
-                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium' 
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            to={item.path}
+            end={item.end}
+            className={({ isActive }) => navLinkClass(isActive)}
           >
-            <div className="flex items-center gap-3 min-w-max">
+            <motion.div
+              variants={itemVariants}
+              initial="open"
+              animate={isCollapsed ? "collapsed" : "open"}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center gap-3 min-w-max"
+            >
               {item.icon && (
-                <item.icon className={`w-5 h-5 ${
-                  (location.pathname === item.path ||
-                    (item.end && location.pathname === item.path) ||
-                    (!item.end && location.pathname.startsWith(item.path)))
-                    ? "text-blue-600 dark:text-blue-400"
-                    : "text-gray-500 dark:text-gray-400"
-                }`} />
+                <item.icon className="w-5 h-5 text-inherit" />
               )}
               {!isCollapsed && <span>{item.title}</span>}
-            </div>
-          </motion.button>
+            </motion.div>
+          </NavLink>
         ))}
       </nav>
 

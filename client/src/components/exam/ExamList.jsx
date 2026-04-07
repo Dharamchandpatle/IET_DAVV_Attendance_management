@@ -1,7 +1,5 @@
 import { motion } from 'framer-motion';
-import gsap from 'gsap';
 import { Calendar, Check, X } from 'lucide-react';
-import { useEffect } from 'react';
 import { useToast } from '../ui/toast';
 
 export function ExamList({ selectedDate, role = 'student' }) {
@@ -34,24 +32,7 @@ export function ExamList({ selectedDate, role = 'student' }) {
       title: "Attendance Marked",
       description: `Student marked as ${present ? 'present' : 'absent'}`
     });
-
-    gsap.to(`#exam-${examId}`, {
-      scale: 1.02,
-      duration: 0.2,
-      yoyo: true,
-      repeat: 1
-    });
   };
-
-  useEffect(() => {
-    gsap.from('.exam-item', {
-      y: 20,
-      opacity: 0,
-      duration: 0.5,
-      stagger: 0.1,
-      ease: 'power3.out'
-    });
-  }, [selectedDate]);
 
   return (
     <div className="space-y-4">

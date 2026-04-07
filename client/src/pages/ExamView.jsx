@@ -1,38 +1,21 @@
 import { motion } from 'framer-motion';
-import gsap from 'gsap';
 import { Calendar, FileText } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useMemo } from 'react';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { ExamList } from '../components/student/ExamList';
 
 export function ExamView() {
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.exam-card', {
-        y: 20,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: 'power3.out'
-      });
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, []);
-
-  const examStats = {
+  const examStats = useMemo(() => ({
     upcoming: 2,
     completed: 5,
     averageScore: 85
-  };
+  }), []);
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar userRole="student" />
       
-      <main className="flex-1 overflow-y-auto p-6" ref={containerRef}>
+      <main className="flex-1 overflow-y-auto p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           <header className="flex justify-between items-center">
             <div>

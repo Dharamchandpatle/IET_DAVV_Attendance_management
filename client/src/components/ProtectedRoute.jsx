@@ -9,6 +9,7 @@ export function ProtectedRoute({ children, allowedRoles = [] }) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
   const { show } = useToast();
+  const isAuthorized = !allowedRoles.length || allowedRoles.includes(user?.role);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -20,6 +21,16 @@ export function ProtectedRoute({ children, allowedRoles = [] }) {
     }
   }, [isAuthenticated, isLoading, show]);
 
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && !isAuthorized) {
+      show({
+        title: "Access Denied",
+        description: "You don't have permission to access this page.",
+        type: "error"
+      });
+    }
+  }, [isAuthenticated, isAuthorized, isLoading, show]);
+
   if (isLoading) {
     return <LoadingSpinner label="Authenticating..." />;
   }
@@ -28,12 +39,7 @@ export function ProtectedRoute({ children, allowedRoles = [] }) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
-  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-    show({
-      title: "Access Denied",
-      description: "You don't have permission to access this page.",
-      type: "error"
-    });
+  if (!isAuthorized) {
     return <Navigate to={`/${user.role}`} replace />;
   }
 

@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../components/ui/toast';
 
@@ -11,13 +11,10 @@ export function AuthProvider({ children }) {
   const location = useLocation();
   const { show } = useToast();
 
-  // Check for existing session on mount
-  useState(() => {
+  useEffect(() => {
     try {
       const savedUser = localStorage.getItem('user');
-      if (savedUser) {
-        setUser(JSON.parse(savedUser));
-      }
+      if (savedUser) setUser(JSON.parse(savedUser));
     } catch (error) {
       console.error('Error restoring auth state:', error);
     } finally {
@@ -133,7 +130,7 @@ async function mockLoginCall(credentials) {
       // Simulate successful login
       resolve({
         user: {
-          id: Math.random().toString(36).substr(2, 9),
+          id: Math.random().toString(36).slice(2, 11),
           name: credentials.email.split('@')[0],
           role: credentials.role,
           email: credentials.email

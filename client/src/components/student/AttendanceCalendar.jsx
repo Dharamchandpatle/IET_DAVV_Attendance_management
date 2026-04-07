@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Calendar, Info } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 // Mock data structure with semester information and event types
 const attendanceDates = {
@@ -19,14 +19,8 @@ const attendanceDates = {
 
 export function AttendanceCalendar({ semester }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [currentMonthData, setCurrentMonthData] = useState({});
   const [selectedEvent, setSelectedEvent] = useState(null);
-
-  useEffect(() => {
-    // In a real app, this would fetch data from an API
-    const semesterData = attendanceDates[semester] || {};
-    setCurrentMonthData(semesterData);
-  }, [semester]);
+  const currentMonthData = attendanceDates[semester] || {};
 
   const getStatusClass = (date) => {
     const entry = currentMonthData[date];

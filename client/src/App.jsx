@@ -1,13 +1,12 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import gsap from 'gsap';
-import { Suspense, useEffect, useRef } from 'react';
+import { Suspense } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { ToastProvider } from './components/ui/toast';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { lazyLoad, prefetchRoutes } from './utils/routeLoader';
+import { lazyLoad } from './utils/routeLoader';
 
 // Lazy load all pages
 const LandingPage = lazyLoad('LandingPage');
@@ -29,35 +28,9 @@ const StudentProfile = lazyLoad('StudentProfile');
 
 function AppContent() {
   const location = useLocation();
-  const pageTransitionRef = useRef(null);
-
-  useEffect(() => {
-    // Prefetch critical routes
-    prefetchRoutes();
-
-    // Setup GSAP page transitions
-    const ctx = gsap.context(() => {
-      gsap.registerEffect({
-        name: "smoothPageTransition",
-        effect: (targets) => {
-          return gsap.timeline()
-            .set(targets, { opacity: 0, y: 10 })
-            .to(targets, { 
-              opacity: 1, 
-              y: 0, 
-              duration: 0.2,
-              ease: "power2.out",
-              clearProps: "all" 
-            });
-        }
-      });
-    }, pageTransitionRef);
-
-    return () => ctx.revert();
-  }, []);
 
   return (
-    <div className="min-h-screen bg-background transition-colors duration-300" ref={pageTransitionRef}>
+    <div className="min-h-screen bg-background transition-colors duration-300">
       <AnimatePresence mode="wait">
         <motion.div
           key={location.pathname}

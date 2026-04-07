@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 
 // Enhanced mock data with proper typing
@@ -17,29 +17,7 @@ const attendanceData = {
 
 export function AttendanceView() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [isLoading, setIsLoading] = useState(true);
-  const [monthData, setMonthData] = useState(attendanceData);
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    // Simulate API call and data loading
-    const fetchAttendanceData = async () => {
-      setIsLoading(true);
-      try {
-        // In production, this would be an API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setMonthData(attendanceData);
-      } catch (error) {
-        console.error('Failed to fetch attendance data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchAttendanceData();
-  }, [currentMonth]); // Refetch when month changes
-
-  const percentage = Math.round((monthData.present / monthData.total) * 100);
+  const percentage = Math.round((attendanceData.present / attendanceData.total) * 100);
 
   const navigateMonth = (direction) => {
     setCurrentMonth(prev => {
@@ -50,7 +28,7 @@ export function AttendanceView() {
   };
 
   const getStatusClass = (date) => {
-    const entry = monthData.dates[date];
+    const entry = attendanceData.dates[date];
     if (!entry) return 'bg-gray-100 dark:bg-gray-800';
 
     switch (entry.type) {
@@ -68,7 +46,7 @@ export function AttendanceView() {
   };
 
   return (
-    <DashboardLayout userRole="student" isLoading={isLoading}>
+    <DashboardLayout userRole="student">
       <div className="space-y-6">
         {/* Header Stats */}
         <header className="flex justify-between items-center">
@@ -141,7 +119,7 @@ export function AttendanceView() {
                   className={`p-2 text-center rounded-lg relative ${getStatusClass(date)}`}
                 >
                   {i + 1}
-                  {monthData.dates[date]?.details && (
+                  {attendanceData.dates[date]?.details && (
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" />
                   )}
                 </motion.button>

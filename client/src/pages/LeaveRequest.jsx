@@ -1,22 +1,14 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import gsap from 'gsap';
 import { Calendar } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { LeaveRequestForm } from '../components/student/LeaveRequestForm';
 import { useToast } from '../components/ui/toast';
 
 export function LeaveRequest() {
   const { show } = useToast();
-  const containerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [leaveRequests, setLeaveRequests] = useState([]);
-  const [stats, setStats] = useState({
-    total: 0,
-    pending: 0,
-    approved: 0,
-    rejected: 0
-  });
 
   useEffect(() => {
     const fetchLeaveRequests = async () => {
@@ -46,7 +38,6 @@ export function LeaveRequest() {
         ];
         
         setLeaveRequests(mockData);
-        updateStats(mockData);
       } catch (error) {
         console.error('Failed to fetch leave requests:', error);
         show({
@@ -62,43 +53,36 @@ export function LeaveRequest() {
     fetchLeaveRequests();
   }, [show]);
 
-  const updateStats = (requests) => {
-    const newStats = requests.reduce((acc, req) => {
-      acc.total++;
-      acc[req.status]++;
+  const stats = useMemo(() => {
+    return leaveRequests.reduce((acc, req) => {
+      acc.total += 1;
+      acc[req.status] += 1;
       return acc;
     }, { total: 0, pending: 0, approved: 0, rejected: 0 });
-    
-    setStats(newStats);
-  };
+  }, [leaveRequests]);
 
   const handleLeaveSubmit = async (formData) => {
     try {
+      const payload = formData instanceof FormData
+        ? Object.fromEntries(formData.entries())
+        : formData;
+
       const newRequest = {
         id: Date.now(),
         date: new Date().toISOString().split('T')[0],
-        fromDate: formData.fromDate,
-        toDate: formData.toDate,
-        reason: formData.reason,
-        type: formData.type || 'personal',
+        fromDate: payload.fromDate,
+        toDate: payload.toDate,
+        reason: payload.reason,
+        type: payload.type || 'personal',
         status: 'pending'
       };
 
       setLeaveRequests(prev => [newRequest, ...prev]);
-      updateStats([...leaveRequests, newRequest]);
       
       show({
         title: "Request Submitted",
         description: "Your leave request has been submitted successfully.",
         type: "success"
-      });
-
-      // Animate the new request
-      gsap.from(`[data-request="${newRequest.id}"]`, {
-        opacity: 0,
-        y: -20,
-        duration: 0.5,
-        ease: 'power2.out'
       });
     } catch (error) {
       show({
@@ -122,7 +106,7 @@ export function LeaveRequest() {
 
   return (
     <DashboardLayout userRole="student" isLoading={isLoading}>
-      <div className="space-y-6" ref={containerRef}>
+      <div className="space-y-6">
         <header className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Leave Requests</h1>

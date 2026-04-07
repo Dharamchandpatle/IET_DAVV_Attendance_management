@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
-import gsap from 'gsap';
 import { Calendar, Save, Search } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { AttendanceHistory } from '../components/attendance/AttendanceHistory';
 import { AttendanceStats } from '../components/attendance/AttendanceStats';
 import { Sidebar } from '../components/dashboard/Sidebar';
@@ -12,13 +11,6 @@ const mockStudents = [
     name: 'Dharamchand Patle', 
     roll: 'CS21B001', 
     present: false, 
-    // history: [
-    //   { type: 'regular', present: true },
-    //   { type: 'regular', present: true },
-    //   { type: 'regular', present: false },
-    //   { type: 'college_event', present: true, details: 'Hackathon attended' },
-    //   { type: 'holiday', present: false, details: 'Republic Day' }
-    // ],
     history: [
       { type: 'regular', present: true },
       { type: 'regular', present: true },
@@ -164,36 +156,13 @@ export function AttendanceSheet() {
   const [students, setStudents] = useState(mockStudents);
   const [search, setSearch] = useState('');
   const [selectedDate] = useState(new Date());
-  const [showEventModal, setShowEventModal] = useState(false);
   const [attendanceType, setAttendanceType] = useState('regular');
-  const containerRef = useRef(null);
   const [activeFilters, setActiveFilters] = useState({
     branch: 'all',
     year: 'all',
     section: 'all',
     semester: 'all'
   });
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.filter-controls', {
-        y: -20,
-        opacity: 0,
-        duration: 0.5,
-        ease: 'power2.out'
-      });
-
-      gsap.from('.attendance-card', {
-        y: 20,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.1,
-        ease: 'power3.out'
-      });
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, []);
 
   const markAttendance = (studentId) => {
     setStudents(prev => prev.map(student => {
@@ -209,21 +178,13 @@ export function AttendanceSheet() {
     });
   };
 
-  const handleBulkAttendance = async (present) => {
-    try {
-      setStudents(prev => prev.map(student => ({ ...student, present })));
-      show({
-        title: "Bulk Attendance",
-        description: `All students marked as ${present ? 'present' : 'absent'}`,
-        type: "success"
-      });
-    } catch (error) {
-      show({
-        title: "Error",
-        description: "Failed to update attendance",
-        type: "error"
-      });
-    }
+  const handleBulkAttendance = (present) => {
+    setStudents(prev => prev.map(student => ({ ...student, present })));
+    show({
+      title: "Bulk Attendance",
+      description: `All students marked as ${present ? 'present' : 'absent'}`,
+      type: "success"
+    });
   };
 
   const handleAttendanceSubmit = async () => {
@@ -235,12 +196,6 @@ export function AttendanceSheet() {
         type: "success"
       });
 
-      gsap.to('.attendance-card', {
-        scale: 1.02,
-        duration: 0.2,
-        yoyo: true,
-        repeat: 1
-      });
     } catch (error) {
       show({
         title: "Error",
@@ -250,10 +205,11 @@ export function AttendanceSheet() {
     }
   };
 
+  const query = search.trim().toLowerCase();
   const filteredStudents = students.filter(student => {
-    const matchesSearch = 
-      student.name.toLowerCase().includes(search.toLowerCase()) ||
-      student.roll.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = !query ||
+      student.name.toLowerCase().includes(query) ||
+      student.roll.toLowerCase().includes(query);
     
     const matchesBranch = activeFilters.branch === 'all' || student.branch === activeFilters.branch;
     const matchesYear = activeFilters.year === 'all' || student.year === activeFilters.year;
@@ -267,7 +223,7 @@ export function AttendanceSheet() {
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar userRole="faculty" />
       
-      <main className="flex-1 overflow-y-auto p-6" ref={containerRef}>
+      <main className="flex-1 overflow-y-auto p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           <header className="flex justify-between items-center">
             <div className="space-y-1">

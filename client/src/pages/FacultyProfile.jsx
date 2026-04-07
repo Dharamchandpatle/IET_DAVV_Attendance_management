@@ -1,14 +1,12 @@
 import { motion } from 'framer-motion';
-import gsap from 'gsap';
 import { Book, Camera, Edit2, GraduationCap, Mail, MapPin, Phone } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useToast } from '../components/ui/toast';
 
 export function FacultyProfile() {
   const { show } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const containerRef = useRef(null);
 
   const [facultyData, setFacultyData] = useState({
     profileImage: '/default-avatar.png',
@@ -35,19 +33,6 @@ export function FacultyProfile() {
     }
   });
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.profile-section', {
-        y: 30,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: 'power3.out'
-      });
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, []);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -108,7 +93,7 @@ export function FacultyProfile() {
 
   return (
     <DashboardLayout userRole="faculty">
-      <div className="max-w-4xl mx-auto space-y-8" ref={containerRef}>
+      <div className="max-w-4xl mx-auto space-y-8">
         {/* Profile Header */}
         <motion.div 
           className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300"

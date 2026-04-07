@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
-import gsap from 'gsap';
 import { Plus, Search } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DEPARTMENTS } from '../components/admin/adminConstants';
 import { DataTable } from '../components/admin/DataTable';
 import { DynamicFormModal } from '../components/admin/DynamicFormModal';
@@ -21,7 +20,6 @@ const mockStudents = Array.from({ length: 20 }, (_, i) => ({
 }));
 
 export function StudentsManagement() {
-  const containerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [students, setStudents] = useState(mockStudents);
@@ -30,20 +28,8 @@ export function StudentsManagement() {
   const { show } = useToast();
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.students-card', {
-        y: 20,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: 'power3.out'
-      });
-    }, containerRef);
-
     // Simulate loading
     setTimeout(() => setIsLoading(false), 1000);
-
-    return () => ctx.revert();
   }, []);
 
   const query = searchQuery.trim().toLowerCase();
@@ -72,7 +58,7 @@ export function StudentsManagement() {
 
   return (
     <DashboardLayout userRole="admin" isLoading={isLoading}>
-      <div className="space-y-6" ref={containerRef}>
+      <div className="space-y-6">
         <header className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Students Management</h1>
@@ -91,9 +77,7 @@ export function StudentsManagement() {
           </motion.button>
         </header>
 
-        <motion.div
-          className="students-card bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
-        >
+        <motion.div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
           {/* Filters */}
           <div className="flex flex-wrap gap-4 mb-6">
             <div className="flex-1 relative min-w-[200px]">

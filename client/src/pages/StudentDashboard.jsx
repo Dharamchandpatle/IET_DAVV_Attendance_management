@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
-import gsap from 'gsap';
 import { AlertCircle, Calendar, ChevronDown, ClipboardList, Clock, FileText } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { AttendanceCalendar } from '../components/student/AttendanceCalendar';
@@ -9,48 +8,38 @@ import { ClassSchedule } from '../components/student/ClassSchedule';
 import { LeaveRequestForm } from '../components/student/LeaveRequestForm';
 
 export function StudentDashboard() {
-  const containerRef = useRef(null);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSemester, setSelectedSemester] = useState(4);
   const [subjectAttendance, setSubjectAttendance] = useState([]);
   const [error, setError] = useState(null);
-  const [studentKPIs, setStudentKPIs] = useState([
-    { title: 'Attendance', value: '85%', icon: Calendar },
+  const kpiTemplate = useMemo(() => ([
+    { title: 'Attendance', value: '0%', icon: Calendar },
     { title: 'Classes Today', value: '4', icon: Clock },
     { title: 'Upcoming Exams', value: '2', icon: ClipboardList },
     { title: 'Leave Requests', value: '1', icon: FileText },
-  ]);
+  ]), []);
 
-  // Effect for initial dashboard data load
   useEffect(() => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // In production, this would be fetched from your API
-        const mockSubjectData = [
+        await new Promise(resolve => setTimeout(resolve, 300));
+        const baseData = [
           { subject_name: 'DBMS', total_classes: 40, attended_classes: 36, percentage: 90 },
           { subject_name: 'Data Structures', total_classes: 38, attended_classes: 35, percentage: 92 },
           { subject_name: 'Operating Systems', total_classes: 42, attended_classes: 38, percentage: 90 },
           { subject_name: 'Computer Networks', total_classes: 36, attended_classes: 30, percentage: 83 },
           { subject_name: 'Software Engineering', total_classes: 35, attended_classes: 32, percentage: 91 }
         ];
-        
-        setSubjectAttendance(mockSubjectData);
-        
-        // Update KPIs
-        const overallAttendance = Math.round(
-          mockSubjectData.reduce((acc, subject) => acc + subject.percentage, 0) / mockSubjectData.length
-        );
-        
-        setStudentKPIs(prev => prev.map(kpi => ({
-          ...kpi,
-          value: kpi.title === 'Attendance' ? `${overallAttendance}%` : kpi.value
-        })));
-        
+
+        const adjusted = baseData.map(subject => ({
+          ...subject,
+          attended_classes: subject.attended_classes + Math.floor(Math.random() * 5),
+          total_classes: subject.total_classes + Math.floor(Math.random() * 5)
+        }));
+
+        setSubjectAttendance(adjusted);
         setError(null);
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
@@ -61,69 +50,23 @@ export function StudentDashboard() {
     };
 
     fetchDashboardData();
-
-    // Initialize GSAP animations
-    const ctx = gsap.context(() => {
-      gsap.from('.dashboard-card', {
-        y: 20,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: 'power3.out'
-      });
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, []);
-
-  // Effect to update data when semester changes
-  useEffect(() => {
-    const updateSemesterData = async () => {
-      setIsLoading(true);
-      try {
-        // Simulate API call for semester change
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // In production, this would fetch new data from your API
-        const mockNewData = [
-          { subject_name: 'DBMS', total_classes: 40, attended_classes: 36, percentage: 90 },
-          { subject_name: 'Data Structures', total_classes: 38, attended_classes: 35, percentage: 92 },
-          { subject_name: 'Operating Systems', total_classes: 42, attended_classes: 38, percentage: 90 },
-          { subject_name: 'Computer Networks', total_classes: 36, attended_classes: 30, percentage: 83 },
-          { subject_name: 'Software Engineering', total_classes: 35, attended_classes: 32, percentage: 91 }
-        ].map(subject => ({
-          ...subject,
-          attended_classes: subject.attended_classes + Math.floor(Math.random() * 5),
-          total_classes: subject.total_classes + Math.floor(Math.random() * 5)
-        }));
-
-        setSubjectAttendance(mockNewData);
-        
-        // Update KPIs for new semester
-        const newOverallAttendance = Math.round(
-          mockNewData.reduce((acc, subject) => acc + subject.percentage, 0) / mockNewData.length
-        );
-        
-        setStudentKPIs(prev => prev.map(kpi => ({
-          ...kpi,
-          value: kpi.title === 'Attendance' ? `${newOverallAttendance}%` : kpi.value
-        })));
-        
-        setError(null);
-      } catch (error) {
-        console.error('Failed to update semester data:', error);
-        setError('Failed to update attendance data for the selected semester.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    updateSemesterData();
   }, [selectedSemester]);
+
+  const overallAttendance = useMemo(() => {
+    if (!subjectAttendance.length) return 0;
+    const total = subjectAttendance.reduce((acc, subject) => acc + subject.percentage, 0);
+    return Math.round(total / subjectAttendance.length);
+  }, [subjectAttendance]);
+
+  const studentKPIs = useMemo(() => (
+    kpiTemplate.map(kpi => (
+      kpi.title === 'Attendance' ? { ...kpi, value: `${overallAttendance}%` } : kpi
+    ))
+  ), [kpiTemplate, overallAttendance]);
 
   return (
     <DashboardLayout userRole="student" isLoading={isLoading}>
-      <div className="space-y-6" ref={containerRef}>
+      <div className="space-y-6">
         {/* Profile Quick Access */}
         <div className="flex justify-between items-center">
           <motion.div

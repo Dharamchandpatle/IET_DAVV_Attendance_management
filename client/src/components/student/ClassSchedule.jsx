@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Clock } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 const scheduleData = {
   4: [ // Semester 4 schedule
@@ -16,12 +16,7 @@ const scheduleData = {
 };
 
 export function ClassSchedule({ semester }) {
-  const [schedule, setSchedule] = useState([]);
-
-  useEffect(() => {
-    // In a real app, this would be an API call
-    setSchedule(scheduleData[semester] || []);
-  }, [semester]);
+  const schedule = useMemo(() => scheduleData[semester] || [], [semester]);
 
   return (
     <div className="space-y-4">

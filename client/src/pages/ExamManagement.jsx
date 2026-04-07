@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
-import gsap from 'gsap';
 import { Calendar, Plus, Users } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { ExamCalendar } from '../components/exam/ExamCalendar';
 import { ExamList } from '../components/exam/ExamList';
@@ -10,27 +9,12 @@ import { NewExamForm } from '../components/exam/NewExamForm';
 export function ExamManagement() {
   const [showNewExamForm, setShowNewExamForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.exam-card', {
-        y: 20,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: 'power3.out'
-      });
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, []);
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-      <Sidebar />
+      <Sidebar userRole="faculty" />
       
-      <main className="flex-1 overflow-y-auto p-6" ref={containerRef}>
+      <main className="flex-1 overflow-y-auto p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           <header className="flex justify-between items-center">
             <div>
