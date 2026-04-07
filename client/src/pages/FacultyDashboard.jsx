@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { AttendanceSection } from '../components/faculty/AttendanceSection';
-import { ExamManagementSection } from '../components/faculty/ExamManagementSection';
+// import { ExamManagementSection } from '../components/faculty/ExamManagementSection';
 import { LeaveRequestsSection } from '../components/faculty/LeaveRequestsSection';
 
 const kpiData = [
@@ -33,16 +33,32 @@ const dashboardSections = [
     component: LeaveRequestsSection,
     path: '/faculty/leave-requests'
   },
-  {
-    id: 'exams',
-    title: 'Exam Management',
-    description: 'Schedule and manage exams',
-    icon: FileText,
-    color: 'purple',
-    component: ExamManagementSection,
-    path: '/faculty/exams'
-  }
+  // Exams disabled
+  // {
+  //   id: 'exams',
+  //   title: 'Exam Management',
+  //   description: 'Schedule and manage exams',
+  //   icon: FileText,
+  //   color: 'purple',
+  //   component: ExamManagementSection,
+  //   path: '/faculty/exams'
+  // }
 ];
+
+const sectionColorClasses = {
+  blue: {
+    bg: 'bg-blue-100 dark:bg-blue-900/20',
+    icon: 'text-blue-600 dark:text-blue-400'
+  },
+  green: {
+    bg: 'bg-green-100 dark:bg-green-900/20',
+    icon: 'text-green-600 dark:text-green-400'
+  },
+  purple: {
+    bg: 'bg-purple-100 dark:bg-purple-900/20',
+    icon: 'text-purple-600 dark:text-purple-400'
+  }
+};
 
 export function FacultyDashboard() {
   const [isLoading, setIsLoading] = useState(true);
@@ -50,6 +66,8 @@ export function FacultyDashboard() {
   const location = useLocation();
 
   useEffect(() => {
+    let isActive = true;
+
     const loadDashboardData = async () => {
       try {
         setIsLoading(true);
@@ -58,13 +76,19 @@ export function FacultyDashboard() {
           new Promise(resolve => setTimeout(resolve, 300))
         ]);
       } catch (error) {
-        console.error('Error loading dashboard:', error);
+        if (isActive) {
+          console.error('Error loading dashboard:', error);
+        }
       } finally {
-        setIsLoading(false);
+        if (isActive) setIsLoading(false);
       }
     };
 
     loadDashboardData();
+
+    return () => {
+      isActive = false;
+    };
 
   }, []);
 
@@ -117,34 +141,40 @@ export function FacultyDashboard() {
 
         {/* Section Navigation */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {dashboardSections.map((section, index) => (
-            <motion.button
-              key={section.id}
-              onClick={() => handleSectionChange(section.id)}
-              className={`relative p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm dashboard-card overflow-hidden
-                       ${activeSection === section.id ? 'ring-2 ring-blue-500' : ''}`}
-              whileHover={{ 
-                scale: 1.02, 
-                y: -5,
-                transition: { duration: 0.2 }
-              }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ 
-                duration: 0.2,
-                delay: index * 0.1 
-              }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10 dark:from-gray-700/5 dark:to-gray-700/10 transform -skew-y-12" />
-              <div className={`relative w-12 h-12 rounded-lg bg-${section.color}-100 dark:bg-${section.color}-900/20 
-                           flex items-center justify-center mb-4 transform transition-transform duration-300 hover:scale-110`}>
-                <section.icon className={`w-6 h-6 text-${section.color}-600 dark:text-${section.color}-400`} />
-              </div>
-              <h3 className="relative text-lg font-semibold mb-2">{section.title}</h3>
-              <p className="relative text-sm text-gray-600 dark:text-gray-400">{section.description}</p>
-            </motion.button>
-          ))}
+          {dashboardSections.map((section, index) => {
+            const colorClasses = sectionColorClasses[section.color] || sectionColorClasses.blue;
+
+            return (
+              <motion.button
+                key={section.id}
+                onClick={() => handleSectionChange(section.id)}
+                className={`relative p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm dashboard-card overflow-hidden
+                         ${activeSection === section.id ? 'ring-2 ring-blue-500' : ''}`}
+                whileHover={{ 
+                  scale: 1.02, 
+                  y: -5,
+                  transition: { duration: 0.2 }
+                }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ 
+                  duration: 0.2,
+                  delay: index * 0.1 
+                }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10 dark:from-gray-700/5 dark:to-gray-700/10 transform -skew-y-12" />
+                <div
+                  className={`relative w-12 h-12 rounded-lg ${colorClasses.bg}
+                           flex items-center justify-center mb-4 transform transition-transform duration-300 hover:scale-110`}
+                >
+                  <section.icon className={`w-6 h-6 ${colorClasses.icon}`} />
+                </div>
+                <h3 className="relative text-lg font-semibold mb-2">{section.title}</h3>
+                <p className="relative text-sm text-gray-600 dark:text-gray-400">{section.description}</p>
+              </motion.button>
+            );
+          })}
         </div>
 
         {/* Active Section Content */}

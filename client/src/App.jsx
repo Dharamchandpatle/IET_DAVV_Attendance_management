@@ -18,12 +18,14 @@ const FacultyDashboard = lazyLoad('FacultyDashboard');
 const StudentsManagement = lazyLoad('StudentsManagement');
 const FacultyManagement = lazyLoad('FacultyManagement');
 const AttendanceSheet = lazyLoad('AttendanceSheet');
-const ExamManagement = lazyLoad('ExamManagement');
+// Exams disabled
+// const ExamManagement = lazyLoad('ExamManagement');
 const LeaveRequests = lazyLoad('LeaveRequests');
 const FacultyProfile = lazyLoad('FacultyProfile');
 const AttendanceView = lazyLoad('AttendanceView');
 const LeaveRequest = lazyLoad('LeaveRequest');
-const ExamView = lazyLoad('ExamView');
+// Exams disabled
+// const ExamView = lazyLoad('ExamView');
 const StudentProfile = lazyLoad('StudentProfile');
 
 function AppContent() {
@@ -64,7 +66,8 @@ function AppContent() {
                   <Routes>
                     <Route index element={<FacultyDashboard />} />
                     <Route path="attendance" element={<AttendanceSheet />} />
-                    <Route path="exams" element={<ExamManagement />} />
+                    {/* Exams disabled */}
+                    {/* <Route path="exams" element={<ExamManagement />} /> */}
                     <Route path="leave-requests" element={<LeaveRequests />} />
                     <Route path="profile" element={<FacultyProfile />} />
                     <Route path="*" element={<Navigate to="/faculty" replace />} />
@@ -79,7 +82,8 @@ function AppContent() {
                     <Route index element={<StudentDashboard />} />
                     <Route path="attendance" element={<AttendanceView />} />
                     <Route path="leave" element={<LeaveRequest />} />
-                    <Route path="exams" element={<ExamView />} />
+                    {/* Exams disabled */}
+                    {/* <Route path="exams" element={<ExamView />} /> */}
                     <Route path="profile" element={<StudentProfile />} />
                     <Route path="*" element={<Navigate to="/student" replace />} />
                   </Routes>

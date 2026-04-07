@@ -45,26 +45,35 @@ export function LeaveRequestsSection() {
   const [comment, setComment] = useState('');
 
   useEffect(() => {
+    let isActive = true;
+
     const loadLeaveRequests = async () => {
       try {
         setIsLoading(true);
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 300));
+        if (!isActive) return;
         setRequests(mockRequests);
         setStats(mockStats);
       } catch (error) {
-        console.error('Error loading leave requests:', error);
-        show({
-          title: "Error",
-          description: "Failed to load leave requests",
-          type: "error"
-        });
+        if (isActive) {
+          console.error('Error loading leave requests:', error);
+          show({
+            title: "Error",
+            description: "Failed to load leave requests",
+            type: "error"
+          });
+        }
       } finally {
-        setIsLoading(false);
+        if (isActive) setIsLoading(false);
       }
     };
 
     loadLeaveRequests();
+
+    return () => {
+      isActive = false;
+    };
   }, [show]);
 
   const handleStatusChange = async (requestId, newStatus) => {

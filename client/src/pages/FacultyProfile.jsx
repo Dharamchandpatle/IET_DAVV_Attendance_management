@@ -203,9 +203,9 @@ export function FacultyProfile() {
           <motion.div className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300">
             <h2 className="text-xl font-semibold mb-4">Assigned Courses</h2>
             <div className="space-y-4">
-              {facultyData.courses.map(course => (
+              {facultyData.courses.map((course, index) => (
                 <motion.div
-                  key={course.id}
+                  key={`${course.id}-${index}`}
                   whileHover={{ scale: 1.02 }}
                   className="p-4 border rounded-lg cursor-pointer"
                 >

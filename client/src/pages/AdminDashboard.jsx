@@ -24,6 +24,11 @@ const adminActions = [
   }
 ];
 
+const actionColorClasses = {
+  green: 'text-green-500',
+  blue: 'text-blue-500'
+};
+
 export function AdminDashboard() {
   const activeTab = 'students';
   const [activeModal, setActiveModal] = useState(null);
@@ -31,19 +36,27 @@ export function AdminDashboard() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let isActive = true;
+
     const loadDashboardData = async () => {
       try {
         setIsLoading(true);
         await new Promise(resolve => setTimeout(resolve, 600));
+        if (!isActive) return;
         setError(null);
       } catch (err) {
+        if (!isActive) return;
         setError(err.message);
       } finally {
-        setIsLoading(false);
+        if (isActive) setIsLoading(false);
       }
     };
 
     loadDashboardData();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   if (error) {
@@ -93,7 +106,9 @@ export function AdminDashboard() {
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 
                               transform translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
                 
-                <action.icon className={`w-8 h-8 text-${action.color}-500 mb-3`} />
+                <action.icon
+                  className={`w-8 h-8 ${actionColorClasses[action.color] || 'text-blue-500'} mb-3`}
+                />
                 <h3 className="text-lg font-semibold mb-1">{action.title}</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {action.description}

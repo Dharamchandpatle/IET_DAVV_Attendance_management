@@ -3,7 +3,7 @@ import { Calendar, Save, Search } from 'lucide-react';
 import { useState } from 'react';
 import { AttendanceHistory } from '../components/attendance/AttendanceHistory';
 import { AttendanceStats } from '../components/attendance/AttendanceStats';
-import { Sidebar } from '../components/dashboard/Sidebar';
+import { FacultyPageLayout } from '../components/faculty/FacultyPageLayout';
 import { useToast } from '../components/ui/toast';
 const mockStudents = [
   { 
@@ -220,26 +220,22 @@ export function AttendanceSheet() {
   });
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-      <Sidebar userRole="faculty" />
-      
-      <main className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <header className="flex justify-between items-center">
-            <div className="space-y-1">
-              <h1 className="text-3xl font-bold">Mark Attendance</h1>
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                <Calendar className="w-5 h-5" />
-                <p>{selectedDate.toLocaleDateString('en-US', { 
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}</p>
-              </div>
-            </div>
-            <AttendanceStats students={filteredStudents} />
-          </header>
+    <FacultyPageLayout>
+      <header className="flex justify-between items-center">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold">Mark Attendance</h1>
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+            <Calendar className="w-5 h-5" />
+            <p>{selectedDate.toLocaleDateString('en-US', { 
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}</p>
+          </div>
+        </div>
+        <AttendanceStats students={filteredStudents} />
+      </header>
 
           {/* Search and Filters */}
           <div className="flex flex-wrap gap-4 mb-6">
@@ -365,8 +361,6 @@ export function AttendanceSheet() {
               </tbody>
             </table>
           </div>
-        </div>
-      </main>
-    </div>
+    </FacultyPageLayout>
   );
 }

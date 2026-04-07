@@ -21,6 +21,8 @@ export function StudentDashboard() {
   ]), []);
 
   useEffect(() => {
+    let isActive = true;
+
     const fetchDashboardData = async () => {
       setIsLoading(true);
       try {
@@ -39,17 +41,23 @@ export function StudentDashboard() {
           total_classes: subject.total_classes + Math.floor(Math.random() * 5)
         }));
 
+        if (!isActive) return;
         setSubjectAttendance(adjusted);
         setError(null);
       } catch (error) {
+        if (!isActive) return;
         console.error('Failed to fetch dashboard data:', error);
         setError('Failed to load attendance data. Please try again later.');
       } finally {
-        setIsLoading(false);
+        if (isActive) setIsLoading(false);
       }
     };
 
     fetchDashboardData();
+
+    return () => {
+      isActive = false;
+    };
   }, [selectedSemester]);
 
   const overallAttendance = useMemo(() => {

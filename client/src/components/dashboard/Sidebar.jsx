@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Calendar, ChevronLeft, Clock, FileText, Home, LogOut, Moon, Sun, User, Users } from 'lucide-react';
+import { Calendar, ChevronLeft, Clock, Home, LogOut, Moon, Sun, User, Users } from 'lucide-react';
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import davvlogo from '../../assets/images/davvlogo.png';
@@ -16,7 +16,8 @@ const roleBasedNavItems = {
     { title: 'Dashboard', path: '/faculty', icon: Home, end: true },
     { title: 'Profile', path: '/faculty/profile', icon: User },
     { title: 'Attendance', path: '/faculty/attendance', icon: Calendar },
-    { title: 'Exams', path: '/faculty/exams', icon: FileText },
+    // Exams disabled
+    // { title: 'Exams', path: '/faculty/exams', icon: FileText },
     { title: 'Leave Requests', path: '/faculty/leave-requests', icon: Clock },
   ],
   student: [

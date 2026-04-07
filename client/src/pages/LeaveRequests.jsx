@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Clock, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { Sidebar } from '../components/dashboard/Sidebar';
+import { FacultyPageLayout } from '../components/faculty/FacultyPageLayout';
 import { useToast } from '../components/ui/toast';
 
 const mockRequests = [
@@ -96,13 +96,6 @@ export function LeaveRequests() {
         description: `Leave request has been ${newStatus} successfully.`,
         type: "success"
       });
-
-      gsap.to(`#request-${id}`, {
-        scale: 1.02,
-        duration: 0.2,
-        yoyo: true,
-        repeat: 1
-      });
     } catch (error) {
       show({
         title: "Error",
@@ -135,25 +128,21 @@ export function LeaveRequests() {
   }), [requests]);
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-      <Sidebar userRole="faculty" />
-      
-      <main className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <header className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold">Leave Requests</h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Manage student leave applications
-              </p>
-            </div>
-            <div className="flex items-center gap-2 bg-white dark:bg-gray-800 p-2 rounded-lg">
-              <Clock className="w-5 h-5 text-gray-500" />
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                Recent updates
-              </span>
-            </div>
-          </header>
+    <FacultyPageLayout>
+      <header className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Leave Requests</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage student leave applications
+          </p>
+        </div>
+        <div className="flex items-center gap-2 bg-white dark:bg-gray-800 p-2 rounded-lg">
+          <Clock className="w-5 h-5 text-gray-500" />
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            Recent updates
+          </span>
+        </div>
+      </header>
 
           {/* Enhanced Filters */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -284,9 +273,7 @@ export function LeaveRequests() {
               ))
             )}
           </div>
-        </div>
-      </main>
-    </div>
+    </FacultyPageLayout>
   );
 }
 
