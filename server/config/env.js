@@ -1,6 +1,7 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
+// Centralized environment config for the server.
 module.exports = {
   dbHost: process.env.DB_HOST,
   dbName: process.env.DB_NAME,

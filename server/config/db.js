@@ -20,4 +20,5 @@ db.connect(err => {
     }
 });
 
+// Export the live MySQL connection for model queries.
 module.exports = db;

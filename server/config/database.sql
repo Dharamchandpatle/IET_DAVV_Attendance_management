@@ -117,6 +117,18 @@ CREATE TABLE IF NOT EXISTS attendance_records (
   UNIQUE KEY unique_attendance (course_assignment_id, student_id, date)
 );
 
+-- Simple class attendance table (used by classAttendanceModel)
+CREATE TABLE IF NOT EXISTS class_attendance (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  class_date DATE NOT NULL,
+  status ENUM('present', 'absent', 'late') NOT NULL DEFAULT 'present',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_class_attendance (user_id, class_date)
+);
+
 -- Leave Requests Table
 CREATE TABLE IF NOT EXISTS leave_requests (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -228,6 +240,10 @@ CREATE TABLE IF NOT EXISTS token_blacklist (
 );
 
 -- Initial Data Inserts
+-- Insert default admin user (password: AdminPass@123)
+INSERT INTO users (email, password, role, name)
+VALUES ('admin@ietdavv.edu.in', '$2b$10$xxxxxxxxxxx', 'admin', 'Admin User');
+
 INSERT INTO system_settings (setting_key, setting_value, description, updated_by) 
 VALUES 
 ('theme_settings', '{"default": "light", "allowed": ["light", "dark"]}', 'Application theme settings', 1),
@@ -298,7 +314,3 @@ INSERT INTO courses (code, name, department_id, credits, description)
 VALUES 
 ('CS101', 'Introduction to Programming', 1, 4, 'Fundamentals of programming using Python'),
 ('CS102', 'Data Structures', 1, 4, 'Basic data structures and algorithms');
-
--- Insert default admin user (password: AdminPass@123)
-INSERT INTO users (email, password, role, name)
-VALUES ('admin@ietdavv.edu.in', '$2b$10$xxxxxxxxxxx', 'admin', 'Admin User');
