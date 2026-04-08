@@ -2,9 +2,8 @@ const express = require('express');
 const router = express.Router();
 const UserController = require('../controllers/userController');
 const authMiddleware = require('../middleware/authMiddleware');
-const User = require('../models/User');
 
-
+// User lookup + admin management routes.
 router.get('/email/:email', authMiddleware(['student', 'faculty', 'admin']), UserController.getUserByEmail);
 router.get('/:id', authMiddleware(['student', 'faculty', 'admin']), UserController.getUserById);
 router.get('/', authMiddleware(['admin']), UserController.getAllUsers);

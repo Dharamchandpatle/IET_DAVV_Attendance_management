@@ -3,6 +3,7 @@ const router = express.Router();
 const FacultyController = require('../controllers/facultyController');
 const authMiddleware = require('../middleware/authMiddleware');
 
+// Faculty routes (mounted at /api/faculty).
 // Faculty auth
 router.post('/register', FacultyController.register);
 router.post('/login', FacultyController.login);

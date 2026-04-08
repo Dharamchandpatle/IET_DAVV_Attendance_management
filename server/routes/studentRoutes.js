@@ -3,6 +3,7 @@ const router = express.Router();
 const StudentController = require('../controllers/studentController');
 const authMiddleware = require('../middleware/authMiddleware');
 
+// Student routes (mounted at /api/students).
 // Student auth
 router.post('/register', StudentController.register);
 router.post('/login', StudentController.login);
