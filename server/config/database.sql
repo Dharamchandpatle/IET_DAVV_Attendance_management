@@ -147,6 +147,7 @@ CREATE TABLE IF NOT EXISTS leave_requests (
   FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
   FOREIGN KEY (reviewed_by) REFERENCES faculty(id) ON DELETE SET NULL
 );
+
 -- Announcements table
 CREATE TABLE IF NOT EXISTS announcements (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -244,8 +245,8 @@ CREATE TABLE IF NOT EXISTS token_blacklist (
 INSERT INTO users (email, password, role, name)
 VALUES ('admin@ietdavv.edu.in', '$2b$10$xxxxxxxxxxx', 'admin', 'Admin User');
 
-INSERT INTO system_settings (setting_key, setting_value, description, updated_by) 
-VALUES 
+INSERT INTO system_settings (setting_key, setting_value, description, updated_by)
+VALUES
 ('theme_settings', '{"default": "light", "allowed": ["light", "dark"]}', 'Application theme settings', 1),
 ('notification_settings', '{"email": true, "push": false}', 'Default notification settings', 1),
 ('academic_year', '{"current": "2025-26", "start_month": 7}', 'Current academic year settings', 1);
@@ -284,7 +285,7 @@ BEGIN
             (SELECT user_id FROM students WHERE id = NEW.student_id),
             'Leave Request Update',
             CONCAT('Your leave request has been ', LOWER(NEW.status)),
-            CASE 
+            CASE
                 WHEN NEW.status = 'approved' THEN 'success'
                 WHEN NEW.status = 'rejected' THEN 'error'
                 ELSE 'info'
@@ -305,12 +306,13 @@ BEGIN
 END//
 
 DELIMITER ;
+
 -- Insert example department
-INSERT INTO departments (name, code, description) 
+INSERT INTO departments (name, code, description)
 VALUES ('Computer Engineering', 'CE', 'Department of Computer Engineering');
 
 -- Insert example courses
 INSERT INTO courses (code, name, department_id, credits, description)
-VALUES 
+VALUES
 ('CS101', 'Introduction to Programming', 1, 4, 'Fundamentals of programming using Python'),
 ('CS102', 'Data Structures', 1, 4, 'Basic data structures and algorithms');
