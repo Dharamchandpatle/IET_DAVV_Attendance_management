@@ -3,6 +3,7 @@ const Student = require('../models/Student');
 const User = require('../models/User');
 const { generateToken } = require('../utils/jwtUtils');
 
+// StudentController handles student auth and profile CRUD.
 class StudentController {
 	// Student registration with profile creation.
 	static async register(req, res) {

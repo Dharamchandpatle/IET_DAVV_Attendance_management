@@ -2,6 +2,7 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const { generateToken } = require('../utils/jwtUtils');
 
+// Handles auth flows for login/register and token refresh.
 class AuthController {
   static async register(req, res) {
     try {
@@ -13,6 +14,7 @@ class AuthController {
         return res.status(400).json({ message: 'Password must be at least 8 characters long' });
       }
       const result = await User.createUser(name, email, password, role, phone, profile_image);
+      // Issue a JWT so the client can use authenticated routes immediately.
       const token = generateToken({ id: result.insertId, role });
       res.status(201).json({
         id: result.insertId,
@@ -45,6 +47,7 @@ class AuthController {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
       await User.updateLastLogin(user.id);
+      // Token includes id + role to support role-based authorization.
       const token = generateToken({ id: user.id, role: user.role });
       res.json({
         token,

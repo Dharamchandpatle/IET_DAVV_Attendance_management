@@ -3,6 +3,7 @@ const Faculty = require('../models/Faculty');
 const User = require('../models/User');
 const { generateToken } = require('../utils/jwtUtils');
 
+// FacultyController handles faculty auth and profile CRUD.
 class FacultyController {
 	// Faculty registration with profile creation.
 	static async register(req, res) {

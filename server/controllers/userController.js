@@ -2,6 +2,7 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const { generateToken } = require('../utils/jwtUtils');
 
+// UserController manages admin and self-service user operations.
 class UserController {
   // Register a new user
   static async register(req, res) {
