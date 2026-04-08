@@ -1,5 +1,6 @@
 const { verifyToken } = require('../utils/jwtUtils');
 
+// Middleware factory for JWT auth + role checks.
 module.exports = (roles = []) => (req, res, next) => {
   const authHeader = req.headers.authorization || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
