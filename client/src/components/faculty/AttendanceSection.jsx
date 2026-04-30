@@ -1,7 +1,10 @@
 import { motion } from 'framer-motion';
 import { Calendar, Check, CheckCheck, Search, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getApiErrorMessage } from '../../services/api';
+import { markClassAttendance } from '../../services/attendanceService';
+import { listStudents } from '../../services/studentService';
 import { AttendanceStats } from '../attendance/AttendanceStats';
 import { useToast } from '../ui/toast';
 
@@ -80,8 +83,51 @@ export function AttendanceSection() {
   const selectedDate = useMemo(() => new Date(), []);
   const [attendanceType, setAttendanceType] = useState('regular');
   const [selectedBranch, setSelectedBranch] = useState('all');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { show } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadStudents = async () => {
+      try {
+        const data = await listStudents();
+        if (!isActive) return;
+
+        const mapped = data.map((student) => ({
+          id: student.user_id,
+          userId: student.user_id,
+          name: student.name,
+          roll: student.roll_number,
+          present: false,
+          attendance: {
+            regular: 0,
+            events: 0,
+            overall: 0
+          },
+          branch: student.department_code || student.department_name,
+          semester: student.semester
+        }));
+
+        setStudents(mapped.length ? mapped : mockStudents);
+      } catch (error) {
+        if (isActive) {
+          show({
+            title: 'Unable to load students',
+            description: getApiErrorMessage(error, 'Please try again later.'),
+            type: 'error'
+          });
+        }
+      }
+    };
+
+    loadStudents();
+
+    return () => {
+      isActive = false;
+    };
+  }, [show]);
 
   const query = search.trim().toLowerCase();
   const filteredStudents = students.filter(student =>
@@ -117,13 +163,36 @@ export function AttendanceSection() {
     });
   };
 
-  const handleSubmitAttendance = () => {
-    show({
-      title: "Success",
-      description: "Attendance submitted successfully",
-      type: "success"
-    });
-    navigate('/faculty');
+  const handleSubmitAttendance = async () => {
+    try {
+      setIsSubmitting(true);
+      const classDate = selectedDate.toISOString().split('T')[0];
+      const records = students.map((student) => ({
+        user_id: student.userId,
+        status: student.present ? 'present' : 'absent'
+      }));
+
+      await markClassAttendance({
+        class_date: classDate,
+        records,
+        attendance_type: attendanceType
+      });
+
+      show({
+        title: "Success",
+        description: "Attendance submitted successfully",
+        type: "success"
+      });
+      navigate('/faculty');
+    } catch (error) {
+      show({
+        title: "Error",
+        description: getApiErrorMessage(error, 'Failed to submit attendance'),
+        type: "error"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -257,7 +326,8 @@ export function AttendanceSection() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleSubmitAttendance}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2"
+          disabled={isSubmitting}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-60"
         >
           <Check className="w-4 h-4" />
           Submit Attendance

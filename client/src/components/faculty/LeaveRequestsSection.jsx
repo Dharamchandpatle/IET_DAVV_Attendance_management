@@ -1,32 +1,16 @@
 import { motion } from 'framer-motion';
 import { Check, Clock, Download, EyeIcon, Paperclip, Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { getApiErrorMessage } from '../../services/api';
+import { listLeaveRequests, updateLeaveStatus } from '../../services/leaveService';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { useToast } from '../ui/toast';
 
 const mockStats = {
-  pending: 5,
-  approved: 12,
-  rejected: 3
+  pending: 0,
+  approved: 0,
+  rejected: 0
 };
-
-const mockRequests = [
-  {
-    id: 1,
-    studentName: 'Dharamchand Patle',
-    studentId: 'ST2025001',
-    startDate: '2025-04-08',
-    endDate: '2025-04-10',
-    reason: 'Medical appointment',
-    type: 'medical',
-    status: 'pending',
-    attachments: [
-      { id: 1, name: 'medical_certificate.pdf', type: 'application/pdf', url: '#' }
-    ],
-    comments: []
-  },
-  // ... other mock requests
-];
 
 export function LeaveRequestsSection() {
   const { show } = useToast();
@@ -50,19 +34,48 @@ export function LeaveRequestsSection() {
     const loadLeaveRequests = async () => {
       try {
         setIsLoading(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 300));
+        const data = await listLeaveRequests();
         if (!isActive) return;
-        setRequests(mockRequests);
-        setStats(mockStats);
+
+        const mapped = data.map((request) => ({
+          id: request.id,
+          studentName: request.student_name,
+          studentId: request.roll_number,
+          startDate: request.start_date,
+          endDate: request.end_date,
+          reason: request.reason,
+          type: request.type,
+          status: request.status,
+          attachments: (request.document_urls || []).map((name, index) => ({
+            id: index + 1,
+            name,
+            type: 'application/pdf',
+            url: '#'
+          })),
+          comments: request.review_comment
+            ? [{ text: request.review_comment, date: request.reviewed_at || new Date().toISOString() }]
+            : []
+        }));
+
+        setRequests(mapped);
+        const nextStats = mapped.reduce(
+          (acc, item) => {
+            if (item.status in acc) acc[item.status] += 1;
+            return acc;
+          },
+          { pending: 0, approved: 0, rejected: 0 }
+        );
+        setStats(nextStats);
       } catch (error) {
         if (isActive) {
           console.error('Error loading leave requests:', error);
           show({
             title: "Error",
-            description: "Failed to load leave requests",
+            description: getApiErrorMessage(error, "Failed to load leave requests"),
             type: "error"
           });
+          setRequests([]);
+          setStats(mockStats);
         }
       } finally {
         if (isActive) setIsLoading(false);
@@ -102,8 +115,10 @@ export function LeaveRequestsSection() {
         )
       );
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await updateLeaveStatus(requestId, {
+        status: newStatus,
+        review_comment: comment
+      });
 
       // Update stats
       setStats(prev => {
@@ -131,7 +146,7 @@ export function LeaveRequestsSection() {
       );
       show({
         title: "Error",
-        description: `Failed to ${newStatus} request`,
+        description: getApiErrorMessage(error, `Failed to ${newStatus} request`),
         type: "error"
       });
     }
