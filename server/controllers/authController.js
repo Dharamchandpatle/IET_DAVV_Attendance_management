@@ -1,79 +1,39 @@
-const User = require('../models/User');
-const bcrypt = require('bcryptjs');
-const { generateToken } = require('../utils/jwtUtils');
+const { registerUser, loginUser, refreshToken } = require('../services/authService');
+const { sendSuccess, sendError } = require('../utils/response');
 
 // Handles auth flows for login/register and token refresh.
 class AuthController {
   static async register(req, res) {
     try {
-      const { name, email, password, role, phone, profile_image } = req.body;
-      if (!name || !email || !password || !role) {
-        return res.status(400).json({ message: 'Name, email, password, and role are required' });
-      }
-      if (password.length < 8) {
-        return res.status(400).json({ message: 'Password must be at least 8 characters long' });
-      }
-      const result = await User.createUser(name, email, password, role, phone, profile_image);
-      // Issue a JWT so the client can use authenticated routes immediately.
-      const token = generateToken({ id: result.insertId, role });
-      res.status(201).json({
-        id: result.insertId,
-        token,
-        message: 'User registered successfully'
-      });
+      const data = await registerUser(req.body);
+      return sendSuccess(res, 'User registered successfully', data, 201);
     } catch (error) {
-      if (error.message === 'Email already exists') {
-        return res.status(409).json({ message: error.message });
-      }
-      if (error.message.includes('Email must end with')) {
-        return res.status(400).json({ message: error.message });
-      }
-      res.status(500).json({ message: 'Error registering user', error: error.message });
+      const status = error.status || (error.message === 'Email already exists' ? 409 : 500);
+      return sendError(res, error.message || 'Error registering user', status);
     }
   }
 
   static async login(req, res) {
     try {
-      const { email, password } = req.body;
-      if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
-      }
-      const user = await User.findUserByEmail(email);
-      if (!user) {
-        return res.status(401).json({ message: 'Invalid email or password' });
-      }
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        return res.status(401).json({ message: 'Invalid email or password' });
-      }
-      await User.updateLastLogin(user.id);
-      // Token includes id + role to support role-based authorization.
-      const token = generateToken({ id: user.id, role: user.role });
-      res.json({
-        token,
-        user: { id: user.id, name: user.name, email: user.email, role: user.role },
-        message: 'Login successful'
-      });
+      const data = await loginUser(req.body);
+      return sendSuccess(res, 'Login successful', data);
     } catch (error) {
-      res.status(500).json({ message: 'Error logging in', error: error.message });
+      const status = error.status || 500;
+      return sendError(res, error.message || 'Error logging in', status);
     }
   }
 
   static async logout(req, res) {
-    res.json({ message: 'Logout successful. Please remove the token from client storage.' });
+    return sendSuccess(res, 'Logout successful');
   }
 
   static async refreshToken(req, res) {
     try {
-      const { token } = req.body;
-      if (!token) {
-        return res.status(400).json({ message: 'Token is required' });
-      }
-      const decoded = require('../utils/jwtUtils').verifyToken(token);
-      const newToken = generateToken({ id: decoded.id, role: decoded.role });
-      res.json({ token: newToken, message: 'Token refreshed successfully' });
+      const data = await refreshToken(req.body.token);
+      return sendSuccess(res, 'Token refreshed successfully', data);
     } catch (error) {
-      res.status(401).json({ message: 'Invalid or expired token', error: error.message });
+      const status = error.status || 401;
+      return sendError(res, error.message || 'Invalid or expired token', status);
     }
   }
 }

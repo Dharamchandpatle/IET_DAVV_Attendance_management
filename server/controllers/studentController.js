@@ -1,114 +1,38 @@
-const bcrypt = require('bcryptjs');
-const Student = require('../models/Student');
-const User = require('../models/User');
-const { generateToken } = require('../utils/jwtUtils');
+const studentService = require('../services/studentService');
+const { sendSuccess, sendError } = require('../utils/response');
 
 // StudentController handles student auth and profile CRUD.
 class StudentController {
 	// Student registration with profile creation.
 	static async register(req, res) {
 		try {
-			const {
-				name,
-				email,
-				password,
-				phone,
-				profile_image,
-				roll_number,
-				department_id,
-				semester,
-				section,
-				admission_year,
-				cgpa,
-				address,
-				guardian_name,
-				guardian_phone
-			} = req.body;
-
-			if (!name || !email || !password) {
-				return res.status(400).json({ message: 'Name, email, and password are required' });
-			}
-			if (!roll_number || !department_id || !semester || !section || !admission_year) {
-				return res.status(400).json({ message: 'Student profile fields are required' });
-			}
-			if (password.length < 8) {
-				return res.status(400).json({ message: 'Password must be at least 8 characters long' });
-			}
-
-			const result = await Student.createWithUser({
-				name,
-				email,
-				password,
-				phone,
-				profile_image,
-				roll_number,
-				department_id,
-				semester,
-				section,
-				admission_year,
-				cgpa,
-				address,
-				guardian_name,
-				guardian_phone
-			});
-
-			const token = generateToken({ id: result.userId, role: 'student' });
-			return res.status(201).json({
-				userId: result.userId,
-				studentId: result.studentId,
-				token,
-				message: 'Student registered successfully'
-			});
+			const data = await studentService.registerStudent(req.body);
+			return sendSuccess(res, 'Student registered successfully', data, 201);
 		} catch (error) {
-			if (error.message === 'Email already exists') {
-				return res.status(409).json({ message: error.message });
-			}
-			if (error.message.includes('Email must end with')) {
-				return res.status(400).json({ message: error.message });
-			}
-			if (error.code === 'ER_DUP_ENTRY') {
-				return res.status(409).json({ message: 'Duplicate student record' });
-			}
-			return res.status(500).json({ message: 'Error registering student', error: error.message });
+			const status = error.status || (error.code === 'ER_DUP_ENTRY' ? 409 : 500);
+			return sendError(res, error.message || 'Error registering student', status);
 		}
 	}
 
 	// Student login only (role-checked).
 	static async login(req, res) {
 		try {
-			const { email, password } = req.body;
-			if (!email || !password) {
-				return res.status(400).json({ message: 'Email and password are required' });
-			}
-			const user = await User.findUserByEmail(email);
-			if (!user || user.role !== 'student') {
-				return res.status(401).json({ message: 'Invalid email or password' });
-			}
-			const isPasswordValid = await bcrypt.compare(password, user.password);
-			if (!isPasswordValid) {
-				return res.status(401).json({ message: 'Invalid email or password' });
-			}
-			await User.updateLastLogin(user.id);
-			const student = await Student.findByUserId(user.id);
-			const token = generateToken({ id: user.id, role: user.role });
-			return res.json({
-				token,
-				user: { id: user.id, name: user.name, email: user.email, role: user.role },
-				student,
-				message: 'Login successful'
-			});
+			const data = await studentService.loginStudent(req.body);
+			return sendSuccess(res, 'Login successful', data);
 		} catch (error) {
-			return res.status(500).json({ message: 'Error logging in', error: error.message });
+			const status = error.status || 500;
+			return sendError(res, error.message || 'Error logging in', status);
 		}
 	}
 
 	// Admin/faculty list of students.
 	static async getAll(req, res) {
 		try {
-			const students = await Student.findAll();
-			return res.json(students);
+			const students = await studentService.getAllStudents();
+			return sendSuccess(res, 'Students fetched successfully', students);
 		} catch (error) {
-			return res.status(500).json({ message: 'Error fetching students', error: error.message });
+			const status = error.status || 500;
+			return sendError(res, error.message || 'Error fetching students', status);
 		}
 	}
 
@@ -116,18 +40,19 @@ class StudentController {
 	static async getById(req, res) {
 		try {
 			const { id } = req.params;
-			const student = await Student.findById(id);
+			const student = await studentService.getStudentById(id);
 			if (!student) {
-				return res.status(404).json({ message: 'Student not found' });
+				return sendError(res, 'Student not found', 404);
 			}
 
 			if (req.user?.role === 'student' && student.user_id !== req.user.id) {
-				return res.status(403).json({ message: 'Forbidden' });
+				return sendError(res, 'Forbidden', 403);
 			}
 
-			return res.json(student);
+			return sendSuccess(res, 'Student fetched successfully', student);
 		} catch (error) {
-			return res.status(500).json({ message: 'Error fetching student', error: error.message });
+			const status = error.status || 500;
+			return sendError(res, error.message || 'Error fetching student', status);
 		}
 	}
 
@@ -135,13 +60,13 @@ class StudentController {
 	static async update(req, res) {
 		try {
 			const { id } = req.params;
-			const current = await Student.findById(id);
+			const current = await studentService.getStudentById(id);
 			if (!current) {
-				return res.status(404).json({ message: 'Student not found' });
+				return sendError(res, 'Student not found', 404);
 			}
 
 			if (req.user?.role === 'student' && current.user_id !== req.user.id) {
-				return res.status(403).json({ message: 'Forbidden' });
+				return sendError(res, 'Forbidden', 403);
 			}
 
 			const userUpdates = {
@@ -164,16 +89,11 @@ class StudentController {
 				guardian_phone: req.body.guardian_phone
 			};
 
-			const updated = await Student.updateById(id, userUpdates, studentUpdates);
-			return res.json({ message: 'Student updated successfully', student: updated });
+			const updated = await studentService.updateStudent(id, userUpdates, studentUpdates);
+			return sendSuccess(res, 'Student updated successfully', updated);
 		} catch (error) {
-			if (error.message?.includes('Email must end with')) {
-				return res.status(400).json({ message: error.message });
-			}
-			if (error.code === 'ER_DUP_ENTRY') {
-				return res.status(409).json({ message: 'Duplicate student record' });
-			}
-			return res.status(500).json({ message: 'Error updating student', error: error.message });
+			const status = error.status || (error.code === 'ER_DUP_ENTRY' ? 409 : 500);
+			return sendError(res, error.message || 'Error updating student', status);
 		}
 	}
 
@@ -181,13 +101,14 @@ class StudentController {
 	static async remove(req, res) {
 		try {
 			const { id } = req.params;
-			const removed = await Student.deleteById(id);
+			const removed = await studentService.deleteStudent(id);
 			if (!removed) {
-				return res.status(404).json({ message: 'Student not found' });
+				return sendError(res, 'Student not found', 404);
 			}
-			return res.json({ message: 'Student deleted successfully' });
+			return sendSuccess(res, 'Student deleted successfully');
 		} catch (error) {
-			return res.status(500).json({ message: 'Error deleting student', error: error.message });
+			const status = error.status || 500;
+			return sendError(res, error.message || 'Error deleting student', status);
 		}
 	}
 }

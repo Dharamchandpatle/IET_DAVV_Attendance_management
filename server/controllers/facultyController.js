@@ -1,110 +1,38 @@
-const bcrypt = require('bcryptjs');
-const Faculty = require('../models/Faculty');
-const User = require('../models/User');
-const { generateToken } = require('../utils/jwtUtils');
+const facultyService = require('../services/facultyService');
+const { sendSuccess, sendError } = require('../utils/response');
 
 // FacultyController handles faculty auth and profile CRUD.
 class FacultyController {
 	// Faculty registration with profile creation.
 	static async register(req, res) {
 		try {
-			const {
-				name,
-				email,
-				password,
-				phone,
-				profile_image,
-				faculty_code,
-				department_id,
-				designation,
-				specialization,
-				joining_date,
-				education_details,
-				address
-			} = req.body;
-
-			if (!name || !email || !password) {
-				return res.status(400).json({ message: 'Name, email, and password are required' });
-			}
-			if (!faculty_code || !department_id || !designation || !joining_date) {
-				return res.status(400).json({ message: 'Faculty profile fields are required' });
-			}
-			if (password.length < 8) {
-				return res.status(400).json({ message: 'Password must be at least 8 characters long' });
-			}
-
-			const result = await Faculty.createWithUser({
-				name,
-				email,
-				password,
-				phone,
-				profile_image,
-				faculty_code,
-				department_id,
-				designation,
-				specialization,
-				joining_date,
-				education_details,
-				address
-			});
-
-			const token = generateToken({ id: result.userId, role: 'faculty' });
-			return res.status(201).json({
-				userId: result.userId,
-				facultyId: result.facultyId,
-				token,
-				message: 'Faculty registered successfully'
-			});
+			const data = await facultyService.registerFaculty(req.body);
+			return sendSuccess(res, 'Faculty registered successfully', data, 201);
 		} catch (error) {
-			if (error.message === 'Email already exists') {
-				return res.status(409).json({ message: error.message });
-			}
-			if (error.message.includes('Email must end with')) {
-				return res.status(400).json({ message: error.message });
-			}
-			if (error.code === 'ER_DUP_ENTRY') {
-				return res.status(409).json({ message: 'Duplicate faculty record' });
-			}
-			return res.status(500).json({ message: 'Error registering faculty', error: error.message });
+			const status = error.status || (error.code === 'ER_DUP_ENTRY' ? 409 : 500);
+			return sendError(res, error.message || 'Error registering faculty', status);
 		}
 	}
 
 	// Faculty login only (role-checked).
 	static async login(req, res) {
 		try {
-			const { email, password } = req.body;
-			if (!email || !password) {
-				return res.status(400).json({ message: 'Email and password are required' });
-			}
-			const user = await User.findUserByEmail(email);
-			if (!user || user.role !== 'faculty') {
-				return res.status(401).json({ message: 'Invalid email or password' });
-			}
-			const isPasswordValid = await bcrypt.compare(password, user.password);
-			if (!isPasswordValid) {
-				return res.status(401).json({ message: 'Invalid email or password' });
-			}
-			await User.updateLastLogin(user.id);
-			const faculty = await Faculty.findByUserId(user.id);
-			const token = generateToken({ id: user.id, role: user.role });
-			return res.json({
-				token,
-				user: { id: user.id, name: user.name, email: user.email, role: user.role },
-				faculty,
-				message: 'Login successful'
-			});
+			const data = await facultyService.loginFaculty(req.body);
+			return sendSuccess(res, 'Login successful', data);
 		} catch (error) {
-			return res.status(500).json({ message: 'Error logging in', error: error.message });
+			const status = error.status || 500;
+			return sendError(res, error.message || 'Error logging in', status);
 		}
 	}
 
 	// Admin list of faculty.
 	static async getAll(req, res) {
 		try {
-			const faculty = await Faculty.findAll();
-			return res.json(faculty);
+			const faculty = await facultyService.getAllFaculty();
+			return sendSuccess(res, 'Faculty fetched successfully', faculty);
 		} catch (error) {
-			return res.status(500).json({ message: 'Error fetching faculty', error: error.message });
+			const status = error.status || 500;
+			return sendError(res, error.message || 'Error fetching faculty', status);
 		}
 	}
 
@@ -112,18 +40,19 @@ class FacultyController {
 	static async getById(req, res) {
 		try {
 			const { id } = req.params;
-			const faculty = await Faculty.findById(id);
+			const faculty = await facultyService.getFacultyById(id);
 			if (!faculty) {
-				return res.status(404).json({ message: 'Faculty not found' });
+				return sendError(res, 'Faculty not found', 404);
 			}
 
 			if (req.user?.role === 'faculty' && faculty.user_id !== req.user.id) {
-				return res.status(403).json({ message: 'Forbidden' });
+				return sendError(res, 'Forbidden', 403);
 			}
 
-			return res.json(faculty);
+			return sendSuccess(res, 'Faculty fetched successfully', faculty);
 		} catch (error) {
-			return res.status(500).json({ message: 'Error fetching faculty', error: error.message });
+			const status = error.status || 500;
+			return sendError(res, error.message || 'Error fetching faculty', status);
 		}
 	}
 
@@ -131,13 +60,13 @@ class FacultyController {
 	static async update(req, res) {
 		try {
 			const { id } = req.params;
-			const current = await Faculty.findById(id);
+			const current = await facultyService.getFacultyById(id);
 			if (!current) {
-				return res.status(404).json({ message: 'Faculty not found' });
+				return sendError(res, 'Faculty not found', 404);
 			}
 
 			if (req.user?.role === 'faculty' && current.user_id !== req.user.id) {
-				return res.status(403).json({ message: 'Forbidden' });
+				return sendError(res, 'Forbidden', 403);
 			}
 
 			const userUpdates = {
@@ -158,16 +87,11 @@ class FacultyController {
 				address: req.body.address
 			};
 
-			const updated = await Faculty.updateById(id, userUpdates, facultyUpdates);
-			return res.json({ message: 'Faculty updated successfully', faculty: updated });
+			const updated = await facultyService.updateFaculty(id, userUpdates, facultyUpdates);
+			return sendSuccess(res, 'Faculty updated successfully', updated);
 		} catch (error) {
-			if (error.message?.includes('Email must end with')) {
-				return res.status(400).json({ message: error.message });
-			}
-			if (error.code === 'ER_DUP_ENTRY') {
-				return res.status(409).json({ message: 'Duplicate faculty record' });
-			}
-			return res.status(500).json({ message: 'Error updating faculty', error: error.message });
+			const status = error.status || (error.code === 'ER_DUP_ENTRY' ? 409 : 500);
+			return sendError(res, error.message || 'Error updating faculty', status);
 		}
 	}
 
@@ -175,13 +99,14 @@ class FacultyController {
 	static async remove(req, res) {
 		try {
 			const { id } = req.params;
-			const removed = await Faculty.deleteById(id);
+			const removed = await facultyService.deleteFaculty(id);
 			if (!removed) {
-				return res.status(404).json({ message: 'Faculty not found' });
+				return sendError(res, 'Faculty not found', 404);
 			}
-			return res.json({ message: 'Faculty deleted successfully' });
+			return sendSuccess(res, 'Faculty deleted successfully');
 		} catch (error) {
-			return res.status(500).json({ message: 'Error deleting faculty', error: error.message });
+			const status = error.status || 500;
+			return sendError(res, error.message || 'Error deleting faculty', status);
 		}
 	}
 }
