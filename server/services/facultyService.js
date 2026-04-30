@@ -21,6 +21,7 @@ const registerFaculty = async (payload) => {
   ];
 
   const missing = getMissingFields(payload, requiredFields);
+
   if (missing.length) {
     const error = new Error(`Missing required fields: ${missing.join(', ')}`);
     error.status = 400;
@@ -77,7 +78,10 @@ const loginFaculty = async ({ email, password }) => {
 
   return {
     token,
-    user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    user: { id: user.id, 
+      name: user.name, 
+      email: user.email, 
+      role: user.role },
     faculty
   };
 };
