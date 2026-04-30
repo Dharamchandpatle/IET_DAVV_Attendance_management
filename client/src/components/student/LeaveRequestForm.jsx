@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { Calendar, Image, Upload, X } from 'lucide-react';
 import { useState } from 'react';
+import { getApiErrorMessage } from '../../services/api';
+import { createLeaveRequest } from '../../services/leaveService';
 import { useToast } from '../ui/toast';
 
 const MAX_FILES = 5;
@@ -83,24 +85,47 @@ export function LeaveRequestForm({ onSubmit, isSubmitting = false }) {
       return;
     }
 
-    // Create FormData to handle file uploads
-    const submitData = new FormData();
-    Object.keys(formData).forEach(key => {
-      if (key === 'attachments') {
-        formData.attachments.forEach(file => {
-          submitData.append('attachments', file);
-        });
-      } else {
-        submitData.append(key, formData[key]);
-      }
-    });
+    if (new Date(formData.toDate) < new Date(formData.fromDate)) {
+      show({
+        title: "Invalid dates",
+        description: "End date cannot be earlier than start date",
+        type: "error"
+      });
+      return;
+    }
 
-    await Promise.resolve(onSubmit?.(submitData));
-    if (!onSubmit) {
+    const typeMap = {
+      sick: 'medical',
+      personal: 'personal',
+      family: 'family',
+      other: 'other'
+    };
+
+    const payload = {
+      start_date: formData.fromDate,
+      end_date: formData.toDate,
+      reason: formData.reason,
+      type: typeMap[formData.type] || 'other',
+      document_urls: formData.attachments.map((file) => file.name)
+    };
+
+    try {
+      if (onSubmit) {
+        await Promise.resolve(onSubmit(payload));
+      } else {
+        await createLeaveRequest(payload);
+      }
+
       show({
         title: "Request Submitted",
         description: "Your leave request has been submitted successfully.",
         type: "success"
+      });
+    } catch (error) {
+      show({
+        title: "Submission failed",
+        description: getApiErrorMessage(error, "Please try again."),
+        type: "error"
       });
     }
   };
