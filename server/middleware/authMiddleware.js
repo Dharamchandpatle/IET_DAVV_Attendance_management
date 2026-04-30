@@ -1,4 +1,5 @@
 const { verifyToken } = require('../utils/jwtUtils');
+const { sendError } = require('../utils/response');
 
 // Middleware factory for JWT auth + role checks.
 module.exports = (roles = []) => (req, res, next) => {
@@ -6,7 +7,7 @@ module.exports = (roles = []) => (req, res, next) => {
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
   if (!token) {
-    return res.status(401).json({ message: 'Unauthorized' });
+    return sendError(res, 'Unauthorized', 401);
   }
 
   try {
@@ -14,11 +15,11 @@ module.exports = (roles = []) => (req, res, next) => {
     req.user = decoded;
 
     if (roles.length && !roles.includes(decoded.role)) {
-      return res.status(403).json({ message: 'Forbidden' });
+      return sendError(res, 'Forbidden', 403);
     }
 
     return next();
   } catch (error) {
-    return res.status(401).json({ message: 'Unauthorized' });
+    return sendError(res, 'Unauthorized', 401);
   }
 };
