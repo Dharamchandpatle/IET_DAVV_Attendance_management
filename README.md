@@ -41,6 +41,11 @@ A full-stack web application for managing users, students, and faculty at IET DA
    npm run dev
    ```
 
+Optional client env (client/.env):
+```bash
+VITE_API_BASE_URL=http://localhost:5000
+```
+
 The server defaults to port 5000. Vite defaults to port 5173.
 
 ## Environment Variables (server/.env)
