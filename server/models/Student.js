@@ -1,33 +1,5 @@
-const db = require('../config/db');
+const { query, withTransaction } = require('../config/db');
 const bcrypt = require('bcryptjs');
-
-// Small promise wrapper for MySQL callbacks.
-const query = (sql, params = []) =>
-	new Promise((resolve, reject) => {
-		db.query(sql, params, (err, result) => {
-			if (err) return reject(err);
-			return resolve(result);
-		});
-	});
-
-// Run multiple queries as a single transaction.
-const withTransaction = (work) =>
-	new Promise((resolve, reject) => {
-		db.beginTransaction(async (err) => {
-			if (err) return reject(err);
-			try {
-				const result = await work();
-				db.commit((commitErr) => {
-					if (commitErr) {
-						return db.rollback(() => reject(commitErr));
-					}
-					return resolve(result);
-				});
-			} catch (error) {
-				db.rollback(() => reject(error));
-			}
-		});
-	});
 
 class Student {
 	// Creates both user + student rows in one transaction.
@@ -55,14 +27,14 @@ class Student {
 
 		const hashedPassword = await bcrypt.hash(password, 10);
 
-		return withTransaction(async () => {
-			const userResult = await query(
+		return withTransaction(async (connection) => {
+			const [userResult] = await connection.execute(
 				'INSERT INTO users (name, email, password, role, phone, profile_image, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)',
 				[name, email, hashedPassword, 'student', phone, profile_image, true]
 			);
 
 			const userId = userResult.insertId;
-			const studentResult = await query(
+			const [studentResult] = await connection.execute(
 				'INSERT INTO students (user_id, roll_number, department_id, semester, section, admission_year, cgpa, address, guardian_name, guardian_phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 				[
 					userId,
@@ -124,8 +96,17 @@ class Student {
 
 	// Updates user + student columns together when provided.
 	static async updateById(id, userUpdates = {}, studentUpdates = {}) {
-		return withTransaction(async () => {
-			const current = await Student.findById(id);
+		return withTransaction(async (connection) => {
+			const [currentRows] = await connection.execute(
+				`SELECT s.*, u.name, u.email, u.phone, u.profile_image, u.is_active, u.created_at, u.updated_at, u.last_login,
+						d.name AS department_name, d.code AS department_code
+				 FROM students s
+				 JOIN users u ON s.user_id = u.id
+				 LEFT JOIN departments d ON s.department_id = d.id
+				 WHERE s.id = ?`,
+				[id]
+			);
+			const current = currentRows[0];
 			if (!current) return null;
 
 			const userFields = [];
@@ -155,7 +136,7 @@ class Student {
 			}
 
 			if (userFields.length) {
-				await query(
+				await connection.execute(
 					`UPDATE users SET ${userFields.join(', ')} WHERE id = ?`,
 					[...userValues, current.user_id]
 				);
@@ -181,7 +162,7 @@ class Student {
 			mapField('guardian_phone', 'guardian_phone');
 
 			if (studentFields.length) {
-				await query(
+				await connection.execute(
 					`UPDATE students SET ${studentFields.join(', ')} WHERE id = ?`,
 					[...studentValues, id]
 				);
@@ -193,10 +174,16 @@ class Student {
 
 	// Deletes student via user row to keep FK cleanup consistent.
 	static async deleteById(id) {
-		return withTransaction(async () => {
-			const current = await Student.findById(id);
+		return withTransaction(async (connection) => {
+			const [currentRows] = await connection.execute(
+				`SELECT s.id, s.user_id
+FROM students s
+WHERE s.id = ?`,
+				[id]
+			);
+			const current = currentRows[0];
 			if (!current) return null;
-			await query('DELETE FROM users WHERE id = ?', [current.user_id]);
+			await connection.execute('DELETE FROM users WHERE id = ?', [current.user_id]);
 			return true;
 		});
 	}

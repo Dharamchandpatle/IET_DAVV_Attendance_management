@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const { query } = require('../config/db');
 const bcrypt = require('bcryptjs');
 
 class User {
@@ -16,63 +16,42 @@ class User {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    return new Promise((resolve, reject) => {
-      db.query(
+    try {
+      return await query(
         'INSERT INTO users (name, email, password, role, phone, profile_image, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [name, email, hashedPassword, role, phone, profile_image, true],
-        (err, result) => {
-          if (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-              reject(new Error('Email already exists'));
-            }
-            reject(err);
-          } else {
-            resolve(result);
-          }
-        }
+        [name, email, hashedPassword, role, phone, profile_image, true]
       );
-    });
+    } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+        throw new Error('Email already exists');
+      }
+      throw error;
+    }
   }
 
   // Find user by email (for login or forgot password)
   static async findUserByEmail(email) {
-    return new Promise((resolve, reject) => {
-      db.query(
-        'SELECT id, name, email, password, role, phone, profile_image, created_at, updated_at, last_login, is_active FROM users WHERE email = ?',
-        [email],
-        (err, result) => {
-          if (err) reject(err);
-          else resolve(result[0]);
-        }
-      );
-    });
+    const rows = await query(
+      'SELECT id, name, email, password, role, phone, profile_image, created_at, updated_at, last_login, is_active FROM users WHERE email = ?',
+      [email]
+    );
+    return rows[0];
   }
 
   // Find user by ID (for profile or admin access)
   static async findUserById(id) {
-    return new Promise((resolve, reject) => {
-      db.query(
-        'SELECT id, name, email, role, phone, profile_image, created_at, updated_at, last_login, is_active FROM users WHERE id = ?',
-        [id],
-        (err, result) => {
-          if (err) reject(err);
-          else resolve(result[0]);
-        }
-      );
-    });
+    const rows = await query(
+      'SELECT id, name, email, role, phone, profile_image, created_at, updated_at, last_login, is_active FROM users WHERE id = ?',
+      [id]
+    );
+    return rows[0];
   }
 
   // Get all users (admin only)
   static async getAllUsers() {
-    return new Promise((resolve, reject) => {
-      db.query(
-        'SELECT id, name, email, role, phone, profile_image, created_at, updated_at, last_login, is_active FROM users',
-        (err, result) => {
-          if (err) reject(err);
-          resolve(result);
-        }
-      );
-    });
+    return query(
+      'SELECT id, name, email, role, phone, profile_image, created_at, updated_at, last_login, is_active FROM users'
+    );
   }
 
   // Update user profile
@@ -81,22 +60,17 @@ class User {
       throw new Error('Email must end with @ietdavv.edu.in');
     }
 
-    return new Promise((resolve, reject) => {
-      db.query(
+    try {
+      return await query(
         'UPDATE users SET name = ?, email = ?, phone = ?, profile_image = ?, is_active = ? WHERE id = ?',
-        [name, email, phone, profile_image, is_active, id],
-        (err, result) => {
-          if (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-              reject(new Error('Email already exists'));
-            }
-            reject(err);
-          } else {
-            resolve(result);
-          }
-        }
+        [name, email, phone, profile_image, is_active, id]
       );
-    });
+    } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+        throw new Error('Email already exists');
+      }
+      throw error;
+    }
   }
 
   // Update user role (admin only)
@@ -106,50 +80,24 @@ class User {
       throw new Error('Invalid role. Must be student, faculty, or admin');
     }
 
-    return new Promise((resolve, reject) => {
-      db.query(
-        'UPDATE users SET role = ? WHERE id = ?',
-        [role, id],
-        (err, result) => {
-          if (err) reject(err);
-          resolve(result);
-        }
-      );
-    });
+    return query('UPDATE users SET role = ? WHERE id = ?', [role, id]);
   }
 
   // Update last login timestamp
   static async updateLastLogin(id) {
-    return new Promise((resolve, reject) => {
-      db.query(
-        'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?',
-        [id],
-        (err, result) => {
-          if (err) reject(err);
-          resolve(result);
-        }
-      );
-    });
+    return query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [id]);
   }
 
   // Delete user (admin only)
   static async deleteUser(id) {
-    return new Promise((resolve, reject) => {
-      db.query(
-        'DELETE FROM users WHERE id = ?',
-        [id],
-        (err, result) => {
-          if (err) {
-            if (err.code === 'ER_ROW_IS_REFERENCED_2') {
-              reject(new Error('Cannot delete user: referenced in other tables (e.g., students, faculty)'));
-            }
-            reject(err);
-          } else {
-            resolve(result);
-          }
-        }
-      );
-    });
+    try {
+      return await query('DELETE FROM users WHERE id = ?', [id]);
+    } catch (error) {
+      if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+        throw new Error('Cannot delete user: referenced in other tables (e.g., students, faculty)');
+      }
+      throw error;
+    }
   }
 }
 
