@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const apiRoutes = require("./routes");
+const { sendError } = require("./utils/response");
 
 const app = express();
 
@@ -19,7 +20,7 @@ app.use("/api", apiRoutes);
 
 // Fallback for unknown routes.
 app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
+  return sendError(res, "Route not found", 404);
 });
 
 module.exports = app;

@@ -51,6 +51,18 @@ Faculty
 	- PUT /api/faculty/:id
 	- DELETE /api/faculty/:id
 
+Departments
+	- GET /api/departments
+
+Attendance (class)
+	- POST /api/attendance/class
+	- GET /api/attendance/class/me
+
+Leave Requests
+	- POST /api/leave-requests
+	- GET /api/leave-requests
+	- PATCH /api/leave-requests/:id/status
+
 ## Notes
 
 - All protected routes expect a Bearer token in the Authorization header.
