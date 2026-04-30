@@ -1,6 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../components/ui/toast';
+import { getApiErrorMessage } from '../services/api';
+import { login as loginApi, logout as logoutApi, register as registerApi } from '../services/authService';
+import { clearAuth, getAuth, setAuth } from '../services/authStorage';
 
 const AuthContext = createContext();
 
@@ -13,8 +16,10 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     try {
-      const savedUser = localStorage.getItem('user');
-      if (savedUser) setUser(JSON.parse(savedUser));
+      const savedAuth = getAuth();
+      if (savedAuth?.user) {
+        setUser(savedAuth.user);
+      }
     } catch (error) {
       console.error('Error restoring auth state:', error);
     } finally {
@@ -25,7 +30,7 @@ export function AuthProvider({ children }) {
   const register = useCallback(async (userData) => {
     try {
       setIsLoading(true);
-      const response = await mockRegisterCall(userData);
+      await registerApi(userData);
       
       show({
         title: "Registration Successful",
@@ -34,11 +39,10 @@ export function AuthProvider({ children }) {
       });
       
       navigate('/login');
-      return response;
     } catch (error) {
       show({
         title: "Registration Failed",
-        description: error.message || "An error occurred during registration. Please try again.",
+        description: getApiErrorMessage(error, "An error occurred during registration. Please try again."),
         type: "error"
       });
       throw error;
@@ -50,10 +54,10 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (credentials) => {
     try {
       setIsLoading(true);
-      const response = await mockLoginCall(credentials);
+      const response = await loginApi(credentials);
       
-      // Store user in localStorage for persistence
-      localStorage.setItem('user', JSON.stringify(response.user));
+      // Store auth details for persistence
+      setAuth({ token: response.token, user: response.user });
       setUser(response.user);
       
       const destination = location.state?.from || getRoleBasedPath(response.user.role);
@@ -65,11 +69,10 @@ export function AuthProvider({ children }) {
         type: "success"
       });
       
-      return response.user;
     } catch (error) {
       show({
         title: "Login Failed",
-        description: error.message || "Invalid credentials. Please try again.",
+        description: getApiErrorMessage(error, "Invalid credentials. Please try again."),
         type: "error"
       });
       throw error;
@@ -78,9 +81,14 @@ export function AuthProvider({ children }) {
     }
   }, [navigate, location, show]);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     setUser(null);
-    localStorage.removeItem('user');
+    clearAuth();
+    try {
+      await logoutApi();
+    } catch (error) {
+      // Ignore logout errors to keep UX smooth.
+    }
     navigate('/', { replace: true });
     show({
       title: "Logged Out",
@@ -115,65 +123,6 @@ function getRoleBasedPath(role) {
     default:
       return '/';
   }
-}
-
-async function mockLoginCall(credentials) {
-  // Mock API call - replace with actual implementation
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      // Simulate basic validation
-      if (!credentials.email || !credentials.password || !credentials.role) {
-        reject(new Error('Please fill in all required fields'));
-        return;
-      }
-
-      // Simulate successful login
-      resolve({
-        user: {
-          id: Math.random().toString(36).slice(2, 11),
-          name: credentials.email.split('@')[0],
-          role: credentials.role,
-          email: credentials.email
-        }
-      });
-    }, 1000); // Simulate network delay
-  });
-}
-
-async function mockRegisterCall(userData) {
-  // Mock API call - replace with actual implementation
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      // Simulate basic validation
-      if (!userData.name || !userData.email || !userData.password || !userData.role) {
-        reject(new Error('Please fill in all required fields'));
-        return;
-      }
-
-      if (userData.password !== userData.confirmPassword) {
-        reject(new Error('Passwords do not match'));
-        return;
-      }
-
-      // Simulate email validation
-      if (!/\S+@\S+\.\S+/.test(userData.email)) {
-        reject(new Error('Please enter a valid email address'));
-        return;
-      }
-
-      // Simulate password validation
-      if (userData.password.length < 6) {
-        reject(new Error('Password must be at least 6 characters long'));
-        return;
-      }
-
-      // Simulate successful registration
-      resolve({
-        success: true,
-        message: 'Registration successful'
-      });
-    }, 1000);
-  });
 }
 
 export const useAuth = () => {
