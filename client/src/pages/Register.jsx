@@ -8,6 +8,8 @@ import { HeroShape } from '../components/ui/HeroShape';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { useToast } from '../components/ui/toast';
 import { useAuth } from '../context/AuthContext';
+import { getApiErrorMessage } from '../services/api';
+import { getDepartments } from '../services/departmentService';
 
 export function Register() {
   const navigate = useNavigate();
@@ -19,6 +21,8 @@ export function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+  const [selectedRole, setSelectedRole] = useState('');
+  const [departments, setDepartments] = useState([]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -43,6 +47,33 @@ export function Register() {
     return () => ctx.revert();
   }, []);
 
+  useEffect(() => {
+    let isActive = true;
+
+    const loadDepartments = async () => {
+      try {
+        const data = await getDepartments();
+        if (isActive) {
+          setDepartments(data);
+        }
+      } catch (error) {
+        if (isActive) {
+          show({
+            title: "Unable to load departments",
+            description: getApiErrorMessage(error, "Please try again later."),
+            type: "error"
+          });
+        }
+      }
+    };
+
+    loadDepartments();
+
+    return () => {
+      isActive = false;
+    };
+  }, [show]);
+
   const validateForm = (formData) => {
     const errors = {};
     const name = formData.get('name');
@@ -63,16 +94,33 @@ export function Register() {
       errors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       errors.email = 'Please enter a valid email';
+    } else if (!email.endsWith('@ietdavv.edu.in')) {
+      errors.email = 'Email must end with @ietdavv.edu.in';
     }
 
     if (!password) {
       errors.password = 'Password is required';
-    } else if (password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
+    } else if (password.length < 8) {
+      errors.password = 'Password must be at least 8 characters';
     }
 
     if (password !== confirmPassword) {
       errors.confirmPassword = 'Passwords do not match';
+    }
+
+    if (role === 'student') {
+      if (!formData.get('roll_number')) errors.roll_number = 'Roll number is required';
+      if (!formData.get('department_id')) errors.department_id = 'Department is required';
+      if (!formData.get('semester')) errors.semester = 'Semester is required';
+      if (!formData.get('section')) errors.section = 'Section is required';
+      if (!formData.get('admission_year')) errors.admission_year = 'Admission year is required';
+    }
+
+    if (role === 'faculty') {
+      if (!formData.get('faculty_code')) errors.faculty_code = 'Faculty code is required';
+      if (!formData.get('department_id')) errors.department_id = 'Department is required';
+      if (!formData.get('designation')) errors.designation = 'Designation is required';
+      if (!formData.get('joining_date')) errors.joining_date = 'Joining date is required';
     }
 
     return errors;
@@ -91,13 +139,33 @@ export function Register() {
 
     try {
       setIsLoading(true);
-      await register({
+      const role = formData.get('role');
+      const payload = {
         name: formData.get('name'),
         email: formData.get('email'),
         password: formData.get('password'),
         confirmPassword: formData.get('confirmPassword'),
-        role: formData.get('role')
-      });
+        role,
+        phone: formData.get('phone') || undefined
+      };
+
+      if (role === 'student') {
+        payload.roll_number = formData.get('roll_number');
+        payload.department_id = Number(formData.get('department_id'));
+        payload.semester = Number(formData.get('semester'));
+        payload.section = formData.get('section');
+        payload.admission_year = Number(formData.get('admission_year'));
+      }
+
+      if (role === 'faculty') {
+        payload.faculty_code = formData.get('faculty_code');
+        payload.department_id = Number(formData.get('department_id'));
+        payload.designation = formData.get('designation');
+        payload.joining_date = formData.get('joining_date');
+        payload.specialization = formData.get('specialization') || undefined;
+      }
+
+      await register(payload);
     } catch (error) {
       // Server-side validation errors will be caught here
       if (error.message) {
@@ -169,6 +237,8 @@ export function Register() {
             <div>
               <select
                 name="role"
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
                 className={`w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 transition-colors
                   ${validationErrors.role ? 'border-red-500' : 'border-gray-300'}`}
                 required
@@ -195,6 +265,174 @@ export function Register() {
                 <p className="mt-1 text-sm text-red-500">{validationErrors.email}</p>
               )}
             </div>
+
+            <div>
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Phone (optional)"
+                className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 transition-colors border-gray-300"
+              />
+            </div>
+
+            {selectedRole === 'student' && (
+              <>
+                <div>
+                  <input
+                    type="text"
+                    name="roll_number"
+                    placeholder="Roll Number"
+                    className={`w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 transition-colors
+                      ${validationErrors.roll_number ? 'border-red-500' : 'border-gray-300'}`}
+                    required
+                  />
+                  {validationErrors.roll_number && (
+                    <p className="mt-1 text-sm text-red-500">{validationErrors.roll_number}</p>
+                  )}
+                </div>
+
+                <div>
+                  <select
+                    name="department_id"
+                    className={`w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 transition-colors
+                      ${validationErrors.department_id ? 'border-red-500' : 'border-gray-300'}`}
+                    required
+                  >
+                    <option value="">Select Department</option>
+                    {departments.map((department) => (
+                      <option key={department.id} value={department.id}>
+                        {department.name}
+                      </option>
+                    ))}
+                  </select>
+                  {validationErrors.department_id && (
+                    <p className="mt-1 text-sm text-red-500">{validationErrors.department_id}</p>
+                  )}
+                </div>
+
+                <div>
+                  <select
+                    name="semester"
+                    className={`w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 transition-colors
+                      ${validationErrors.semester ? 'border-red-500' : 'border-gray-300'}`}
+                    required
+                  >
+                    <option value="">Select Semester</option>
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((semester) => (
+                      <option key={semester} value={semester}>
+                        Semester {semester}
+                      </option>
+                    ))}
+                  </select>
+                  {validationErrors.semester && (
+                    <p className="mt-1 text-sm text-red-500">{validationErrors.semester}</p>
+                  )}
+                </div>
+
+                <div>
+                  <input
+                    type="text"
+                    name="section"
+                    placeholder="Section"
+                    className={`w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 transition-colors
+                      ${validationErrors.section ? 'border-red-500' : 'border-gray-300'}`}
+                    required
+                  />
+                  {validationErrors.section && (
+                    <p className="mt-1 text-sm text-red-500">{validationErrors.section}</p>
+                  )}
+                </div>
+
+                <div>
+                  <input
+                    type="number"
+                    name="admission_year"
+                    placeholder="Admission Year"
+                    min="2000"
+                    max="2100"
+                    className={`w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 transition-colors
+                      ${validationErrors.admission_year ? 'border-red-500' : 'border-gray-300'}`}
+                    required
+                  />
+                  {validationErrors.admission_year && (
+                    <p className="mt-1 text-sm text-red-500">{validationErrors.admission_year}</p>
+                  )}
+                </div>
+              </>
+            )}
+
+            {selectedRole === 'faculty' && (
+              <>
+                <div>
+                  <input
+                    type="text"
+                    name="faculty_code"
+                    placeholder="Faculty Code"
+                    className={`w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 transition-colors
+                      ${validationErrors.faculty_code ? 'border-red-500' : 'border-gray-300'}`}
+                    required
+                  />
+                  {validationErrors.faculty_code && (
+                    <p className="mt-1 text-sm text-red-500">{validationErrors.faculty_code}</p>
+                  )}
+                </div>
+
+                <div>
+                  <select
+                    name="department_id"
+                    className={`w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 transition-colors
+                      ${validationErrors.department_id ? 'border-red-500' : 'border-gray-300'}`}
+                    required
+                  >
+                    <option value="">Select Department</option>
+                    {departments.map((department) => (
+                      <option key={department.id} value={department.id}>
+                        {department.name}
+                      </option>
+                    ))}
+                  </select>
+                  {validationErrors.department_id && (
+                    <p className="mt-1 text-sm text-red-500">{validationErrors.department_id}</p>
+                  )}
+                </div>
+
+                <div>
+                  <input
+                    type="text"
+                    name="designation"
+                    placeholder="Designation"
+                    className={`w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 transition-colors
+                      ${validationErrors.designation ? 'border-red-500' : 'border-gray-300'}`}
+                    required
+                  />
+                  {validationErrors.designation && (
+                    <p className="mt-1 text-sm text-red-500">{validationErrors.designation}</p>
+                  )}
+                </div>
+
+                <div>
+                  <input
+                    type="date"
+                    name="joining_date"
+                    className={`w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 transition-colors
+                      ${validationErrors.joining_date ? 'border-red-500' : 'border-gray-300'}`}
+                    required
+                  />
+                  {validationErrors.joining_date && (
+                    <p className="mt-1 text-sm text-red-500">{validationErrors.joining_date}</p>
+                  )}
+                </div>
+
+                <div>
+                  <input
+                    type="text"
+                    name="specialization"
+                    placeholder="Specialization (optional)"
+                    className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 transition-colors border-gray-300"
+                  />
+                </div>
+              </>
+            )}
 
             <div className="relative">
               <input

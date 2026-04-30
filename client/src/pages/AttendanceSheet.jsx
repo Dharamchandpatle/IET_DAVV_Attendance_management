@@ -1,10 +1,13 @@
 import { motion } from 'framer-motion';
 import { Calendar, Save, Search } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AttendanceHistory } from '../components/attendance/AttendanceHistory';
 import { AttendanceStats } from '../components/attendance/AttendanceStats';
 import { FacultyPageLayout } from '../components/faculty/FacultyPageLayout';
 import { useToast } from '../components/ui/toast';
+import { getApiErrorMessage } from '../services/api';
+import { markClassAttendance } from '../services/attendanceService';
+import { listStudents } from '../services/studentService';
 const mockStudents = [
   { 
     id: 1, 
@@ -157,12 +160,69 @@ export function AttendanceSheet() {
   const [search, setSearch] = useState('');
   const [selectedDate] = useState(new Date());
   const [attendanceType, setAttendanceType] = useState('regular');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeFilters, setActiveFilters] = useState({
     branch: 'all',
     year: 'all',
     section: 'all',
     semester: 'all'
   });
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadStudents = async () => {
+      try {
+        const data = await listStudents();
+        if (!isActive) return;
+
+        const yearMap = {
+          1: '1st',
+          2: '1st',
+          3: '2nd',
+          4: '2nd',
+          5: '3rd',
+          6: '3rd',
+          7: '4th',
+          8: '4th'
+        };
+
+        const mapped = data.map((student) => ({
+          id: student.user_id,
+          userId: student.user_id,
+          name: student.name,
+          roll: student.roll_number,
+          present: false,
+          history: [],
+          semester: student.semester,
+          branch: student.department_code || student.department_name,
+          year: yearMap[student.semester] || 'N/A',
+          section: student.section,
+          attendance: {
+            regular: 0,
+            events: 0,
+            overall: 0
+          }
+        }));
+
+        setStudents(mapped.length ? mapped : mockStudents);
+      } catch (error) {
+        if (isActive) {
+          show({
+            title: 'Unable to load students',
+            description: getApiErrorMessage(error, 'Please try again later.'),
+            type: 'error'
+          });
+        }
+      }
+    };
+
+    loadStudents();
+
+    return () => {
+      isActive = false;
+    };
+  }, [show]);
 
   const markAttendance = (studentId) => {
     setStudents(prev => prev.map(student => {
@@ -189,19 +249,32 @@ export function AttendanceSheet() {
 
   const handleAttendanceSubmit = async () => {
     try {
-      // API call would go here with attendanceType
+      setIsSubmitting(true);
+      const classDate = selectedDate.toISOString().split('T')[0];
+      const records = students.map((student) => ({
+        user_id: student.userId,
+        status: student.present ? 'present' : 'absent'
+      }));
+
+      await markClassAttendance({
+        class_date: classDate,
+        records,
+        attendance_type: attendanceType
+      });
+
       show({
         title: "Success",
         description: "Attendance submitted successfully",
         type: "success"
       });
-
     } catch (error) {
       show({
         title: "Error",
-        description: "Failed to submit attendance",
+        description: getApiErrorMessage(error, "Failed to submit attendance"),
         type: "error"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -305,7 +378,8 @@ export function AttendanceSheet() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleAttendanceSubmit}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-60"
             >
               <Save className="w-4 h-4" />
               Submit Attendance

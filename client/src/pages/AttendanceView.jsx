@@ -1,21 +1,18 @@
 import { motion } from 'framer-motion';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
-
-// Enhanced mock data with proper typing
-const attendanceData = {
-  present: 42,
-  total: 50,
-  dates: {
-    '2024-02-01': { type: 'regular', present: true },
-    '2024-02-02': { type: 'college_event', present: true, details: 'Technical Symposium' },
-    '2024-02-03': { type: 'holiday', details: 'College Function' },
-    '2024-02-04': { type: 'regular', present: false },
-  }
-};
+import { useToast } from '../components/ui/toast';
+import { getApiErrorMessage } from '../services/api';
+import { getMyAttendance } from '../services/attendanceService';
 
 export function AttendanceView() {
+  const { show } = useToast();
+  const [attendanceData, setAttendanceData] = useState({
+    present: 0,
+    total: 0,
+    dates: {}
+  });
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const monthLabel = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   const totalClasses = attendanceData.total || 0;
@@ -25,6 +22,52 @@ export function AttendanceView() {
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
   const monthKey = String(currentMonth.getMonth() + 1).padStart(2, '0');
   const yearKey = currentMonth.getFullYear();
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadAttendance = async () => {
+      try {
+        const records = await getMyAttendance();
+        if (!isActive) return;
+
+        const dates = {};
+        let presentCount = 0;
+
+        records.forEach((record) => {
+          const dateKey = record.class_date instanceof Date
+            ? record.class_date.toISOString().split('T')[0]
+            : record.class_date;
+          const isPresent = record.status !== 'absent';
+          if (isPresent) presentCount += 1;
+          dates[dateKey] = {
+            type: 'regular',
+            present: isPresent
+          };
+        });
+
+        setAttendanceData({
+          present: presentCount,
+          total: records.length,
+          dates
+        });
+      } catch (error) {
+        if (isActive) {
+          show({
+            title: 'Unable to load attendance',
+            description: getApiErrorMessage(error, 'Please try again later.'),
+            type: 'error'
+          });
+        }
+      }
+    };
+
+    loadAttendance();
+
+    return () => {
+      isActive = false;
+    };
+  }, [show]);
 
   const navigateMonth = (direction) => {
     setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + direction, 1));

@@ -1,11 +1,13 @@
 import { motion } from 'framer-motion';
 import { Filter, Plus, Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DEPARTMENTS, DESIGNATIONS } from '../components/admin/adminConstants';
 import { DataTable } from '../components/admin/DataTable';
 import { DynamicFormModal } from '../components/admin/DynamicFormModal';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useToast } from '../components/ui/toast';
+import { getApiErrorMessage } from '../services/api';
+import { listFaculty } from '../services/facultyService';
 
 // Mock faculty data
 const departmentValues = DEPARTMENTS.map((department) => department.value);
@@ -34,9 +36,55 @@ export function FacultyManagement() {
   const { show } = useToast();
 
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => setIsLoading(false), 1000);
-  }, []);
+    let isActive = true;
+
+    const loadFaculty = async () => {
+      try {
+        setIsLoading(true);
+        const data = await listFaculty();
+        if (!isActive) return;
+
+        const mapped = data.map((member) => ({
+          id: member.id,
+          name: member.name,
+          facultyId: member.faculty_code,
+          department: member.department_code || member.department_name,
+          designation: member.designation,
+          email: member.email,
+          courses: member.courses || 0
+        }));
+
+        setFaculty(mapped.length ? mapped : mockFaculty);
+      } catch (error) {
+        if (isActive) {
+          show({
+            title: 'Unable to load faculty',
+            description: getApiErrorMessage(error, 'Please try again later.'),
+            type: 'error'
+          });
+          setFaculty(mockFaculty);
+        }
+      } finally {
+        if (isActive) setIsLoading(false);
+      }
+    };
+
+    loadFaculty();
+
+    return () => {
+      isActive = false;
+    };
+  }, [show]);
+
+  const departmentOptions = useMemo(() => {
+    const values = faculty.map((member) => member.department).filter(Boolean);
+    return Array.from(new Set(values));
+  }, [faculty]);
+
+  const designationOptions = useMemo(() => {
+    const values = faculty.map((member) => member.designation).filter(Boolean);
+    return Array.from(new Set(values));
+  }, [faculty]);
 
   const query = filters.search.trim().toLowerCase();
   const matchesQuery = (value) => value?.toLowerCase().includes(query);
@@ -127,11 +175,17 @@ export function FacultyManagement() {
                   className="p-2 rounded-lg border dark:border-gray-700 dark:bg-gray-800"
                 >
                   <option value="all">All Departments</option>
-                  {DEPARTMENTS.map((department) => (
-                    <option key={department.value} value={department.value}>
-                      {department.label}
-                    </option>
-                  ))}
+                  {departmentOptions.length
+                    ? departmentOptions.map((department) => (
+                        <option key={department} value={department}>
+                          {department}
+                        </option>
+                      ))
+                    : DEPARTMENTS.map((department) => (
+                        <option key={department.value} value={department.value}>
+                          {department.label}
+                        </option>
+                      ))}
                 </select>
                 <select
                   value={filters.designation}
@@ -139,11 +193,17 @@ export function FacultyManagement() {
                   className="p-2 rounded-lg border dark:border-gray-700 dark:bg-gray-800"
                 >
                   <option value="all">All Designations</option>
-                  {DESIGNATIONS.map((designation) => (
-                    <option key={designation.value} value={designation.value}>
-                      {designation.label}
-                    </option>
-                  ))}
+                  {designationOptions.length
+                    ? designationOptions.map((designation) => (
+                        <option key={designation} value={designation}>
+                          {designation}
+                        </option>
+                      ))
+                    : DESIGNATIONS.map((designation) => (
+                        <option key={designation.value} value={designation.value}>
+                          {designation.label}
+                        </option>
+                      ))}
                 </select>
               </motion.div>
             )}

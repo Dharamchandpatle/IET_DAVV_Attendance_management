@@ -1,11 +1,13 @@
 import { motion } from 'framer-motion';
 import { Plus, Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DEPARTMENTS } from '../components/admin/adminConstants';
 import { DataTable } from '../components/admin/DataTable';
 import { DynamicFormModal } from '../components/admin/DynamicFormModal';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { useToast } from '../components/ui/toast';
+import { getApiErrorMessage } from '../services/api';
+import { listStudents } from '../services/studentService';
 
 // Mock data for students
 const departmentValues = DEPARTMENTS.map((department) => department.value);
@@ -28,9 +30,50 @@ export function StudentsManagement() {
   const { show } = useToast();
 
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => setIsLoading(false), 1000);
-  }, []);
+    let isActive = true;
+
+    const loadStudents = async () => {
+      try {
+        setIsLoading(true);
+        const data = await listStudents();
+        if (!isActive) return;
+
+        const mapped = data.map((student) => ({
+          id: student.id,
+          name: student.name,
+          rollNo: student.roll_number,
+          semester: student.semester,
+          department: student.department_code || student.department_name,
+          email: student.email,
+          attendance: student.attendance_percentage || 0
+        }));
+
+        setStudents(mapped.length ? mapped : mockStudents);
+      } catch (error) {
+        if (isActive) {
+          show({
+            title: 'Unable to load students',
+            description: getApiErrorMessage(error, 'Please try again later.'),
+            type: 'error'
+          });
+          setStudents(mockStudents);
+        }
+      } finally {
+        if (isActive) setIsLoading(false);
+      }
+    };
+
+    loadStudents();
+
+    return () => {
+      isActive = false;
+    };
+  }, [show]);
+
+  const departmentOptions = useMemo(() => {
+    const values = students.map((student) => student.department).filter(Boolean);
+    return Array.from(new Set(values));
+  }, [students]);
 
   const query = searchQuery.trim().toLowerCase();
   const matchesQuery = (value) => value?.toLowerCase().includes(query);
@@ -96,11 +139,17 @@ export function StudentsManagement() {
               className="p-2 rounded-lg border dark:border-gray-700 dark:bg-gray-800"
             >
               <option value="all">All Departments</option>
-              {DEPARTMENTS.map((department) => (
-                <option key={department.value} value={department.value}>
-                  {department.label}
-                </option>
-              ))}
+              {departmentOptions.length
+                ? departmentOptions.map((department) => (
+                    <option key={department} value={department}>
+                      {department}
+                    </option>
+                  ))
+                : DEPARTMENTS.map((department) => (
+                    <option key={department.value} value={department.value}>
+                      {department.label}
+                    </option>
+                  ))}
             </select>
           </div>
 
