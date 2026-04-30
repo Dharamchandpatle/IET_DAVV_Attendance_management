@@ -1,24 +1,44 @@
-const mysql = require('mysql');
-const dotenv = require('dotenv');
+const mysql = require('mysql2/promise');
+const { dbHost, dbUser, dbPass, dbName } = require('./env');
 
-dotenv.config();  // Load environment variables from .env
-
-// MySQL Connection Configuration
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: process.env.DB_NAME
+const pool = mysql.createPool({
+    host: dbHost,
+    user: dbUser,
+    password: dbPass,
+    database: dbName,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-// Connect to MySQL
-db.connect(err => {
-    if (err) {
-        console.error('MySQL Connection Failed:', err);
-    } else {
-        console.log('Connected to MySQL Database Successfully');
+const query = async (sql, params = []) => {
+    const [rows] = await pool.execute(sql, params);
+    return rows;
+};
+
+const withTransaction = async (work) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const result = await work(connection);
+        await connection.commit();
+        return result;
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
     }
-});
+};
 
-// Export the live MySQL connection for model queries.
-module.exports = db;
+const testConnection = async () => {
+    const connection = await pool.getConnection();
+    connection.release();
+};
+
+module.exports = {
+    pool,
+    query,
+    withTransaction,
+    testConnection
+};
