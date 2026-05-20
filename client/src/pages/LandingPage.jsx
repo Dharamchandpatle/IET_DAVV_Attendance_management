@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowDown } from 'lucide-react';
@@ -125,22 +125,18 @@ export default function LandingPage() {
               </h1>
             </div>
             <div className="flex gap-4">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={() => navigate('/login')}
                 className="px-6 py-2 rounded-lg text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition-colors shadow-sm"
               >
                 Login
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              </button>
+              <button
                 onClick={() => navigate('/register')}
                 className="px-6 py-2 rounded-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-colors shadow-md"
               >
                 Register
-              </motion.button>
+              </button>
             </div>
           </div>
         </nav>
@@ -148,12 +144,9 @@ export default function LandingPage() {
         {/* Hero Section */}
         <header ref={headerRef} className="relative pt-32 pb-16">
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="hero-content"
-            >
+          <div
+            className="hero-content"
+          >
               <h1 className="text-5xl md:text-7xl font-extrabold heading-gradient mb-6 leading-tight">
                 Smart Attendance
                 <br />
@@ -163,33 +156,25 @@ export default function LandingPage() {
                 Streamline your attendance tracking with our modern digital solution. Built specifically for IET DAVV.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <motion.button
+                <button
                   onClick={handleGetStarted}
                   className="custom-button-primary"
                 >
                   Get Started
-                </motion.button>
+                </button>
                 {/* <button className="custom-button-secondary">
                   Learn More
                 </button> */}
               </div>
-            </motion.div>
+            </div>
           </div>
           
-          <motion.button
+          <button
             onClick={scrollToFeatures}
             className="absolute bottom-8 left-1/2 -translate-x-1/2"
-            animate={{
-              y: [0, 10, 0],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
           >
             <ArrowDown className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-          </motion.button>
+          </button>
         </header>
 
         {/* Features Section */}
@@ -197,11 +182,8 @@ export default function LandingPage() {
           <div ref={featuresRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {features.map((feature, index) => (
-                <motion.div 
+                <div 
                   key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.2 }}
                   className="p-8 rounded-2xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   <h3 className="text-2xl font-bold mb-4 heading-gradient">
@@ -210,7 +192,7 @@ export default function LandingPage() {
                   <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
                     {feature.description}
                   </p>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>

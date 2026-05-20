@@ -14,7 +14,7 @@ CREATE TABLE users (
   password VARCHAR(255) NOT NULL,
   role ENUM('student', 'faculty', 'admin') NOT NULL,
   name VARCHAR(255) NOT NULL,
-  profile_image VARCHAR(255),
+  -- profile_image removed per schema cleanup
   phone VARCHAR(20),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS departments (
 CREATE TABLE IF NOT EXISTS students (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
+  enrollment_no VARCHAR(50) UNIQUE,
   roll_number VARCHAR(20) NOT NULL UNIQUE,
   department_id INT NOT NULL,
   semester INT NOT NULL,
@@ -61,6 +62,7 @@ CREATE TABLE IF NOT EXISTS faculty (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   faculty_code VARCHAR(20) NOT NULL UNIQUE,
+  employee_number VARCHAR(50) DEFAULT NULL,
   department_id INT NOT NULL,
   designation VARCHAR(100) NOT NULL,
   specialization TEXT,
@@ -103,15 +105,21 @@ CREATE TABLE IF NOT EXISTS course_assignments (
 -- Attendance table
 CREATE TABLE IF NOT EXISTS attendance_records (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  course_assignment_id INT NOT NULL,
+  course_assignment_id INT DEFAULT NULL,
+  course_id INT DEFAULT NULL,
+  faculty_id INT DEFAULT NULL,
   student_id INT NOT NULL,
   date DATE NOT NULL,
+  semester INT DEFAULT NULL,
+  academic_year VARCHAR(9) DEFAULT NULL,
   status ENUM('present', 'absent', 'late') NOT NULL DEFAULT 'absent',
   marked_by INT NOT NULL,
   remarks TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (course_assignment_id) REFERENCES course_assignments(id) ON DELETE CASCADE,
+  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL,
+  FOREIGN KEY (faculty_id) REFERENCES faculty(id) ON DELETE SET NULL,
   FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
   FOREIGN KEY (marked_by) REFERENCES users(id) ON DELETE RESTRICT,
   UNIQUE KEY unique_attendance (course_assignment_id, student_id, date)

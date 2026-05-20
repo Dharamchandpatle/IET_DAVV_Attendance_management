@@ -6,6 +6,7 @@ exports.generateToken = (user) => {
   return jwt.sign({ id: user.id, role: user.role }, jwtSecret, { expiresIn: '1h' });
 };
 
+// Verifies a JWT and returns its payload.
 exports.verifyToken = (token) => {
   return jwt.verify(token, jwtSecret);
 };

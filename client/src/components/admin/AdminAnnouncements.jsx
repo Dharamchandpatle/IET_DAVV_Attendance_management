@@ -1,7 +1,8 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 
+// Admin dashboard for posting system announcements.
 export function AdminAnnouncements() {
   const [showForm, setShowForm] = useState(false);
 
@@ -9,23 +10,17 @@ export function AdminAnnouncements() {
     <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Announcements</h2>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+        <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:scale-102 transition-transform"
         >
           <Plus className="w-4 h-4" />
           New Announcement
-        </motion.button>
+        </button>
       </div>
 
       {showForm && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6 space-y-4"
-        >
+        <div className="mb-6 space-y-4 transition-transform">
           <input
             type="text"
             placeholder="Announcement Title"
@@ -47,7 +42,7 @@ export function AdminAnnouncements() {
               Post
             </button>
           </div>
-        </motion.div>
+        </div>
       )}
 
       <div className="space-y-4">

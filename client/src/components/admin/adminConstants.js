@@ -1,20 +1,24 @@
+// Department options for select inputs.
 export const DEPARTMENTS = [
   { value: 'CSE', label: 'Computer Science' },
   { value: 'IT', label: 'Information Technology' },
   { value: 'ECE', label: 'Electronics & Communication' }
 ];
 
+// Faculty designation options.
 export const DESIGNATIONS = [
   { value: 'Professor', label: 'Professor' },
   { value: 'Associate Professor', label: 'Associate Professor' },
   { value: 'Assistant Professor', label: 'Assistant Professor' }
 ];
 
+// Semester options for dropdowns.
 export const SEMESTERS = Array.from({ length: 8 }, (_, index) => ({
   value: index + 1,
   label: `Semester ${index + 1}`
 }));
 
+// Column definitions for admin tables.
 export const TABLE_COLUMNS = {
   students: [
     { key: 'name', label: 'Name' },
@@ -34,6 +38,7 @@ export const TABLE_COLUMNS = {
   ]
 };
 
+// Field schemas for admin modals.
 export const FORM_FIELDS = {
   'add-student': [
     { name: 'name', label: 'Full Name', type: 'text', required: true },
@@ -53,6 +58,7 @@ export const FORM_FIELDS = {
   ]
 };
 
+// Titles and button labels for admin forms.
 export const FORM_META = {
   'add-student': {
     title: 'Add New Student',

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Calendar, Save, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AttendanceHistory } from '../components/attendance/AttendanceHistory';
@@ -357,33 +357,27 @@ export function AttendanceSheet() {
           {/* Quick Actions */}
           <div className="flex justify-between mb-4">
             <div className="space-x-2">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={() => handleBulkAttendance(true)}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg"
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:scale-102 transition-transform"
               >
                 Mark All Present
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              </button>
+              <button
                 onClick={() => handleBulkAttendance(false)}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg"
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:scale-102 transition-transform"
               >
                 Mark All Absent
-              </motion.button>
+              </button>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <button
               onClick={handleAttendanceSubmit}
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-60"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-60 hover:scale-102 transition-transform"
             >
               <Save className="w-4 h-4" />
               Submit Attendance
-            </motion.button>
+            </button>
           </div>
 
           {/* Enhanced Student List */}
@@ -400,10 +394,9 @@ export function AttendanceSheet() {
               </thead>
               <tbody>
                 {filteredStudents.map((student) => (
-                  <motion.tr
+                  <tr
                     key={student.id}
-                    layoutId={student.id.toString()}
-                    className="attendance-card border-b dark:border-gray-700"
+                    className="attendance-card border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                   >
                     <td className="p-4">{student.roll}</td>
                     <td className="p-4">{student.name}</td>
@@ -417,20 +410,18 @@ export function AttendanceSheet() {
                       <AttendanceHistory history={student.history} />
                     </td>
                     <td className="p-4">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                      <button
                         onClick={() => markAttendance(student.id)}
                         className={`px-4 py-2 rounded-lg transition-colors ${
                           student.present
                             ? 'bg-green-500 text-white'
                             : 'bg-gray-200 dark:bg-gray-700'
-                        }`}
+                        } hover:scale-105 transition-transform`}
                       >
                         {student.present ? 'Present' : 'Absent'}
-                      </motion.button>
+                      </button>
                     </td>
-                  </motion.tr>
+                  </tr>
                 ))}
               </tbody>
             </table>

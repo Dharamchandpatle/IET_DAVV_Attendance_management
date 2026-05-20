@@ -1,18 +1,12 @@
-import { AnimatePresence, motion } from 'framer-motion';
+// import { AnimatePresence, motion } from 'framer-motion';
 import { Calendar, Check, Clock, FileText, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { AttendanceSection } from '../components/faculty/AttendanceSection';
-// import { ExamManagementSection } from '../components/faculty/ExamManagementSection';
 import { LeaveRequestsSection } from '../components/faculty/LeaveRequestsSection';
-
-const kpiData = [
-  { title: 'Assigned Courses', value: '4', icon: FileText },
-  { title: 'Total Students', value: '120', icon: Users },
-  { title: 'Classes Today', value: '3', icon: Clock },
-  { title: 'Attendance Marked', value: '85%', icon: Check },
-];
+import { useAuth } from '../context/AuthContext';
 
 const dashboardSections = [
   {
@@ -32,17 +26,7 @@ const dashboardSections = [
     color: 'green',
     component: LeaveRequestsSection,
     path: '/faculty/leave-requests'
-  },
-  // Exams disabled
-  // {
-  //   id: 'exams',
-  //   title: 'Exam Management',
-  //   description: 'Schedule and manage exams',
-  //   icon: FileText,
-  //   color: 'purple',
-  //   component: ExamManagementSection,
-  //   path: '/faculty/exams'
-  // }
+  }
 ];
 
 const sectionColorClasses = {
@@ -61,24 +45,40 @@ const sectionColorClasses = {
 };
 
 export function FacultyDashboard() {
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
+  const [facultyData, setFacultyData] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Fetch faculty data on mount
   useEffect(() => {
     let isActive = true;
 
     const loadDashboardData = async () => {
       try {
         setIsLoading(true);
-        await Promise.all([
-          new Promise(resolve => setTimeout(resolve, 300)),
-          new Promise(resolve => setTimeout(resolve, 300))
-        ]);
+        // Use user data from auth context
+        const data = {
+          id: user?.id,
+          name: user?.name,
+          email: user?.email,
+          phone: user?.phone || '',
+          faculty_code: user?.faculty_code,
+          department_name: user?.department_name || 'Computer Science',
+          designation: user?.designation || 'Assistant Professor',
+          joining_date: user?.joining_date,
+          specialization: user?.specialization || '',
+          profile_image: user?.profile_image,
+          assigned_courses: 4,
+          total_students: 120,
+          classes_today: 3,
+          attendance_marked: '85%'
+        };
+        if (!isActive) return;
+        setFacultyData(data);
       } catch (error) {
-        if (isActive) {
-          console.error('Error loading dashboard:', error);
-        }
+        if (isActive) toast.error('Failed to load dashboard data');
       } finally {
         if (isActive) setIsLoading(false);
       }
@@ -89,8 +89,7 @@ export function FacultyDashboard() {
     return () => {
       isActive = false;
     };
-
-  }, []);
+  }, [user?.id]);
 
   const activeSection = useMemo(() => {
     const match = dashboardSections.find(section => section.path === location.pathname);
@@ -100,6 +99,24 @@ export function FacultyDashboard() {
   const ActiveComponent = useMemo(() => {
     return dashboardSections.find(section => section.id === activeSection)?.component || AttendanceSection;
   }, [activeSection]);
+
+  if (isLoading || !facultyData) {
+    return (
+      <DashboardLayout userRole="faculty" isLoading={isLoading}>
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const facultyKPIs = [
+    { title: 'Assigned Courses', value: facultyData.assigned_courses?.toString() || '0', icon: FileText },
+    { title: 'Total Students', value: facultyData.total_students?.toString() || '0', icon: Users },
+    { title: 'Classes Today', value: facultyData.classes_today?.toString() || '0', icon: Clock },
+    { title: 'Attendance Marked', value: facultyData.attendance_marked || '0%', icon: Check },
+  ];
+
 
   const handleSectionChange = (sectionId) => {
     const section = dashboardSections.find(s => s.id === sectionId);
@@ -113,18 +130,10 @@ export function FacultyDashboard() {
       <div className="space-y-8">
         {/* KPI Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {kpiData.map((kpi, index) => (
-            <motion.div
+          {facultyKPIs.map((kpi, index) => (
+            <div
               key={kpi.title}
-              className="dashboard-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ 
-                y: -5, 
-                transition: { duration: 0.2 },
-                scale: 1.02
-              }}
+              className="dashboard-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg transform transition-transform group-hover:scale-110">
@@ -135,7 +144,7 @@ export function FacultyDashboard() {
                   <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">{kpi.value}</h3>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -145,23 +154,11 @@ export function FacultyDashboard() {
             const colorClasses = sectionColorClasses[section.color] || sectionColorClasses.blue;
 
             return (
-              <motion.button
+              <button
                 key={section.id}
                 onClick={() => handleSectionChange(section.id)}
                 className={`relative p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm dashboard-card overflow-hidden
                          ${activeSection === section.id ? 'ring-2 ring-blue-500' : ''}`}
-                whileHover={{ 
-                  scale: 1.02, 
-                  y: -5,
-                  transition: { duration: 0.2 }
-                }}
-                whileTap={{ scale: 0.98 }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ 
-                  duration: 0.2,
-                  delay: index * 0.1 
-                }}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10 dark:from-gray-700/5 dark:to-gray-700/10 transform -skew-y-12" />
                 <div
@@ -172,24 +169,17 @@ export function FacultyDashboard() {
                 </div>
                 <h3 className="relative text-lg font-semibold mb-2">{section.title}</h3>
                 <p className="relative text-sm text-gray-600 dark:text-gray-400">{section.description}</p>
-              </motion.button>
+              </button>
             );
           })}
         </div>
 
         {/* Active Section Content */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeSection}
-            className="section-content"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ActiveComponent />
-          </motion.div>
-        </AnimatePresence>
+        <div
+          className="section-content"
+        >
+          <ActiveComponent />
+        </div>
       </div>
     </DashboardLayout>
   );

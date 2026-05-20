@@ -1,18 +1,17 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { Eye, EyeOff, LucideLoader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import davvlogo from '../assets/images/davvlogo.png';
 import { HeroShape } from '../components/ui/HeroShape';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
-import { useToast } from '../components/ui/toast';
 import { useAuth } from '../context/AuthContext';
 
 export function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { show } = useToast();
   const containerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -21,7 +20,6 @@ export function Login() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Animate the login card
       gsap.from('.login-card', {
         y: 30,
         opacity: 0,
@@ -30,13 +28,15 @@ export function Login() {
         onComplete: () => setIsPageLoading(false)
       });
 
-      // Animate background grid
-      gsap.to('.bg-grid-pattern', {
-        backgroundPosition: '40px 40px',
-        duration: 20,
-        repeat: -1,
-        ease: 'none'
-      });
+      const gridEl = containerRef.current?.querySelector('.bg-grid-pattern') || document.querySelector('.bg-grid-pattern');
+      if (gridEl) {
+        gsap.to(gridEl, {
+          backgroundPosition: '40px 40px',
+          duration: 20,
+          repeat: -1,
+          ease: 'none'
+        });
+      }
     }, containerRef);
 
     return () => ctx.revert();
@@ -71,11 +71,7 @@ export function Login() {
     try {
       await login(values);
     } catch (error) {
-      show({
-        title: "Login Failed",
-        description: error.message || "Invalid credentials. Please try again.",
-        type: "error"
-      });
+      toast.error(error.message || 'Invalid credentials. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -87,29 +83,23 @@ export function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 relative overflow-hidden" ref={containerRef}>
-      {/* Animated Background */}
       <div className="absolute inset-0 bg-grid-pattern animate-grid opacity-10" />
       <HeroShape className="absolute inset-0 opacity-5" />
       
-      <motion.div
+      <div
         className="login-card max-w-md w-full space-y-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-8 rounded-xl shadow-xl relative z-10"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
       >
         <div className="text-center space-y-6">
-          <motion.div
+          <div
             onClick={() => navigate('/')}
             className="cursor-pointer inline-block"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
           >
             <img 
               src={davvlogo}
               alt="IET DAVV Logo" 
               className="w-24 h-24 mx-auto object-contain"
             />
-          </motion.div>
+          </div>
           <div>
             <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Welcome Back
@@ -175,9 +165,7 @@ export function Login() {
             </div>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <button
             type="submit"
             disabled={isLoading}
             className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 
@@ -191,20 +179,19 @@ export function Login() {
             ) : (
               <span>Sign In</span>
             )}
-          </motion.button>
+          </button>
         </form>
 
         <p className="text-center text-sm text-gray-600 dark:text-gray-400">
           Don't have an account?{' '}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
+          <button
             onClick={() => navigate('/register')}
-            className="text-blue-600 hover:underline font-medium"
+            className="text-blue-600 hover:underline font-medium bg-none border-none cursor-pointer"
           >
             Register
-          </motion.button>
+          </button>
         </p>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Filter, Plus, Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { DEPARTMENTS, DESIGNATIONS } from '../components/admin/adminConstants';
@@ -125,18 +125,16 @@ export function FacultyManagement() {
               Manage faculty records and information
             </p>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:scale-102 transition-transform"
           >
             <Plus className="w-5 h-5" />
             Add Faculty
-          </motion.button>
+          </button>
         </header>
 
-        <motion.div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
           {/* Search and Filters */}
           <div className="space-y-4 mb-6">
             <div className="flex flex-wrap gap-4 items-center">
@@ -150,25 +148,18 @@ export function FacultyManagement() {
                   className="w-full pl-10 pr-4 py-2 rounded-lg border dark:border-gray-700 dark:bg-gray-800"
                 />
               </div>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="p-2 border rounded-lg dark:border-gray-700 flex items-center gap-2"
+                className="p-2 border rounded-lg dark:border-gray-700 flex items-center gap-2 hover:scale-102 transition-transform"
               >
                 <Filter className="w-5 h-5" />
                 Filters
-              </motion.button>
+              </button>
             </div>
 
             {/* Expanded Filters */}
             {showFilters && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="flex flex-wrap gap-4 pt-4 border-t dark:border-gray-700"
-              >
+              <div className="flex flex-wrap gap-4 pt-4 border-t dark:border-gray-700 transition-all">
                 <select
                   value={filters.department}
                   onChange={(e) => setFilters(prev => ({ ...prev, department: e.target.value }))}
@@ -205,7 +196,7 @@ export function FacultyManagement() {
                         </option>
                       ))}
                 </select>
-              </motion.div>
+              </div>
             )}
           </div>
 
@@ -217,7 +208,7 @@ export function FacultyManagement() {
               <p className="text-gray-500 dark:text-gray-400">No faculty members found matching your criteria</p>
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
 
       {/* Add Faculty Modal */}

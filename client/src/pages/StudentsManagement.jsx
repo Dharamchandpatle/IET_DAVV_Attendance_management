@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Plus, Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { DEPARTMENTS } from '../components/admin/adminConstants';
@@ -109,18 +109,16 @@ export function StudentsManagement() {
               Manage student records and information
             </p>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:scale-102 transition-transform"
           >
             <Plus className="w-5 h-5" />
             Add Student
-          </motion.button>
+          </button>
         </header>
 
-        <motion.div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
           {/* Filters */}
           <div className="flex flex-wrap gap-4 mb-6">
             <div className="flex-1 relative min-w-[200px]">
@@ -161,7 +159,7 @@ export function StudentsManagement() {
               <p className="text-gray-500 dark:text-gray-400">No students found matching your criteria</p>
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
 
       {/* Add Student Modal */}

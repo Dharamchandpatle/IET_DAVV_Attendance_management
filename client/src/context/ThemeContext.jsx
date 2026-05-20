@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 const ThemeContext = createContext();
 
+// Provides theme state and toggle action.
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     // Fix theme initialization
@@ -25,6 +26,7 @@ export function ThemeProvider({ children }) {
     root.classList.add('transition-colors');
   }, [theme]);
 
+  // Animates and toggles between light and dark themes.
   const toggleTheme = () => {
     gsap.to('body', {
       backgroundColor: theme === 'light' ? '#1a1b1e' : '#ffffff',
@@ -42,6 +44,7 @@ export function ThemeProvider({ children }) {
   );
 }
 
+// Hook for consuming theme context.
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {

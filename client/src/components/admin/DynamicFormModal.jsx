@@ -1,9 +1,10 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '../ui/toast';
 import { FORM_FIELDS, FORM_META } from './adminConstants';
 
+// Dynamic form modal built from configuration constants.
 export function DynamicFormModal({ type, onClose, onSubmit }) {
   const { show } = useToast();
   const [formData, setFormData] = useState({});
@@ -16,6 +17,7 @@ export function DynamicFormModal({ type, onClose, onSubmit }) {
     return null;
   }
 
+  // Validates all form fields against rules and formats.
   const validateForm = () => {
     const newErrors = {};
     fields.forEach(field => {
@@ -40,6 +42,7 @@ export function DynamicFormModal({ type, onClose, onSubmit }) {
     e.preventDefault();
     if (validateForm()) {
       if (typeof onSubmit === 'function') {
+        // Calls the parent handler with validated form data.
         onSubmit(formData);
       } else {
         onClose();
@@ -55,6 +58,7 @@ export function DynamicFormModal({ type, onClose, onSubmit }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // Updates form state and clears field error on change.
     setFormData(prev => ({ ...prev, [name]: value }));
     // Clear error when field is edited
     if (errors[name]) {
@@ -63,19 +67,11 @@ export function DynamicFormModal({ type, onClose, onSubmit }) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+    <div
       className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg"
-      >
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg transition-transform">
         {/* Modal Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">
@@ -137,26 +133,12 @@ export function DynamicFormModal({ type, onClose, onSubmit }) {
           ))}
 
           <div className="flex justify-end gap-2 mt-6">
-            <motion.button
-              type="button"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={onClose}
-              className="px-4 py-2 border rounded-lg dark:border-gray-600"
-            >
-              Cancel
-            </motion.button>
-            <motion.button
-              type="submit"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-            >
-              {meta.submitLabel}
-            </motion.button>
+              <button type="button" onClick={onClose} className="px-4 py-2 border rounded-lg dark:border-gray-600 hover:bg-gray-100 transition-colors">Cancel</button>
+              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">{meta.submitLabel}</button>
           </div>
         </form>
-      </motion.div>
-    </motion.div>
+      </div>
+        </div>
+      </div>
   );
 }

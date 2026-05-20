@@ -1,9 +1,11 @@
 const { query } = require('../config/db');
 const Student = require('../models/Student');
 
+// Allowed statuses and leave types for validation.
 const VALID_STATUSES = ['pending', 'approved', 'rejected', 'cancelled'];
 const VALID_TYPES = ['medical', 'personal', 'family', 'other'];
 
+// Creates a leave request for the authenticated student.
 const createLeaveRequest = async (userId, payload) => {
   const student = await Student.findByUserId(userId);
   if (!student) {
@@ -40,6 +42,7 @@ const createLeaveRequest = async (userId, payload) => {
   return { id: result.insertId };
 };
 
+// Returns leave requests filtered by role and query params.
 const listLeaveRequests = async ({ role, userId, status, type }) => {
   if (status && !VALID_STATUSES.includes(status)) {
     const error = new Error('Invalid leave request status');
@@ -113,6 +116,7 @@ const listLeaveRequests = async ({ role, userId, status, type }) => {
   });
 };
 
+// Updates a leave request status and reviewer metadata.
 const updateLeaveStatus = async (id, { status, review_comment, reviewerUserId }) => {
   if (!VALID_STATUSES.includes(status)) {
     const error = new Error('Invalid leave request status');

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Clock } from 'lucide-react';
 
 const scheduleData = {
@@ -14,6 +14,7 @@ const scheduleData = {
   ]
 };
 
+// Lists today's class schedule for a semester.
 export function ClassSchedule({ semester }) {
   const schedule = scheduleData[semester] || [];
 
@@ -24,12 +25,7 @@ export function ClassSchedule({ semester }) {
       ) : (
         <div className="grid gap-4">
           {schedule.map((item) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
-            >
+            <div key={item.id} className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg transition-transform">
               <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
@@ -39,7 +35,7 @@ export function ClassSchedule({ semester }) {
                   {item.time} • {item.duration} • Room {item.room}
                 </p>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}

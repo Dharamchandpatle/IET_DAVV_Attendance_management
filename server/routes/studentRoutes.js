@@ -4,11 +4,7 @@ const StudentController = require('../controllers/studentController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 // Student routes (mounted at /api/students).
-// Student auth
-router.post('/register', StudentController.register);
-router.post('/login', StudentController.login);
-
-// Student CRUD
+// Student CRUD (auth handled by /api/auth/register, /api/auth/login)
 router.get('/', authMiddleware(['admin', 'faculty']), StudentController.getAll);
 router.get('/:id', authMiddleware(['admin', 'faculty', 'student']), StudentController.getById);
 router.put('/:id', authMiddleware(['admin', 'faculty', 'student']), StudentController.update);

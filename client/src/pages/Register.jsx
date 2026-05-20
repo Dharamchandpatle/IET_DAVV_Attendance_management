@@ -1,20 +1,18 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { Eye, EyeOff, LucideLoader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import davvlogo from '../assets/images/davvlogo.png';
 import { HeroShape } from '../components/ui/HeroShape';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
-import { useToast } from '../components/ui/toast';
 import { useAuth } from '../context/AuthContext';
-import { getApiErrorMessage } from '../services/api';
 import { getDepartments } from '../services/departmentService';
 
 export function Register() {
   const navigate = useNavigate();
   const { register } = useAuth();
-  const { show } = useToast();
   const containerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -26,7 +24,6 @@ export function Register() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Animate the register card
       gsap.from('.register-card', {
         y: 30,
         opacity: 0,
@@ -35,13 +32,15 @@ export function Register() {
         onComplete: () => setIsPageLoading(false)
       });
 
-      // Animate background grid
-      gsap.to('.bg-grid-pattern', {
-        backgroundPosition: '40px 40px',
-        duration: 20,
-        repeat: -1,
-        ease: 'none'
-      });
+      const gridEl = containerRef.current?.querySelector('.bg-grid-pattern') || document.querySelector('.bg-grid-pattern');
+      if (gridEl) {
+        gsap.to(gridEl, {
+          backgroundPosition: '40px 40px',
+          duration: 20,
+          repeat: -1,
+          ease: 'none'
+        });
+      }
     }, containerRef);
 
     return () => ctx.revert();
@@ -58,11 +57,7 @@ export function Register() {
         }
       } catch (error) {
         if (isActive) {
-          show({
-            title: "Unable to load departments",
-            description: getApiErrorMessage(error, "Please try again later."),
-            type: "error"
-          });
+          toast.error('Unable to load departments. Please try again later.');
         }
       }
     };
@@ -72,7 +67,7 @@ export function Register() {
     return () => {
       isActive = false;
     };
-  }, [show]);
+  }, []);
 
   const validateForm = (formData) => {
     const errors = {};
@@ -167,14 +162,21 @@ export function Register() {
 
       await register(payload);
     } catch (error) {
-      // Server-side validation errors will be caught here
       if (error.message) {
-        // If it's a specific field error
-        if (error.message.toLowerCase().includes('email')) {
+        const msg = error.message.toLowerCase();
+        if (msg.includes('email')) {
           setValidationErrors(prev => ({ ...prev, email: error.message }));
-        } else if (error.message.toLowerCase().includes('password')) {
+        } else if (msg.includes('password')) {
           setValidationErrors(prev => ({ ...prev, password: error.message }));
+        } else if (msg.includes('roll number')) {
+          setValidationErrors(prev => ({ ...prev, roll_number: error.message }));
+        } else if (msg.includes('faculty code')) {
+          setValidationErrors(prev => ({ ...prev, faculty_code: error.message }));
+        } else {
+          throw error;
         }
+      } else {
+        throw error;
       }
     }
   };
@@ -185,29 +187,23 @@ export function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 relative overflow-hidden" ref={containerRef}>
-      {/* Animated Background */}
       <div className="absolute inset-0 bg-grid-pattern animate-grid opacity-10" />
       <HeroShape />
       
-      <motion.div
+      <div
         className="register-card max-w-md w-full space-y-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-8 rounded-xl shadow-xl relative z-10"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
       >
         <div className="text-center space-y-6">
-          <motion.div
+          <div
             onClick={() => navigate('/')}
             className="cursor-pointer inline-block"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
           >
             <img 
               src={davvlogo}
               alt="IET DAVV Logo" 
               className="w-24 h-24 mx-auto object-contain"
             />
-          </motion.div>
+          </div>
           <div>
             <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Create Account
@@ -477,9 +473,7 @@ export function Register() {
             </div>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <button
             type="submit"
             disabled={isLoading}
             className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 
@@ -493,20 +487,19 @@ export function Register() {
             ) : (
               <span>Create Account</span>
             )}
-          </motion.button>
+          </button>
         </form>
 
         <p className="text-center text-sm text-gray-600 dark:text-gray-400">
           Already have an account?{' '}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
+          <button
             onClick={() => navigate('/login')}
-            className="text-blue-600 hover:underline font-medium"
+            className="text-blue-600 hover:underline font-medium bg-none border-none cursor-pointer"
           >
             Sign in
-          </motion.button>
+          </button>
         </p>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { BarChart3, Calendar, Clock, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -23,11 +23,13 @@ const mockData = {
   ]
 };
 
+// Shows attendance analytics with selectable views and charts.
 export function AttendanceTrends() {
   const [viewMode, setViewMode] = useState('regular');
   const [timeRange, setTimeRange] = useState('week');
   const [chartType, setChartType] = useState('line');
 
+  // Derives summary stats for the current view.
   const stats = useMemo(() => {
     if (viewMode === 'regular') {
       const total = mockData.regular.reduce((acc, day) => acc + day.total, 0);
@@ -41,11 +43,7 @@ export function AttendanceTrends() {
   }, [viewMode]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
-    >
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm transition-transform">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <h2 className="text-xl font-semibold">Attendance Analytics</h2>
         <div className="flex flex-wrap items-center gap-4">
@@ -161,13 +159,7 @@ export function AttendanceTrends() {
       {viewMode === 'events' && (
         <div className="space-y-4">
           {mockData.events.map((event, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="p-4 border dark:border-gray-700 rounded-lg"
-            >
+            <div key={index} className="p-4 border dark:border-gray-700 rounded-lg transition-transform">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-medium">{event.name}</h3>
@@ -179,7 +171,7 @@ export function AttendanceTrends() {
                   <p className="text-sm text-gray-600">{event.present}/{event.total} students</p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}
@@ -187,13 +179,7 @@ export function AttendanceTrends() {
       {viewMode === 'holidays' && (
         <div className="space-y-4">
           {mockData.holidays.map((holiday, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
-            >
+            <div key={index} className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg transition-transform">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-medium">{holiday.name}</h3>
@@ -203,10 +189,10 @@ export function AttendanceTrends() {
                   Holiday
                 </span>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }

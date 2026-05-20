@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Check, Clock, Download, EyeIcon, Paperclip, Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getApiErrorMessage } from '../../services/api';
@@ -12,6 +12,7 @@ const mockStats = {
   rejected: 0
 };
 
+// Faculty review dashboard for student leave requests.
 export function LeaveRequestsSection() {
   const { show } = useToast();
   const [stats, setStats] = useState(mockStats);
@@ -31,6 +32,7 @@ export function LeaveRequestsSection() {
   useEffect(() => {
     let isActive = true;
 
+    // Loads leave requests and derives summary stats.
     const loadLeaveRequests = async () => {
       try {
         setIsLoading(true);
@@ -89,6 +91,7 @@ export function LeaveRequestsSection() {
     };
   }, [show]);
 
+  // Approves or rejects a leave request with optional comments.
   const handleStatusChange = async (requestId, newStatus) => {
     if (!comment && newStatus === 'rejected') {
       show({
@@ -181,32 +184,18 @@ export function LeaveRequestsSection() {
     <div className="space-y-6">
       {/* Stats Grid */}
       <div className="grid grid-cols-3 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-lg bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200"
-        >
+        <div className="p-4 rounded-lg bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 transition-transform">
           <h3 className="font-medium">Pending</h3>
           <p className="text-2xl font-bold">{stats.pending}</p>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="p-4 rounded-lg bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200"
-        >
+        </div>
+        <div className="p-4 rounded-lg bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200 transition-transform">
           <h3 className="font-medium">Approved</h3>
           <p className="text-2xl font-bold">{stats.approved}</p>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="p-4 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200"
-        >
+        </div>
+        <div className="p-4 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 transition-transform">
           <h3 className="font-medium">Rejected</h3>
           <p className="text-2xl font-bold">{stats.rejected}</p>
-        </motion.div>
+        </div>
       </div>
 
       {/* Search and Filters */}
@@ -271,24 +260,17 @@ export function LeaveRequestsSection() {
 
         <div className="divide-y dark:divide-gray-700">
           {filteredRequests.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="p-8 text-center text-gray-500 dark:text-gray-400"
-            >
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
               <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p>No {activeTab} leave requests found</p>
-            </motion.div>
+            </div>
           ) : (
             filteredRequests.map((request, index) => (
-              <motion.div
+              <div
                 key={request.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
                 className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
                   selectedRequest?.id === request.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                }`}
+                } transition-transform`}
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -324,14 +306,12 @@ export function LeaveRequestsSection() {
                   {request.status === 'pending' ? (
                     <div className="flex gap-2">
                       {/* Review Actions */}
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                      <button
                         onClick={() => setSelectedRequest(request)}
-                        className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-transform hover:scale-105"
                       >
                         <EyeIcon className="w-5 h-5" />
-                      </motion.button>
+                      </button>
                     </div>
                   ) : (
                     <div className={`px-3 py-1 rounded-full text-sm
@@ -375,7 +355,7 @@ export function LeaveRequestsSection() {
                     ))}
                   </div>
                 )}
-              </motion.div>
+                </div>
             ))
           )}
         </div>
@@ -384,11 +364,7 @@ export function LeaveRequestsSection() {
       {/* Review Modal */}
       {selectedRequest && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-          >
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto transition-transform">
             <h3 className="text-lg font-semibold mb-4">Review Leave Request</h3>
             
             <div className="space-y-6">
@@ -501,7 +477,7 @@ export function LeaveRequestsSection() {
                 </button>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       )}
     </div>

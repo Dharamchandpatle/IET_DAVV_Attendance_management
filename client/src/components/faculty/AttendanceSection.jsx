@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Calendar, Check, CheckCheck, Search, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -77,12 +77,19 @@ const mockStudents = [
   // ... add more mock data as needed
 ];
 
+// Faculty workflow for marking and submitting class attendance.
 export function AttendanceSection() {
   const [students, setStudents] = useState(mockStudents);
   const [search, setSearch] = useState('');
   const selectedDate = useMemo(() => new Date(), []);
   const [attendanceType, setAttendanceType] = useState('regular');
   const [selectedBranch, setSelectedBranch] = useState('all');
+  const [selectedSemester, setSelectedSemester] = useState(null);
+  const [academicYear, setAcademicYear] = useState(() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    return `${y}-${y + 1}`;
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { show } = useToast();
   const navigate = useNavigate();
@@ -90,6 +97,7 @@ export function AttendanceSection() {
   useEffect(() => {
     let isActive = true;
 
+    // Loads student list from the API with fallback to mock data.
     const loadStudents = async () => {
       try {
         const data = await listStudents();
@@ -111,6 +119,10 @@ export function AttendanceSection() {
         }));
 
         setStudents(mapped.length ? mapped : mockStudents);
+        const listSource = mapped.length ? mapped : mockStudents;
+        if (listSource && listSource.length) {
+          setSelectedSemester(listSource[0].semester || 1);
+        }
       } catch (error) {
         if (isActive) {
           show({
@@ -135,6 +147,7 @@ export function AttendanceSection() {
     (selectedBranch === 'all' || student.branch === selectedBranch)
   );
 
+  // Toggles a student's present/absent status.
   const handleMarkAttendance = (studentId) => {
     setStudents(prev => prev.map(student => {
       if (student.id === studentId) {
@@ -150,6 +163,7 @@ export function AttendanceSection() {
     });
   };
 
+  // Marks all students as present or absent.
   const handleBatchMark = (present) => {
     setStudents(prev => prev.map(student => ({
       ...student,
@@ -163,19 +177,22 @@ export function AttendanceSection() {
     });
   };
 
+  // Submits the attendance payload to the API.
   const handleSubmitAttendance = async () => {
     try {
       setIsSubmitting(true);
       const classDate = selectedDate.toISOString().split('T')[0];
       const records = students.map((student) => ({
-        user_id: student.userId,
+        user_id: student.userId || student.id,
         status: student.present ? 'present' : 'absent'
       }));
 
       await markClassAttendance({
         class_date: classDate,
         records,
-        attendance_type: attendanceType
+        attendance_type: attendanceType,
+        semester: selectedSemester,
+        academic_year: academicYear
       });
 
       show({
@@ -215,10 +232,8 @@ export function AttendanceSection() {
       </header>
 
       {/* Controls Bar */}
-      <motion.div 
+      <div 
         className="flex flex-wrap gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
       >
         {/* Search */}
         <div className="flex-1 relative min-w-[200px]">
@@ -255,44 +270,56 @@ export function AttendanceSection() {
           <option value="ECE">ECE</option>
         </select>
 
+        <select
+          value={selectedSemester || '1'}
+          onChange={(e) => setSelectedSemester(Number(e.target.value))}
+          className="p-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700"
+        >
+          <option value="1">Sem 1</option>
+          <option value="2">Sem 2</option>
+          <option value="3">Sem 3</option>
+          <option value="4">Sem 4</option>
+          <option value="5">Sem 5</option>
+          <option value="6">Sem 6</option>
+          <option value="7">Sem 7</option>
+          <option value="8">Sem 8</option>
+        </select>
+
+        <input
+          value={academicYear}
+          onChange={(e) => setAcademicYear(e.target.value)}
+          placeholder="Academic Year (e.g. 2025-2026)"
+          className="p-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700"
+        />
+
         {/* Batch Actions */}
         <div className="flex gap-2">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <button
             onClick={() => handleBatchMark(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg flex items-center gap-2"
+            className="px-4 py-2 bg-green-600 text-white rounded-lg flex items-center gap-2 hover:scale-102 transition-transform"
           >
             <CheckCheck className="w-4 h-4" />
             Mark All Present
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          </button>
+          <button
             onClick={() => handleBatchMark(false)}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg flex items-center gap-2"
+            className="px-4 py-2 bg-red-600 text-white rounded-lg flex items-center gap-2 hover:scale-102 transition-transform"
           >
             <X className="w-4 h-4" />
             Mark All Absent
-          </motion.button>
+          </button>
         </div>
-      </motion.div>
+      </div>
 
       {/* Student List */}
-      <motion.div 
-        layout
+      <div 
         className="bg-white dark:bg-gray-800 rounded-xl shadow-sm"
       >
         <div className="p-6 space-y-4">
           {filteredStudents.map((student) => (
-            <motion.div
+            <div
               key={student.id}
-              layout
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="flex flex-wrap md:flex-nowrap justify-between items-center p-4 border dark:border-gray-700 rounded-lg gap-4"
-              whileHover={{ scale: 1.01 }}
+              className="flex flex-wrap md:flex-nowrap justify-between items-center p-4 border dark:border-gray-700 rounded-lg gap-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
             >
               <div className="space-y-1 flex-1">
                 <h3 className="font-medium">{student.name}</h3>
@@ -303,35 +330,31 @@ export function AttendanceSection() {
                   <span>Semester: {student.semester}</span>
                 </div>
               </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => handleMarkAttendance(student.id)}
-                className={`px-6 py-2 rounded-lg transition-colors ${
+                className={`px-6 py-2 rounded-lg transition-colors hover:scale-105 ${
                   student.present
                     ? 'bg-green-500 text-white'
                     : 'bg-gray-200 dark:bg-gray-700'
                 }`}
               >
                 {student.present ? 'Present' : 'Absent'}
-              </motion.button>
-            </motion.div>
+              </button>
+            </div>
           ))}
         </div>
-      </motion.div>
+      </div>
 
       {/* Submit Button */}
       <div className="flex justify-end">
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+        <button
           onClick={handleSubmitAttendance}
           disabled={isSubmitting}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-60"
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-60 hover:scale-102 transition-transform"
         >
           <Check className="w-4 h-4" />
           Submit Attendance
-        </motion.button>
+        </button>
       </div>
     </div>
   );

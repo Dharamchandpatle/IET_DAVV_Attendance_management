@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Clock, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { FacultyPageLayout } from '../components/faculty/FacultyPageLayout';
@@ -184,37 +184,25 @@ export function LeaveRequests() {
           {/* Stats Overview */}
           <div className="grid grid-cols-3 gap-4">
             {Object.entries(stats).map(([status, count]) => (
-              <motion.div
-                key={status}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`p-4 rounded-lg ${statusColors[status]} bg-opacity-20`}
-              >
-                <h3 className="capitalize font-medium">{status}</h3>
-                <p className="text-2xl font-bold">{count}</p>
-              </motion.div>
-            ))}
+                <div
+                  key={status}
+                  className={`p-4 rounded-lg ${statusColors[status]} bg-opacity-20 transition-transform`}
+                >
+                  <h3 className="capitalize font-medium">{status}</h3>
+                  <p className="text-2xl font-bold">{count}</p>
+                </div>
+              ))}
           </div>
 
           {/* Requests List with Enhanced Animations */}
           <div className="space-y-4">
             {filteredRequests.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-8 text-gray-500"
-              >
-                No leave requests found
-              </motion.div>
+              <div className="text-center py-8 text-gray-500">No leave requests found</div>
             ) : (
               filteredRequests.map((request) => (
-                <motion.div
+                <div
                   key={request.id}
-                  layoutId={request.id.toString()}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="leave-request-card bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
+                  className="leave-request-card bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm transition-transform hover:scale-101"
                 >
                   <div className="flex justify-between items-start">
                     <div>
@@ -251,25 +239,21 @@ export function LeaveRequests() {
 
                   {request.status === 'pending' && (
                     <div className="mt-4 flex justify-end gap-2">
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                      <button
                         onClick={() => handleStatusUpdate(request.id, 'rejected')}
-                        className="px-4 py-2 border rounded-lg text-red-600 hover:bg-red-50"
+                        className="px-4 py-2 border rounded-lg text-red-600 hover:bg-red-50 hover:scale-102 transition-transform"
                       >
                         Reject
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                      </button>
+                      <button
                         onClick={() => handleStatusUpdate(request.id, 'approved')}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:scale-102 transition-transform"
                       >
                         Approve
-                      </motion.button>
+                      </button>
                     </div>
                   )}
-                </motion.div>
+                </div>
               ))
             )}
           </div>

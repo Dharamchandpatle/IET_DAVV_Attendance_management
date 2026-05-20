@@ -1,5 +1,6 @@
 import { Sidebar } from '../dashboard/Sidebar';
 
+// Layout wrapper for faculty pages with sidebar.
 export function FacultyPageLayout({ children }) {
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">

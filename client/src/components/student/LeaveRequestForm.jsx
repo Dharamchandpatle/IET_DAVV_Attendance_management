@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Calendar, Image, Upload, X } from 'lucide-react';
 import { useState } from 'react';
 import { getApiErrorMessage } from '../../services/api';
@@ -8,6 +8,7 @@ import { useToast } from '../ui/toast';
 const MAX_FILES = 5;
 const MAX_SIZE = 5 * 1024 * 1024;
 
+// Student form for submitting leave requests with attachments.
 export function LeaveRequestForm({ onSubmit, isSubmitting = false }) {
   const { show } = useToast();
   const [formData, setFormData] = useState({
@@ -20,6 +21,7 @@ export function LeaveRequestForm({ onSubmit, isSubmitting = false }) {
 
   const [dragActive, setDragActive] = useState(false);
 
+  // Tracks drag-over state for the drop zone.
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -30,6 +32,7 @@ export function LeaveRequestForm({ onSubmit, isSubmitting = false }) {
     }
   };
 
+  // Handles files dropped onto the drop zone.
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -38,6 +41,7 @@ export function LeaveRequestForm({ onSubmit, isSubmitting = false }) {
     handleFiles(files);
   };
 
+  // Validates files and appends them to form state.
   const handleFiles = (files) => {
     const validFiles = [];
     files.forEach(file => {
@@ -67,6 +71,7 @@ export function LeaveRequestForm({ onSubmit, isSubmitting = false }) {
     }));
   };
 
+  // Removes an attachment by index.
   const removeFile = (index) => {
     setFormData(prev => ({
       ...prev,
@@ -74,6 +79,7 @@ export function LeaveRequestForm({ onSubmit, isSubmitting = false }) {
     }));
   };
 
+  // Validates inputs and submits the leave request.
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.fromDate || !formData.toDate || !formData.reason) {
@@ -237,12 +243,7 @@ export function LeaveRequestForm({ onSubmit, isSubmitting = false }) {
         {formData.attachments.length > 0 && (
           <div className="mt-4 space-y-2">
             {formData.attachments.map((file, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg"
-              >
+              <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg transition-transform">
                 <div className="flex items-center gap-2">
                   {file.type.startsWith('image/') ? (
                     <Image className="w-5 h-5 text-blue-500" />
@@ -260,24 +261,22 @@ export function LeaveRequestForm({ onSubmit, isSubmitting = false }) {
                 >
                   <X className="w-4 h-4 text-gray-500" />
                 </button>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
       </div>
 
       {/* Submit Button */}
-      <motion.button
+      <button
         type="submit"
         disabled={isSubmitting}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
         className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-medium 
                    hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 
-                   focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                   focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {isSubmitting ? 'Submitting...' : 'Submit Leave Request'}
-      </motion.button>
+      </button>
     </form>
   );
 }

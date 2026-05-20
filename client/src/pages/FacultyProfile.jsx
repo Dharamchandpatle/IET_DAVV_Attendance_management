@@ -1,61 +1,73 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Book, Camera, Edit2, GraduationCap, Mail, MapPin, Phone } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
-import { useToast } from '../components/ui/toast';
+import { useAuth } from '../context/AuthContext';
 
 export function FacultyProfile() {
-  const { show } = useToast();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [facultyData, setFacultyData] = useState(null);
 
-  const [facultyData, setFacultyData] = useState({
-    profileImage: '/icon.svg',
-    personalInfo: {
-      name: 'Dr. Vaibhav Jain sir',
-      id: 'FAC001',
-      email: 'vjain@iet.davv.ac.in',
-      phone: '+91 9876543210',
-      address: 'Department of Computer Science',
-      department: 'Computer Science & Engineering',
-      designation: 'Associate Professor',
-      joiningDate: '2010-08-15'
-    },
-    courses: [
-      { id: 'CS101', name: 'Introduction to Programming', students: 60 },
-      { id: 'CS204', name: 'Data Structures', students: 55 },
-      { id: 'CS204', name: 'Data Base Management System', students: 96 },
-      { id: 'CS204', name: 'Data Structures', students: 85 },
-    ],
-    attendance: {
-      present: 42,
-      total: 45,
-      history: [true, true, false, true, true]
-    }
-  });
+  // Fetch faculty profile data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        if (user?.id) {
+          // Use user data from auth context
+          const data = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone || '',
+            address: user.address || '',
+            faculty_code: user.faculty_code,
+            department_name: user.department_name || 'Computer Science & Engineering',
+            designation: user.designation || 'Assistant Professor',
+            joining_date: user.joining_date,
+            specialization: user.specialization || '',
+            profile_image: user.profile_image,
+            courses: [
+              { id: 'CS101', name: 'Introduction to Programming', students: 60 },
+              { id: 'CS204', name: 'Data Structures', students: 55 },
+              { id: 'CS301', name: 'Database Management System', students: 96 },
+              { id: 'CS302', name: 'Operating Systems', students: 85 }
+            ],
+            attendance: {
+              present: 42,
+              total: 45,
+              history: [true, true, false, true, true]
+            }
+          };
+          setFacultyData(data);
+        }
+      } catch (error) {
+        toast.error('Failed to load profile');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
+    fetchProfile();
+  }, [user?.id]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
       try {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = (event) => {
           setFacultyData(prev => ({
             ...prev,
-            profileImage: e.target.result
+            profile_image: event.target.result
           }));
         };
         reader.readAsDataURL(file);
-        
-        show({
-          title: "Success",
-          description: "Profile picture updated successfully"
-        });
+        toast.success('Profile picture updated');
       } catch (error) {
-        show({
-          title: "Error",
-          description: "Failed to update profile picture"
-        });
+        toast.error('Failed to update profile picture');
       }
     }
   };
@@ -65,6 +77,7 @@ export function FacultyProfile() {
     const formData = new FormData(e.target);
     
     try {
+      setIsLoading(true);
       const updatedInfo = {
         phone: formData.get('phone'),
         address: formData.get('address')
@@ -72,36 +85,39 @@ export function FacultyProfile() {
 
       setFacultyData(prev => ({
         ...prev,
-        personalInfo: {
-          ...prev.personalInfo,
-          ...updatedInfo
-        }
+        ...updatedInfo
       }));
 
       setIsEditing(false);
-      show({
-        title: "Success",
-        description: "Profile updated successfully"
-      });
+      toast.success('Profile updated successfully');
     } catch (error) {
-      show({
-        title: "Error",
-        description: "Failed to update profile"
-      });
+      toast.error('Failed to update profile');
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  if (isLoading || !facultyData) {
+    return (
+      <DashboardLayout userRole="faculty">
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout userRole="faculty">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Profile Header */}
-        <motion.div 
-          className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300"
+        <div 
+          className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
         >
           <div className="flex items-center gap-6">
             <div className="relative group">
               <img 
-                src={facultyData.profileImage} 
+                src={facultyData.profile_image || '/icon.svg'} 
                 alt="Profile" 
                 className="w-24 h-24 rounded-full object-cover ring-2 ring-blue-500/20 group-hover:ring-blue-500 transition-all duration-300"
               />
@@ -118,31 +134,29 @@ export function FacultyProfile() {
             
             <div className="flex-1">
               <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">
-                {facultyData.personalInfo.name}
+                {facultyData.name}
               </h1>
               <p className="text-gray-600 dark:text-gray-400 font-medium">
-                {facultyData.personalInfo.designation}
+                {facultyData.designation}
               </p>
               <p className="text-sm text-gray-500">
-                Joined {new Date(facultyData.personalInfo.joiningDate).toLocaleDateString()}
+                Faculty Code: {facultyData.faculty_code}
               </p>
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={() => setIsEditing(!isEditing)}
               className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
             >
               <Edit2 className="w-5 h-5" />
-            </motion.button>
+            </button>
           </div>
-        </motion.div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Personal Information */}
-          <motion.div 
-            className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300"
+          <div 
+            className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
           >
             <h2 className="text-xl font-semibold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">
               Personal Information
@@ -152,26 +166,24 @@ export function FacultyProfile() {
                 <input
                   type="tel"
                   name="phone"
-                  defaultValue={facultyData.personalInfo.phone}
-                  className="form-input"
+                  defaultValue={facultyData.phone}
+                  className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
                   required
                 />
                 <input
                   type="text"
                   name="address"
-                  defaultValue={facultyData.personalInfo.address}
-                  className="form-input"
+                  defaultValue={facultyData.address}
+                  className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
                   required
                 />
                 <div className="flex gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
                     type="submit"
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg"
                   >
                     Save Changes
-                  </motion.button>
+                  </button>
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
@@ -185,47 +197,46 @@ export function FacultyProfile() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-gray-400" />
-                  <span>{facultyData.personalInfo.email}</span>
+                  <span>{facultyData.email}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="w-5 h-5 text-gray-400" />
-                  <span>{facultyData.personalInfo.phone}</span>
+                  <span>{facultyData.phone || 'N/A'}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <MapPin className="w-5 h-5 text-gray-400" />
-                  <span>{facultyData.personalInfo.address}</span>
+                  <span>{facultyData.address || facultyData.department_name}</span>
                 </div>
               </div>
             )}
-          </motion.div>
+          </div>
 
           {/* Assigned Courses */}
-          <motion.div className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300">
+          <div className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
             <h2 className="text-xl font-semibold mb-4">Assigned Courses</h2>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {facultyData.courses.map((course, index) => (
-                <motion.div
+                <div
                   key={`${course.id}-${index}`}
-                  whileHover={{ scale: 1.02 }}
-                  className="p-4 border rounded-lg cursor-pointer"
+                  className="p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-medium">{course.name}</h3>
-                      <p className="text-sm text-gray-600">{course.id}</p>
+                      <h3 className="font-medium text-sm">{course.name}</h3>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">{course.id}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <GraduationCap className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm">{course.students}</span>
+                      <span className="text-sm font-medium">{course.students}</span>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Attendance Summary */}
-          <motion.div className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm md:col-span-2 hover:shadow-lg transition-all duration-300">
+          <div className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm md:col-span-2">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Attendance Record</h2>
               <div className="flex items-center gap-2">
@@ -236,15 +247,12 @@ export function FacultyProfile() {
               </div>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ 
-                  width: `${(facultyData.attendance.present / facultyData.attendance.total) * 100}%` 
-                }}
+              <div
                 className="bg-blue-600 h-2 rounded-full"
+                style={{ width: `${(facultyData.attendance.present / facultyData.attendance.total) * 100}%` }}
               />
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </DashboardLayout>

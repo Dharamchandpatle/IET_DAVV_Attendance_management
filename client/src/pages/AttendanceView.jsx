@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
@@ -102,11 +102,7 @@ export function AttendanceView() {
               Track your attendance and participation
             </p>
           </div>
-          <motion.div 
-            className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-          >
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm transition-transform">
             <div className="flex items-center gap-3">
               <Calendar className="w-5 h-5 text-blue-600" />
               <div>
@@ -114,35 +110,27 @@ export function AttendanceView() {
                 <p className="attendance-percentage text-2xl font-bold">{percentage}%</p>
               </div>
             </div>
-          </motion.div>
+          </div>
         </header>
 
         {/* Calendar View */}
-        <motion.div 
-          className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm transition-transform">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold">Monthly View</h2>
             <div className="flex items-center gap-4">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+              <button
                 onClick={() => navigateMonth(-1)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-transform hover:scale-105"
               >
                 <ChevronLeft className="w-5 h-5" />
-              </motion.button>
+              </button>
               <span className="font-medium">{monthLabel}</span>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+              <button
                 onClick={() => navigateMonth(1)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-transform hover:scale-105"
               >
                 <ChevronRight className="w-5 h-5" />
-              </motion.button>
+              </button>
             </div>
           </div>
 
@@ -157,17 +145,15 @@ export function AttendanceView() {
               const day = i + 1;
               const date = `${yearKey}-${monthKey}-${String(day).padStart(2, '0')}`;
               return (
-                <motion.button
+                <button
                   key={date}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`p-2 text-center rounded-lg relative ${getStatusClass(date)}`}
+                  className={`p-2 text-center rounded-lg relative ${getStatusClass(date)} transition-transform hover:scale-105`}
                 >
                   {day}
                   {attendanceData.dates[date]?.details && (
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" />
                   )}
-                </motion.button>
+                </button>
               );
             })}
           </div>
@@ -191,7 +177,7 @@ export function AttendanceView() {
               <span>Holiday</span>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </DashboardLayout>
   );

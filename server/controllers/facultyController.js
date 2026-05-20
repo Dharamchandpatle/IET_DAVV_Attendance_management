@@ -1,30 +1,8 @@
 const facultyService = require('../services/facultyService');
 const { sendSuccess, sendError } = require('../utils/response');
 
-// FacultyController handles faculty auth and profile CRUD.
+// FacultyController handles faculty profile CRUD.
 class FacultyController {
-	// Faculty registration with profile creation.
-	static async register(req, res) {
-		try {
-			const data = await facultyService.registerFaculty(req.body);
-			return sendSuccess(res, 'Faculty registered successfully', data, 201);
-		} catch (error) {
-			const status = error.status || (error.code === 'ER_DUP_ENTRY' ? 409 : 500);
-			return sendError(res, error.message || 'Error registering faculty', status);
-		}
-	}
-
-	// Faculty login only (role-checked).
-	static async login(req, res) {
-		try {
-			const data = await facultyService.loginFaculty(req.body);
-			return sendSuccess(res, 'Login successful', data);
-		} catch (error) {
-			const status = error.status || 500;
-			return sendError(res, error.message || 'Error logging in', status);
-		}
-	}
-
 	// Admin list of faculty.
 	static async getAll(req, res) {
 		try {
@@ -73,7 +51,6 @@ class FacultyController {
 				name: req.body.name,
 				email: req.body.email,
 				phone: req.body.phone,
-				profile_image: req.body.profile_image,
 				is_active: req.body.is_active
 			};
 

@@ -1,6 +1,7 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { DEPARTMENTS, SEMESTERS } from '../adminConstants';
 
+// Form component for creating or editing course records.
 export function CourseForm({ onSubmit }) {
   return (
     <form onSubmit={(e) => {
@@ -63,14 +64,7 @@ export function CourseForm({ onSubmit }) {
         </select>
       </div>
 
-      <motion.button
-        type="submit"
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg"
-      >
-        Add Course
-      </motion.button>
+      <button type="submit" className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Add Course</button>
     </form>
   );
 }

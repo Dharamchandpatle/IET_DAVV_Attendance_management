@@ -4,7 +4,9 @@ const { sendSuccess, sendError } = require('../utils/response');
 class AttendanceController {
   static async markClassAttendance(req, res) {
     try {
-      const data = await attendanceService.markClassAttendance(req.body);
+      // Pass the logged-in user id as the marker
+      const payload = { ...req.body, marked_by: req.user.id };
+      const data = await attendanceService.markClassAttendance(payload);
       return sendSuccess(res, 'Attendance marked successfully', data);
     } catch (error) {
       const status = error.status || 500;

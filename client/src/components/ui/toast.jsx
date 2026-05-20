@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+// import { AnimatePresence, motion } from "framer-motion";
 import { gsap } from "gsap";
 import { X } from "lucide-react";
 import * as React from "react";
@@ -8,10 +8,7 @@ const ToastContext = React.createContext({});
 
 export function Toast({ className, children, onClose, ...props }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
+    <div
       className={cn(
         "fixed bottom-4 right-4 z-50 rounded-lg bg-white p-4 shadow-lg dark:bg-gray-800",
         className
@@ -27,7 +24,7 @@ export function Toast({ className, children, onClose, ...props }) {
           <X size={16} />
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -60,27 +57,26 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ show }}>
       {children}
-      <AnimatePresence>
-        {toasts.map((toast) => (
-          <Toast
-            key={toast.id}
-            onClose={() =>
-              setToasts((current) =>
-                current.filter((t) => t.id !== toast.id)
-              )
-            }
-          >
-            <div>
-              {toast.title && (
-                <div className="font-semibold">{toast.title}</div>
-              )}
-              {toast.description && (
-                <div className="text-sm text-gray-500">{toast.description}</div>
-              )}
-            </div>
-          </Toast>
-        ))}
-      </AnimatePresence>
+      {toasts.map((toast) => (
+        <Toast
+          key={toast.id}
+          className={`toast-${toast.id}`}
+          onClose={() =>
+            setToasts((current) =>
+              current.filter((t) => t.id !== toast.id)
+            )
+          }
+        >
+          <div>
+            {toast.title && (
+              <div className="font-semibold">{toast.title}</div>
+            )}
+            {toast.description && (
+              <div className="text-sm text-gray-500">{toast.description}</div>
+            )}
+          </div>
+        </Toast>
+      ))}
     </ToastContext.Provider>
   );
 }

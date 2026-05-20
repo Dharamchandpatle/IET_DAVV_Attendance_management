@@ -9,7 +9,6 @@ class Faculty {
 			email,
 			password,
 			phone = null,
-			profile_image = null,
 			faculty_code,
 			department_id,
 			designation,
@@ -27,8 +26,8 @@ class Faculty {
 
 		return withTransaction(async (connection) => {
 			const [userResult] = await connection.execute(
-				'INSERT INTO users (name, email, password, role, phone, profile_image, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)',
-				[name, email, hashedPassword, 'faculty', phone, profile_image, true]
+				'INSERT INTO users (name, email, password, role, phone, is_active) VALUES (?, ?, ?, ?, ?, ?)',
+				[name, email, hashedPassword, 'faculty', phone, true]
 			);
 
 			const userId = userResult.insertId;
@@ -53,7 +52,7 @@ class Faculty {
 	// Returns faculty with user + department info.
 	static async findAll() {
 		return query(
-			`SELECT f.*, u.name, u.email, u.phone, u.profile_image, u.is_active, u.created_at, u.updated_at, u.last_login,
+			`SELECT f.*, u.name, u.email, u.phone, u.is_active, u.created_at, u.updated_at, u.last_login,
 					d.name AS department_name, d.code AS department_code
 			 FROM faculty f
 			 JOIN users u ON f.user_id = u.id
@@ -65,8 +64,8 @@ class Faculty {
 	// Fetches a faculty member by faculty id.
 	static async findById(id) {
 		const rows = await query(
-			`SELECT f.*, u.name, u.email, u.phone, u.profile_image, u.is_active, u.created_at, u.updated_at, u.last_login,
-					d.name AS department_name, d.code AS department_code
+			`SELECT f.*, u.name, u.email, u.phone, u.is_active, u.created_at, u.updated_at, u.last_login,
+				d.name AS department_name, d.code AS department_code
 			 FROM faculty f
 			 JOIN users u ON f.user_id = u.id
 			 LEFT JOIN departments d ON f.department_id = d.id
@@ -79,8 +78,8 @@ class Faculty {
 	// Fetches a faculty member by user id.
 	static async findByUserId(userId) {
 		const rows = await query(
-			`SELECT f.*, u.name, u.email, u.phone, u.profile_image, u.is_active, u.created_at, u.updated_at, u.last_login,
-					d.name AS department_name, d.code AS department_code
+			`SELECT f.*, u.name, u.email, u.phone, u.is_active, u.created_at, u.updated_at, u.last_login,
+				d.name AS department_name, d.code AS department_code
 			 FROM faculty f
 			 JOIN users u ON f.user_id = u.id
 			 LEFT JOIN departments d ON f.department_id = d.id
@@ -94,7 +93,7 @@ class Faculty {
 	static async updateById(id, userUpdates = {}, facultyUpdates = {}) {
 		return withTransaction(async (connection) => {
 			const [currentRows] = await connection.execute(
-				`SELECT f.*, u.name, u.email, u.phone, u.profile_image, u.is_active, u.created_at, u.updated_at, u.last_login,
+				`SELECT f.*, u.name, u.email, u.phone, u.is_active, u.created_at, u.updated_at, u.last_login,
 					d.name AS department_name, d.code AS department_code
 				 FROM faculty f
 				 JOIN users u ON f.user_id = u.id
@@ -122,10 +121,7 @@ class Faculty {
 				userFields.push('phone = ?');
 				userValues.push(userUpdates.phone);
 			}
-			if (userUpdates.profile_image !== undefined) {
-				userFields.push('profile_image = ?');
-				userValues.push(userUpdates.profile_image);
-			}
+			// profile_image removed from users schema
 			if (userUpdates.is_active !== undefined) {
 				userFields.push('is_active = ?');
 				userValues.push(userUpdates.is_active);

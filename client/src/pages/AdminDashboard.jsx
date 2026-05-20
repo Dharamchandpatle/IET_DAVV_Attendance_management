@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+// import { AnimatePresence, motion } from 'framer-motion';
 import { UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AdminAnnouncements } from '../components/admin/AdminAnnouncements';
@@ -6,6 +6,7 @@ import { DataTable } from '../components/admin/DataTable';
 import { DynamicFormModal } from '../components/admin/DynamicFormModal';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { KPIGrid } from '../components/dashboard/KPIGrid';
+import { useAuth } from '../context/AuthContext';
 
 const adminActions = [
   {
@@ -30,6 +31,7 @@ const actionColorClasses = {
 };
 
 export function AdminDashboard() {
+  const { user } = useAuth();
   const activeTab = 'students';
   const [activeModal, setActiveModal] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -84,7 +86,7 @@ export function AdminDashboard() {
           <div>
             <h1 className="text-3xl font-bold">Admin Dashboard</h1>
             <p className="text-muted-foreground">
-              Welcome back, Administrator
+              Welcome back, {user?.name || 'Administrator'}
             </p>
           </div>
         </header>
@@ -95,16 +97,12 @@ export function AdminDashboard() {
           <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {adminActions.map((action) => (
-              <motion.button
+              <button
                 key={action.id}
                 onClick={() => setActiveModal(action.id)}
-                className="group p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm 
-                         hover:shadow-md transition-all text-left relative overflow-hidden admin-card"
-                whileHover={{ y: -5 }}
-                whileTap={{ scale: 0.98 }}
+                className="group p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all text-left relative overflow-hidden admin-card transform hover:-translate-y-1"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 
-                              transform translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 transform translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
                 
                 <action.icon
                   className={`w-8 h-8 ${actionColorClasses[action.color] || 'text-blue-500'} mb-3`}
@@ -113,7 +111,7 @@ export function AdminDashboard() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {action.description}
                 </p>
-              </motion.button>
+              </button>
             ))}
           </div>
         </section>
@@ -129,14 +127,12 @@ export function AdminDashboard() {
           </div>
         </section>
 
-        <AnimatePresence>
-          {activeModal && (
-            <DynamicFormModal
-              type={activeModal}
-              onClose={() => setActiveModal(null)}
-            />
-          )}
-        </AnimatePresence>
+        {activeModal && (
+          <DynamicFormModal
+            type={activeModal}
+            onClose={() => setActiveModal(null)}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

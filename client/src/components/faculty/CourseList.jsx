@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Users } from 'lucide-react';
 
 const courses = [
@@ -13,6 +13,7 @@ const courses = [
   // Add more courses...
 ];
 
+// Lists today's classes with quick attendance action.
 export function CourseList({ onMarkAttendance }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm">
@@ -20,11 +21,9 @@ export function CourseList({ onMarkAttendance }) {
         <h2 className="text-xl font-semibold mb-4">Today's Classes</h2>
         <div className="space-y-4">
           {courses.map((course) => (
-            <motion.div
+            <div
               key={course.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+              className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg transition-transform hover:translate-y-0.5"
             >
               <div className="flex justify-between items-start">
                 <div>
@@ -46,7 +45,7 @@ export function CourseList({ onMarkAttendance }) {
                 <span>{course.time}</span>
                 <span className="text-green-600">Attendance: {course.attendance}</span>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

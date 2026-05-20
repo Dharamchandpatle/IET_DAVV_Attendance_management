@@ -1,11 +1,13 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Calendar, Check, Flag, Star, X } from 'lucide-react';
 import { useState } from 'react';
 
+// Shows recent attendance history with status icons.
 export function AttendanceHistory({ history = [] }) {
   const [showDetails, setShowDetails] = useState(false);
 
   // Example structure for enhanced history
+  // Returns an icon for the attendance entry type.
   const getStatusIcon = (entry) => {
     switch (entry.type) {
       case 'regular':
@@ -25,6 +27,7 @@ export function AttendanceHistory({ history = [] }) {
     }
   };
 
+  // Returns a background class for the entry status.
   const getStatusClass = (entry) => {
     switch (entry.type) {
       case 'regular':
@@ -48,26 +51,19 @@ export function AttendanceHistory({ history = [] }) {
     <div className="space-y-4">
       <div className="flex gap-2">
         {history.map((entry, index) => (
-          <motion.button
+          <button
             key={index}
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: index * 0.1 }}
-            className={`p-2 rounded-lg ${getStatusClass(entry)}`}
+            className={`p-2 rounded-lg ${getStatusClass(entry)} transition-transform hover:scale-105`}
             onClick={() => entry.details && setShowDetails(!showDetails)}
             title={entry.details || (entry.present ? 'Present' : 'Absent')}
           >
             {getStatusIcon(entry)}
-          </motion.button>
+          </button>
         ))}
       </div>
 
       {showDetails && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-sm space-y-2"
-        >
+        <div className="text-sm space-y-2 transition-transform">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-green-500" />
@@ -86,7 +82,7 @@ export function AttendanceHistory({ history = [] }) {
               <span>Holiday</span>
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
     </div>
   );

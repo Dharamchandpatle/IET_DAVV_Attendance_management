@@ -2,6 +2,7 @@ const app = require("./app");
 const { port } = require("./config/env");
 const { testConnection } = require("./config/db");
 
+// Connects to the database before starting the HTTP server.
 const startServer = async () => {
   try {
     await testConnection();

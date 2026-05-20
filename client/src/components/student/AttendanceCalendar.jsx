@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Calendar, Info } from 'lucide-react';
 import { useState } from 'react';
 
@@ -17,6 +17,7 @@ const attendanceDates = {
   }
 };
 
+// Calendar view of attendance entries for a semester.
 export function AttendanceCalendar({ semester }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -24,6 +25,7 @@ export function AttendanceCalendar({ semester }) {
   const monthLabel = selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   const daysInMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
 
+  // Returns a class name based on attendance type/status.
   const getStatusClass = (date) => {
     const entry = currentMonthData[date];
     if (!entry) return 'bg-gray-100 dark:bg-gray-800';
@@ -44,6 +46,7 @@ export function AttendanceCalendar({ semester }) {
     }
   };
 
+  // Handles date selection and optional event details.
   const handleDateClick = (date, entry) => {
     setSelectedDate(new Date(date));
     setSelectedEvent(entry?.details ? entry : null);
@@ -74,10 +77,9 @@ export function AttendanceCalendar({ semester }) {
           const date = `2024-02-${String(day).padStart(2, '0')}`;
           const entry = currentMonthData[date];
           return (
-            <motion.button
+            <button
               key={date}
-              whileHover={{ scale: 1.1 }}
-              className={`p-2 rounded-lg relative ${getStatusClass(date)}`}
+              className={`p-2 rounded-lg relative ${getStatusClass(date)} transition-transform hover:scale-105`}
               onClick={() => handleDateClick(date, entry)}
             >
               {day}
@@ -86,7 +88,7 @@ export function AttendanceCalendar({ semester }) {
                   <Info className="w-3 h-3" />
                 </div>
               )}
-            </motion.button>
+            </button>
           );
         })}
       </div>
@@ -117,11 +119,7 @@ export function AttendanceCalendar({ semester }) {
 
       {/* Event Details */}
       {selectedEvent && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-4 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 mt-4"
-        >
+        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 mt-4 transition-transform">
           <div className="flex justify-between items-start">
             <div>
               <h4 className="font-medium">{selectedEvent.details}</h4>
@@ -141,7 +139,7 @@ export function AttendanceCalendar({ semester }) {
               <Info className="w-4 h-4" />
             </button>
           </div>
-        </motion.div>
+        </div>
       )}
     </div>
   );

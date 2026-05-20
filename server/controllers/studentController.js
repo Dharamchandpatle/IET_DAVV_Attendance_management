@@ -1,30 +1,8 @@
 const studentService = require('../services/studentService');
 const { sendSuccess, sendError } = require('../utils/response');
 
-// StudentController handles student auth and profile CRUD.
+// StudentController handles student profile CRUD.
 class StudentController {
-	// Student registration with profile creation.
-	static async register(req, res) {
-		try {
-			const data = await studentService.registerStudent(req.body);
-			return sendSuccess(res, 'Student registered successfully', data, 201);
-		} catch (error) {
-			const status = error.status || (error.code === 'ER_DUP_ENTRY' ? 409 : 500);
-			return sendError(res, error.message || 'Error registering student', status);
-		}
-	}
-
-	// Student login only (role-checked).
-	static async login(req, res) {
-		try {
-			const data = await studentService.loginStudent(req.body);
-			return sendSuccess(res, 'Login successful', data);
-		} catch (error) {
-			const status = error.status || 500;
-			return sendError(res, error.message || 'Error logging in', status);
-		}
-	}
-
 	// Admin/faculty list of students.
 	static async getAll(req, res) {
 		try {
@@ -73,7 +51,6 @@ class StudentController {
 				name: req.body.name,
 				email: req.body.email,
 				phone: req.body.phone,
-				profile_image: req.body.profile_image,
 				is_active: req.body.is_active
 			};
 

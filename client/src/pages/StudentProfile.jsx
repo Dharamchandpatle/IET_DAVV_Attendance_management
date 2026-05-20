@@ -1,109 +1,119 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Camera, Edit2, Mail, Phone, School, User } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
 import { AttendanceHistory } from '../components/student/AttendanceHistory';
-import { useToast } from '../components/ui/toast';
-
-const mockProfile = {
-  profileImage: '/icon.svg',
-  personalInfo: {
-    name: 'Dharamchand Patle',
-    id: 'DE24799',
-    email: '24bcs091@ietdavv.edu.in',
-    phone: '+91 6263827162',
-    address: '123 College Road, Indore',
-    department: 'Computer Science',
-    semester: '4th',
-    section: 'A'
-  },
-  academicInfo: {
-    attendance: 85,
-    cgpa: 8.5,
-    totalClasses: 100,
-    attendedClasses: 85
-  },
-  attendanceHistory: [true, true, false, true, true]
-};
+import { useAuth } from '../context/AuthContext';
 
 export function StudentProfile() {
-  const { show } = useToast();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState(mockProfile);
-  const info = profileData.personalInfo;
-  const academics = profileData.academicInfo;
+  const [isLoading, setIsLoading] = useState(true);
+  const [profileData, setProfileData] = useState(null);
+
+  // Fetch student profile data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        if (user?.id) {
+          // Use the user data from auth context as the profile
+          const data = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone || '',
+            address: user.address || '',
+            roll_number: user.roll_number,
+            department_name: user.department_name || 'Computer Science',
+            semester: user.semester || 4,
+            section: user.section || 'A',
+            admission_year: user.admission_year,
+            cgpa: user.cgpa || 0,
+            profile_image: user.profile_image,
+            guardian_name: user.guardian_name || '',
+            guardian_phone: user.guardian_phone || '',
+            attendance: 85,
+            totalClasses: 100,
+            attendedClasses: 85,
+            attendanceHistory: [true, true, false, true, true]
+          };
+          setProfileData(data);
+        }
+      } catch (error) {
+        toast.error('Failed to load profile');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [user?.id]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
       try {
-        // API call would go here for image upload
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = (event) => {
           setProfileData(prev => ({
             ...prev,
-            profileImage: e.target.result
+            profile_image: event.target.result
           }));
         };
         reader.readAsDataURL(file);
-        
-        show({
-          title: "Success",
-          description: "Profile picture updated successfully",
-          type: "success"
-        });
+        toast.success('Profile picture updated');
       } catch (error) {
-        show({
-          title: "Error",
-          description: "Failed to update profile picture",
-          type: "error"
-        });
+        toast.error('Failed to update profile picture');
       }
     }
   };
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
-    const formData = Object.fromEntries(new FormData(e.target));
+    const formData = new FormData(e.target);
     
     try {
-      // API call would go here
-      const updatedInfo = {
-        phone: formData.phone,
-        address: formData.address
+      setIsLoading(true);
+      const updateData = {
+        name: formData.get('name') || profileData.name,
+        phone: formData.get('phone'),
+        address: formData.get('address')
       };
 
+      // Update profile data locally
       setProfileData(prev => ({
         ...prev,
-        personalInfo: {
-          ...prev.personalInfo,
-          ...updatedInfo
-        }
+        ...updateData
       }));
 
       setIsEditing(false);
-      show({
-        title: "Success",
-        description: "Profile updated successfully",
-        type: "success"
-      });
+      toast.success('Profile updated successfully');
     } catch (error) {
-      show({
-        title: "Error",
-        description: "Failed to update profile",
-        type: "error"
-      });
+      toast.error('Failed to update profile');
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  if (isLoading || !profileData) {
+    return (
+      <DashboardLayout userRole="student">
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const info = profileData;
 
   return (
     <DashboardLayout userRole="student">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Profile Header */}
-        <motion.div 
+        <div 
           className="profile-section relative bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
         >
           <div className="flex items-center gap-6">
             <div className="relative">
@@ -131,20 +141,18 @@ export function StudentProfile() {
               </p>
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={() => setIsEditing(!isEditing)}
               className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600"
             >
               <Edit2 className="w-5 h-5" />
-            </motion.button>
+            </button>
           </div>
-        </motion.div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Personal Information */}
-          <motion.div 
+          <div 
             className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
           >
             <h2 className="text-xl font-semibold mb-4">Personal Information</h2>
@@ -168,23 +176,19 @@ export function StudentProfile() {
                   required
                 />
                 <div className="flex gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
                     type="submit"
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg"
                   >
                     Save Changes
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  </button>
+                  <button
                     type="button"
                     onClick={() => setIsEditing(false)}
                     className="px-4 py-2 border rounded-lg"
                   >
                     Cancel
-                  </motion.button>
+                  </button>
                 </div>
               </form>
             ) : (
@@ -203,10 +207,10 @@ export function StudentProfile() {
                 </div>
               </div>
             )}
-          </motion.div>
+          </div>
 
           {/* Academic Performance */}
-          <motion.div 
+          <div 
             className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
           >
             <h2 className="text-xl font-semibold mb-4">Academic Performance</h2>
@@ -217,36 +221,33 @@ export function StudentProfile() {
                 </p>
                 <div className="flex items-center gap-4">
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${academics.attendance}%` }}
+                    <div
                       className="bg-blue-600 h-2 rounded-full"
+                      style={{ width: `${(profileData.attendedClasses / profileData.totalClasses) * 100}%` }}
                     />
                   </div>
-                  <span className="font-bold">{academics.attendance}%</span>
+                  <span className="font-bold">{Math.round((profileData.attendedClasses / profileData.totalClasses) * 100)}%</span>
                 </div>
               </div>
               
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">CGPA</p>
-                <motion.p 
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
+                <p 
                   className="text-2xl font-bold"
                 >
-                  {academics.cgpa}
-                </motion.p>
+                  {profileData.cgpa}
+                </p>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Attendance History */}
-          <motion.div 
+          <div 
             className="profile-section bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm md:col-span-2"
           >
             <h2 className="text-xl font-semibold mb-4">Recent Attendance</h2>
             <AttendanceHistory history={profileData.attendanceHistory} />
-          </motion.div>
+          </div>
         </div>
       </div>
     </DashboardLayout>

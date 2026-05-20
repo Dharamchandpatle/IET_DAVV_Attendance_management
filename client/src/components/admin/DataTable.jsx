@@ -1,8 +1,9 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { TABLE_COLUMNS } from './adminConstants';
 
+// Sortable table for displaying admin data with pagination support.
 export function DataTable({ type = 'students', data = [] }) {
   const [sortConfig, setSortConfig] = useState({
     key: null,
@@ -11,6 +12,7 @@ export function DataTable({ type = 'students', data = [] }) {
 
   const columns = TABLE_COLUMNS[type] ?? TABLE_COLUMNS.students;
 
+  // Updates sort order for the clicked column.
   const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -22,6 +24,7 @@ export function DataTable({ type = 'students', data = [] }) {
   const sortedData = useMemo(() => {
     if (!sortConfig.key) return data;
 
+    // Sorts rows by the selected column and direction.
     return [...data].sort((a, b) => {
       const aVal = a[sortConfig.key];
       const bVal = b[sortConfig.key];
@@ -71,13 +74,7 @@ export function DataTable({ type = 'students', data = [] }) {
         </thead>
         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
           {sortedData.map((row, index) => (
-            <motion.tr
-              key={row.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="hover:bg-gray-50 dark:hover:bg-gray-800/50"
-            >
+            <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-transform">
               {columns.map(({ key }) => (
                 <td key={key} className="px-4 py-3 text-sm">
                   {key === 'attendance' ? (
@@ -118,7 +115,7 @@ export function DataTable({ type = 'students', data = [] }) {
                   </button>
                 </div>
               </td>
-            </motion.tr>
+            </tr>
           ))}
         </tbody>
       </table>

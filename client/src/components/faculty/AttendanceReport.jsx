@@ -10,6 +10,7 @@ const attendanceData = [
   // Add more data points...
 ];
 
+// Displays a simple attendance trend report chart.
 export function AttendanceReport() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm">

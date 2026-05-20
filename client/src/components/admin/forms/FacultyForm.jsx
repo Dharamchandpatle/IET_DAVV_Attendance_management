@@ -1,7 +1,8 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { DEPARTMENTS, DESIGNATIONS } from '../adminConstants';
 
+// Form component for creating or editing faculty records.
 export function FacultyForm({ onSubmit }) {
   const [formData, setFormData] = useState({
     facultyId: generateFacultyId(),
@@ -64,19 +65,13 @@ export function FacultyForm({ onSubmit }) {
         disabled
       />
 
-      <motion.button
-        type="submit"
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg"
-      >
-        Add Faculty Member
-      </motion.button>
+      <button type="submit" className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Add Faculty Member</button>
     </form>
   );
 }
 
 function generateFacultyId() {
+  // Generates a unique faculty ID using prefix and random number.
   const prefix = 'FAC';
   const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
   return `${prefix}${random}`;

@@ -4,18 +4,22 @@ import { useEffect, useRef } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Renders animated background blobs for the hero section.
 export function HeroShape() {
   const container = useRef(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Animate the grid pattern
-      gsap.to('.bg-grid-pattern', {
-        backgroundPosition: '40px 40px',
-        duration: 20,
-        repeat: -1,
-        ease: 'none'
-      });
+      // Animate the grid pattern (guard element existence)
+      const gridEl = document.querySelector('.bg-grid-pattern');
+      if (gridEl) {
+        gsap.to(gridEl, {
+          backgroundPosition: '40px 40px',
+          duration: 20,
+          repeat: -1,
+          ease: 'none'
+        });
+      }
 
       // Create parallax effect for each blob
       const blobs = container.current.querySelectorAll('.blob');

@@ -1,6 +1,7 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Calendar, Clock, FileText, Users } from 'lucide-react';
 
+// Summarizes attendance stats for a student list.
 export function AttendanceStats({ students }) {
   const presentCount = students.filter(s => s.present).length;
   const totalCount = students.length;
@@ -21,10 +22,8 @@ export function AttendanceStats({ students }) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <motion.div 
+      <div 
         className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
       >
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
@@ -35,26 +34,22 @@ export function AttendanceStats({ students }) {
             <p className="stat-number text-xl font-bold">{presentCount}/{totalCount}</p>
           </div>
         </div>
-        <motion.div 
+        <div 
           className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2"
         >
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${percentage}%` }}
+          <div
             className={`h-2 rounded-full ${
               percentage >= 75 ? 'bg-green-500' :
               percentage >= 50 ? 'bg-yellow-500' :
               'bg-red-500'
             }`}
+            style={{ width: `${percentage}%` }}
           />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div 
+      <div 
         className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
       >
         <div className="flex items-center gap-3">
           <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
@@ -65,13 +60,10 @@ export function AttendanceStats({ students }) {
             <p className="stat-number text-xl font-bold">{averageRegular}%</p>
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div 
+      <div 
         className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
       >
         <div className="flex items-center gap-3">
           <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
@@ -82,13 +74,10 @@ export function AttendanceStats({ students }) {
             <p className="stat-number text-xl font-bold">{averageEvents}%</p>
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div 
+      <div 
         className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
       >
         <div className="flex items-center gap-3">
           <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
@@ -99,7 +88,7 @@ export function AttendanceStats({ students }) {
             <p className="stat-number text-xl font-bold">75%</p>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { clearAuth, getToken } from './authStorage';
 
+// Shared Axios instance for API calls.
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000',
   headers: {
@@ -8,6 +9,7 @@ const api = axios.create({
   }
 });
 
+// Attaches auth token to outgoing requests.
 api.interceptors.request.use((config) => {
   const token = getToken();
   if (token) {
@@ -16,6 +18,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Handles auth failures globally.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -30,6 +33,7 @@ api.interceptors.response.use(
   }
 );
 
+// Normalizes API payloads and throws on failures.
 export const unwrapResponse = (response) => {
   const payload = response?.data;
   if (!payload) {
@@ -41,6 +45,7 @@ export const unwrapResponse = (response) => {
   return payload;
 };
 
+// Extracts a user-friendly error message.
 export const getApiErrorMessage = (error, fallback = 'Something went wrong') => {
   return error?.response?.data?.message || error?.message || fallback;
 };

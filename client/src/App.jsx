@@ -1,9 +1,9 @@
-import { AnimatePresence, motion } from 'framer-motion';
+// import { AnimatePresence, motion } from 'framer-motion';
 import { Suspense } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
-import { ToastProvider } from './components/ui/toast';
+import { ToasterProvider } from './components/ui/Toaster';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { lazyLoad } from './utils/routeLoader';
@@ -28,18 +28,15 @@ const LeaveRequest = lazyLoad('LeaveRequest');
 // const ExamView = lazyLoad('ExamView');
 const StudentProfile = lazyLoad('StudentProfile');
 
+// Handles route transitions and lazy-loaded pages.
 function AppContent() {
   const location = useLocation();
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
-      <AnimatePresence mode="wait">
-        <motion.div
+      <div>
+        <div
           key={location.pathname}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
         >
           <Suspense fallback={<LoadingSpinner fullScreen />}>
             <Routes location={location}>
@@ -94,21 +91,22 @@ function AppContent() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
-        </motion.div>
-      </AnimatePresence>
+        </div>
+      </div>
     </div>
   );
 }
 
+// Wraps routing and global providers.
 function App() {
   return (
     <Router>
       <ThemeProvider>
-        <AuthProvider>
-          <ToastProvider>
+        <ToasterProvider>
+          <AuthProvider>
             <AppContent />
-          </ToastProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </ToasterProvider>
       </ThemeProvider>
     </Router>
   );

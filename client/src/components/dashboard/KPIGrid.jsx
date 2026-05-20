@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { BarChart3, BookOpen, GraduationCap, Users } from 'lucide-react';
 
 const kpiData = {
@@ -22,21 +22,14 @@ const kpiData = {
   ]
 };
 
+// Displays key KPI cards for the selected role.
 export function KPIGrid({ userRole = 'student' }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {kpiData[userRole].map((kpi, index) => (
-        <motion.div
+        <div
           key={kpi.title}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
-          className="dashboard-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300"
-          whileHover={{ 
-            y: -5,
-            scale: 1.02,
-            transition: { duration: 0.2 }
-          }}
+          className="dashboard-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:scale-102"
         >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg transform transition-transform group-hover:scale-110">
@@ -62,7 +55,7 @@ export function KPIGrid({ userRole = 'student' }) {
               )}
             </div>
           </div>
-        </motion.div>
+        </div>
       ))}
     </div>
   );
