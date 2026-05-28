@@ -34,6 +34,20 @@ class FacultyController {
 		}
 	}
 
+	// Returns the faculty record for the logged-in user
+	static async getMe(req, res) {
+		try {
+			const userId = req.user?.id;
+			if (!userId) return sendError(res, 'Unauthorized', 401);
+			const faculty = await facultyService.getFacultyByUserId(userId);
+			if (!faculty) return sendError(res, 'Faculty not found', 404);
+			return sendSuccess(res, 'Faculty fetched successfully', faculty);
+		} catch (error) {
+			const status = error.status || 500;
+			return sendError(res, error.message || 'Error fetching faculty', status);
+		}
+	}
+
 	// Faculty can only update their own record.
 	static async update(req, res) {
 		try {
@@ -84,6 +98,18 @@ class FacultyController {
 		} catch (error) {
 			const status = error.status || 500;
 			return sendError(res, error.message || 'Error deleting faculty', status);
+		}
+	}
+
+	// Admin create faculty
+	static async create(req, res) {
+		try {
+			const payload = req.body;
+			const result = await facultyService.createFaculty(payload);
+			return sendSuccess(res, 'Faculty created successfully', result, 201);
+		} catch (error) {
+			const status = error.status || 500;
+			return sendError(res, error.message || 'Error creating faculty', status);
 		}
 	}
 }

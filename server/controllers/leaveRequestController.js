@@ -47,6 +47,21 @@ class LeaveRequestController {
       return sendError(res, error.message || 'Error updating leave request', status);
     }
   }
+
+  static async delete(req, res) {
+    try {
+      const { id } = req.params;
+      const user = req.user;
+      const result = await leaveRequestService.deleteLeaveRequest(id, user);
+      if (result.affectedRows === 0) {
+        return sendError(res, 'Leave request not found or not allowed', 404);
+      }
+      return sendSuccess(res, 'Leave request deleted successfully');
+    } catch (error) {
+      const status = error.status || 500;
+      return sendError(res, error.message || 'Error deleting leave request', status);
+    }
+  }
 }
 
 module.exports = LeaveRequestController;

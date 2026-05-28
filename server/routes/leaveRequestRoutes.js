@@ -11,6 +11,10 @@ router.post('/', authMiddleware(['student']), LeaveRequestController.create);
 router.get('/', authMiddleware(['student', 'faculty', 'admin']), LeaveRequestController.list);
 
 // Faculty/admin review leave requests.
-router.patch('/:id/status', authMiddleware(['faculty', 'admin']), LeaveRequestController.updateStatus);
+// Allow students to cancel their own requests and faculty/admin to update status.
+router.patch('/:id/status', authMiddleware(['student', 'faculty', 'admin']), LeaveRequestController.updateStatus);
+
+// Allow deletion of leave requests (student can delete their own request).
+router.delete('/:id', authMiddleware(['student', 'faculty', 'admin']), LeaveRequestController.delete);
 
 module.exports = router;

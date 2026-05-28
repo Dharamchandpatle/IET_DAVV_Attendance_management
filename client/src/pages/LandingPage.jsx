@@ -30,6 +30,8 @@ export default function LandingPage() {
   const featuresRef = useRef(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const rootRef = useRef(null);
+
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Animate header content
@@ -72,7 +74,7 @@ export default function LandingPage() {
         stagger: 0.2,
         ease: "power2.out"
       });
-    });
+    }, rootRef.current);
 
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -99,7 +101,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="relative min-h-screen font-['Inter']">
+    <div ref={rootRef} className="relative min-h-screen font-['Inter']">
       {/* Background wrapper */}
       <div className="absolute inset-0 overflow-hidden">
         <HeroShape />

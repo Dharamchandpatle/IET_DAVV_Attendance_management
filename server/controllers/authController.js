@@ -2,41 +2,36 @@ const { registerUser, loginUser, refreshToken } = require('../services/authServi
 const { sendSuccess, sendError } = require('../utils/response');
 
 class AuthController {
-  // Handle user registration
   static async register(req, res) {
     try {
-      const data = await registerUser(req.body);
-      return sendSuccess(res, 'User registered successfully', data, 201);
-    } catch (error) {
-      const status = error.status || 500;
-      return sendError(res, error.message || 'Error registering user', status);
+      const result = await registerUser(req.body);
+      return sendSuccess(res, 'User registered', result, 201);
+    } catch (err) {
+      return sendError(res, err.message || 'Registration failed', err.status || 400);
     }
   }
 
-  // Handle user login
   static async login(req, res) {
     try {
-      const data = await loginUser(req.body);
-      return sendSuccess(res, 'Login successful', data, 200);
-    } catch (error) {
-      const status = error.status || 500;
-      return sendError(res, error.message || 'Error logging in', status);
+      const result = await loginUser(req.body);
+      return sendSuccess(res, 'Login successful', result, 200);
+    } catch (err) {
+      return sendError(res, err.message || 'Login failed', err.status || 401);
     }
   }
 
-  // Handle user logout
   static async logout(req, res) {
+    // For this simple implementation we don't need server-side logout logic.
     return sendSuccess(res, 'Logout successful', null, 200);
   }
 
-  // Handle token refresh
   static async refreshToken(req, res) {
     try {
-      const data = await refreshToken(req.body.token);
-      return sendSuccess(res, 'Token refreshed successfully', data, 200);
-    } catch (error) {
-      const status = error.status || 401;
-      return sendError(res, error.message || 'Invalid or expired token', status);
+      const token = req.body.token;
+      const data = await refreshToken(token);
+      return sendSuccess(res, 'Token refreshed', data, 200);
+    } catch (err) {
+      return sendError(res, err.message || 'Invalid token', err.status || 401);
     }
   }
 }

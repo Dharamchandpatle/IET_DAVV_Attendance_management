@@ -2,7 +2,7 @@
 import { Calendar, Image, Upload, X } from 'lucide-react';
 import { useState } from 'react';
 import { getApiErrorMessage } from '../../services/api';
-import { createLeaveRequest } from '../../services/leaveService';
+import { createLeaveRequest, uploadAttachments } from '../../services/leaveService';
 import { useToast } from '../ui/toast';
 
 const MAX_FILES = 5;
@@ -107,12 +107,18 @@ export function LeaveRequestForm({ onSubmit, isSubmitting = false }) {
       other: 'other'
     };
 
+    let documentUrls = [];
+    if (formData.attachments && formData.attachments.length) {
+      // upload files first
+      documentUrls = await uploadAttachments(formData.attachments);
+    }
+
     const payload = {
       start_date: formData.fromDate,
       end_date: formData.toDate,
       reason: formData.reason,
       type: typeMap[formData.type] || 'other',
-      document_urls: formData.attachments.map((file) => file.name)
+      document_urls: documentUrls
     };
 
     try {

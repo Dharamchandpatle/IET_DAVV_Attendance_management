@@ -1,11 +1,11 @@
-const { getDepartments } = require('../services/departmentService');
+const { query } = require('../config/db');
 const { sendSuccess, sendError } = require('../utils/response');
 
 class DepartmentController {
-  static async list(req, res) {
+  static async getAll(req, res) {
     try {
-      const departments = await getDepartments();
-      return sendSuccess(res, 'Departments fetched successfully', departments);
+      const rows = await query('SELECT id, name, code FROM departments ORDER BY name');
+      return sendSuccess(res, 'Departments fetched', rows);
     } catch (error) {
       const status = error.status || 500;
       return sendError(res, error.message || 'Error fetching departments', status);

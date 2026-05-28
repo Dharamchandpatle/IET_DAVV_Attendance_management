@@ -34,6 +34,34 @@ class StudentController {
 		}
 	}
 
+	// Returns the authenticated student's profile (by user id).
+	static async getMyProfile(req, res) {
+		try {
+			const userId = req.user?.id;
+			if (!userId) return sendError(res, 'Unauthorized', 401);
+			const student = await studentService.getStudentById(userId);
+			// studentService.getStudentById expects student id; try finding by user id instead
+			const byUser = await studentService.getStudentByUserId(userId);
+			if (!byUser) return sendError(res, 'Student not found', 404);
+			return sendSuccess(res, 'Profile fetched', byUser);
+		} catch (error) {
+			const status = error.status || 500;
+			return sendError(res, error.message || 'Error fetching profile', status);
+		}
+	}
+
+	// Admin create student (wraps Student.createWithUser)
+	static async create(req, res) {
+		try {
+			const payload = req.body;
+			const result = await studentService.createStudent(payload);
+			return sendSuccess(res, 'Student created successfully', result, 201);
+		} catch (error) {
+			const status = error.status || 500;
+			return sendError(res, error.message || 'Error creating student', status);
+		}
+	}
+
 	// Students can only update their own record.
 	static async update(req, res) {
 		try {

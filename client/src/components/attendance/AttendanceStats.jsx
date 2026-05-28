@@ -1,92 +1,38 @@
-// import { motion } from 'framer-motion';
-import { Calendar, Clock, FileText, Users } from 'lucide-react';
+import { useMemo } from 'react';
 
-// Summarizes attendance stats for a student list.
-export function AttendanceStats({ students }) {
-  const presentCount = students.filter(s => s.present).length;
-  const totalCount = students.length;
-  const percentage = Math.round((presentCount / totalCount) * 100) || 0;
-
-  const stats = students.reduce(
-    (acc, student) => {
-      acc.regular += student.attendance?.regular || 0;
-      acc.events += student.attendance?.events || 0;
-      acc.count += 1;
-      return acc;
-    },
-    { regular: 0, events: 0, count: 0 }
-  );
-
-  const averageRegular = Math.round(stats.regular / stats.count) || 0;
-  const averageEvents = Math.round(stats.events / stats.count) || 0;
+export function AttendanceStats({ students = [], present: presentProp, absent: absentProp }) {
+  const stats = useMemo(() => {
+    const total = students.length;
+    const present = typeof presentProp === 'number' ? presentProp : students.filter(s => s.present).length;
+    const absent = typeof absentProp === 'number' ? absentProp : total - present;
+    const percent = total ? Math.round((present / total) * 100) : 0;
+    return { total, present, absent, percent };
+  }, [students, presentProp, absentProp]);
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div 
-        className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm"
-      >
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Present Today</p>
-            <p className="stat-number text-xl font-bold">{presentCount}/{totalCount}</p>
-          </div>
+    <div className="p-4 rounded-xl bg-white dark:bg-gray-800 shadow-sm min-w-[220px]">
+      <h4 className="text-sm text-gray-500 dark:text-gray-400">Attendance Summary</h4>
+      <div className="mt-2">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-600 dark:text-gray-400">Present</span>
+          <span className="font-semibold">{stats.present}</span>
         </div>
-        <div 
-          className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2"
-        >
-          <div
-            className={`h-2 rounded-full ${
-              percentage >= 75 ? 'bg-green-500' :
-              percentage >= 50 ? 'bg-yellow-500' :
-              'bg-red-500'
-            }`}
-            style={{ width: `${percentage}%` }}
-          />
+        <div className="flex items-center justify-between mt-1">
+          <span className="text-sm text-gray-600 dark:text-gray-400">Absent</span>
+          <span className="font-semibold">{stats.absent}</span>
         </div>
-      </div>
-
-      <div 
-        className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm"
-      >
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Regular Classes</p>
-            <p className="stat-number text-xl font-bold">{averageRegular}%</p>
-          </div>
+        <div className="flex items-center justify-between mt-1">
+          <span className="text-sm text-gray-600 dark:text-gray-400">Total</span>
+          <span className="font-semibold">{stats.total}</span>
         </div>
-      </div>
-
-      <div 
-        className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm"
-      >
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-            <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+        <div className="mt-3">
+          <div className="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div
+              className="h-3 bg-green-500"
+              style={{ width: `${stats.percent}%` }}
+            />
           </div>
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Event Attendance</p>
-            <p className="stat-number text-xl font-bold">{averageEvents}%</p>
-          </div>
-        </div>
-      </div>
-
-      <div 
-        className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm"
-      >
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-            <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Required</p>
-            <p className="stat-number text-xl font-bold">75%</p>
-          </div>
+          <div className="text-right mt-1 text-sm text-gray-600 dark:text-gray-400">{stats.percent}%</div>
         </div>
       </div>
     </div>

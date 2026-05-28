@@ -1,8 +1,10 @@
 import api, { unwrapResponse } from './api';
 
 // Fetch current student profile
+// If no studentId is provided, use the authenticated /me endpoint
 export const getStudentProfile = async (studentId) => {
-  const response = await api.get(`/api/students/${studentId}`);
+  const url = studentId ? `/api/students/${studentId}` : '/api/students/me';
+  const response = await api.get(url);
   return unwrapResponse(response).data;
 };
 

@@ -1,4 +1,4 @@
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 export function ToasterProvider({ children }) {
@@ -7,9 +7,9 @@ export function ToasterProvider({ children }) {
       {children}
       <ToastContainer
         position="top-right"
-        autoClose={3000}
+        autoClose={4000}
         hideProgressBar={false}
-        newestOnTop={true}
+        newestOnTop={false}
         closeOnClick
         rtl={false}
         pauseOnFocusLoss
@@ -19,31 +19,3 @@ export function ToasterProvider({ children }) {
     </>
   );
 }
-
-// Simple helper to show toast notifications
-export const showToast = {
-  success: (message, title = 'Success') => {
-    toast.success(message, { 
-      autoClose: 3000,
-      position: "top-right"
-    });
-  },
-  error: (message, title = 'Error') => {
-    toast.error(message, { 
-      autoClose: 3000,
-      position: "top-right"
-    });
-  },
-  info: (message, title = 'Info') => {
-    toast.info(message, { 
-      autoClose: 3000,
-      position: "top-right"
-    });
-  },
-  warning: (message, title = 'Warning') => {
-    toast.warning(message, { 
-      autoClose: 3000,
-      position: "top-right"
-    });
-  }
-};

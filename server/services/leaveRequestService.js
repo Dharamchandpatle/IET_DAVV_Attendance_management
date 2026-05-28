@@ -135,8 +135,35 @@ const updateLeaveStatus = async (id, { status, review_comment, reviewerUserId })
   return result;
 };
 
+// Deletes a leave request. Students can only delete their own requests.
+const deleteLeaveRequest = async (id, user) => {
+  // If student, ensure ownership
+  if (user.role === 'student') {
+    const student = await Student.findByUserId(user.id);
+    if (!student) {
+      const error = new Error('Student profile not found');
+      error.status = 404;
+      throw error;
+    }
+    // Verify the leave request belongs to this student
+    const rows = await query('SELECT student_id FROM leave_requests WHERE id = ?', [id]);
+    const ownerId = rows[0]?.student_id;
+    if (!ownerId || ownerId !== student.id) {
+      const error = new Error('Not authorized to delete this leave request');
+      error.status = 403;
+      throw error;
+    }
+  }
+
+  // Allow faculty/admin to delete any
+  const result = await query('DELETE FROM leave_requests WHERE id = ?', [id]);
+  return result;
+};
+
 module.exports = {
   createLeaveRequest,
   listLeaveRequests,
   updateLeaveStatus
+  ,deleteLeaveRequest
 };
+

@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const apiRoutes = require("./routes");
 const { sendError } = require("./utils/response");
+const path = require('path');
 
 const app = express();
 
@@ -17,6 +18,9 @@ app.get("/", (req, res) => {
 
 // API entrypoint: all routes are mounted under /api.
 app.use("/api", apiRoutes);
+
+// Serve uploaded files statically from /uploads
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // Fallback for unknown routes.
 app.use((req, res) => {

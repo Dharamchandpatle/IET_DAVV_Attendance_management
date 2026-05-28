@@ -19,6 +19,11 @@ const getFacultyById = async (id) => {
   return Faculty.findById(id);
 };
 
+// Fetches a faculty member by user id.
+const getFacultyByUserId = async (userId) => {
+  return Faculty.findByUserId(userId);
+};
+
 // Updates user and faculty details for a faculty record.
 const updateFaculty = async (id, userUpdates, facultyUpdates) => {
   return Faculty.updateById(id, userUpdates, facultyUpdates);
@@ -29,9 +34,18 @@ const deleteFaculty = async (id) => {
   return Faculty.deleteById(id);
 };
 
+// Create a new faculty (user + faculty rows)
+const createFaculty = async (payload) => {
+  const result = await Faculty.createWithUser(payload);
+  const faculty = await Faculty.findById(result.facultyId);
+  return faculty;
+};
+
 module.exports = {
   getAllFaculty,
   getFacultyById,
+  getFacultyByUserId,
   updateFaculty,
-  deleteFaculty
+  deleteFaculty,
+  createFaculty
 };

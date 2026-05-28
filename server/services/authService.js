@@ -1,258 +1,268 @@
 const bcrypt = require('bcryptjs');
+
 const User = require('../models/User');
 const Student = require('../models/Student');
 const Faculty = require('../models/Faculty');
+
 const { generateToken, verifyToken } = require('../utils/jwtUtils');
-const {
-  getMissingFields,
-  isInstitutionEmail,
-  isStrongPassword,
-  isValidEmail,
-  isValidRole
-} = require('../utils/validators');
 
-// Get user details based on role
-const getUserDetails = async (user) => {
-  try {
-    if (user.role === 'student') {
-      const students = await Student.findByUserId(user.id);
-      return students && students.length > 0 ? students[0] : null;
-    }
-    if (user.role === 'faculty') {
-      const faculty = await Faculty.findByUserId(user.id);
-      return faculty && faculty.length > 0 ? faculty[0] : null;
-    }
-  } catch (error) {
-    console.error('Error fetching user details:', error);
-  }
-  return null;
-};
+// ============================================
+// Attach role-specific profile
+// ============================================
 
-// Register a new student
-const registerStudent = async (payload) => {
-  const requiredFields = ['name', 'email', 'password', 'roll_number', 'department_id', 'semester', 'section', 'admission_year'];
-  const missing = getMissingFields(payload, requiredFields);
-  
-  if (missing.length) {
-    const error = new Error(`Missing required fields: ${missing.join(', ')}`);
-    error.status = 400;
-    throw error;
-  }
+async function attachRoleProfile(userRow) {
+  if (!userRow) return null;
 
-  if (!isValidEmail(payload.email) || !isInstitutionEmail(payload.email)) {
-    const error = new Error('Email must end with @ietdavv.edu.in');
-    error.status = 400;
-    throw error;
-  }
-
-  if (!isStrongPassword(payload.password)) {
-    const error = new Error('Password must be at least 8 characters');
-    error.status = 400;
-    throw error;
-  }
+  const base = {
+    id: userRow.id,
+    name: userRow.name,
+    email: userRow.email,
+    role: userRow.role,
+    phone: userRow.phone
+  };
 
   try {
-    const result = await Student.createWithUser(payload);
-    const student = await Student.findByUserId(result.userId);
-    
-    return {
-      token: generateToken({ id: result.userId, role: 'student' }),
-      user: {
-        id: result.userId,
-        name: payload.name,
-        email: payload.email,
-        role: 'student',
-        ...student[0]
+    if (userRow.role === 'student') {
+      const profile = await Student.findByUserId(userRow.id);
+
+      if (profile) {
+        return {
+          ...base,
+          profile
+        };
       }
-    };
-  } catch (error) {
-    if (error.code === 'ER_DUP_ENTRY') {
-      const message = error.message.includes('roll_number')
-        ? 'Roll number already exists'
-        : 'Email already exists';
-      const err = new Error(message);
-      err.status = 409;
-      throw err;
     }
-    throw error;
-  }
-};
 
-// Register a new faculty
-const registerFaculty = async (payload) => {
-  const requiredFields = ['name', 'email', 'password', 'faculty_code', 'department_id', 'designation', 'joining_date'];
-  const missing = getMissingFields(payload, requiredFields);
-  
-  if (missing.length) {
-    const error = new Error(`Missing required fields: ${missing.join(', ')}`);
-    error.status = 400;
-    throw error;
-  }
+    if (userRow.role === 'faculty') {
+      const profile = await Faculty.findByUserId(userRow.id);
 
-  if (!isValidEmail(payload.email) || !isInstitutionEmail(payload.email)) {
-    const error = new Error('Email must end with @ietdavv.edu.in');
-    error.status = 400;
-    throw error;
-  }
-
-  if (!isStrongPassword(payload.password)) {
-    const error = new Error('Password must be at least 8 characters');
-    error.status = 400;
-    throw error;
-  }
-
-  try {
-    const result = await Faculty.createWithUser(payload);
-    const faculty = await Faculty.findByUserId(result.userId);
-    
-    return {
-      token: generateToken({ id: result.userId, role: 'faculty' }),
-      user: {
-        id: result.userId,
-        name: payload.name,
-        email: payload.email,
-        role: 'faculty',
-        ...faculty[0]
+      if (profile) {
+        return {
+          ...base,
+          profile
+        };
       }
-    };
-  } catch (error) {
-    if (error.code === 'ER_DUP_ENTRY') {
-      const message = error.message.includes('faculty_code')
-        ? 'Faculty code already exists'
-        : 'Email already exists';
-      const err = new Error(message);
-      err.status = 409;
-      throw err;
     }
-    throw error;
-  }
-};
-
-// Register a new admin
-const registerAdmin = async (payload) => {
-  const requiredFields = ['name', 'email', 'password'];
-  const missing = getMissingFields(payload, requiredFields);
-  
-  if (missing.length) {
-    const error = new Error(`Missing required fields: ${missing.join(', ')}`);
-    error.status = 400;
-    throw error;
+  } catch (err) {
+    console.error('attachRoleProfile error:', err.message);
   }
 
-  if (!isValidEmail(payload.email) || !isInstitutionEmail(payload.email)) {
-    const error = new Error('Email must end with @ietdavv.edu.in');
-    error.status = 400;
-    throw error;
+  return base;
+}
+
+// ============================================
+// Register User
+// ============================================
+
+async function registerUser(payload) {
+  const { name, email, password, role } = payload;
+
+  // Required fields validation
+  if (!name || !email || !password || !role) {
+    const err = new Error(
+      'name, email, password and role are required'
+    );
+    err.status = 400;
+    throw err;
   }
 
-  if (!isStrongPassword(payload.password)) {
-    const error = new Error('Password must be at least 8 characters');
-    error.status = 400;
-    throw error;
+  // Email validation
+  if (!email.endsWith('@ietdavv.edu.in')) {
+    const err = new Error(
+      'Email must end with @ietdavv.edu.in'
+    );
+    err.status = 400;
+    throw err;
   }
 
   try {
-    const result = await User.createUser(payload.name, payload.email, payload.password, 'admin');
-    return {
-      token: generateToken({ id: result.insertId, role: 'admin' }),
-      user: {
+    // ============================================
+    // Student Registration
+    // ============================================
+
+    if (role === 'student') {
+      const result = await Student.createWithUser(payload);
+
+      const user = await User.findById(result.userId);
+
+      const token = generateToken({
+        id: result.userId,
+        role: 'student'
+      });
+
+      const userData = await attachRoleProfile(user);
+
+      return {
+        token,
+        user: userData
+      };
+    }
+
+    // ============================================
+    // Faculty Registration
+    // ============================================
+
+    if (role === 'faculty') {
+      const result = await Faculty.createWithUser(payload);
+
+      const user = await User.findById(result.userId);
+
+      const token = generateToken({
+        id: result.userId,
+        role: 'faculty'
+      });
+
+      const userData = await attachRoleProfile(user);
+
+      return {
+        token,
+        user: userData
+      };
+    }
+
+    // ============================================
+    // Admin Registration
+    // ============================================
+
+    if (role === 'admin') {
+      const result = await User.create({
+        name,
+        email,
+        password,
+        role
+      });
+
+      const user = await User.findById(result.insertId);
+
+      const token = generateToken({
         id: result.insertId,
-        name: payload.name,
-        email: payload.email,
         role: 'admin'
-      }
-    };
+      });
+
+      return {
+        token,
+        user
+      };
+    }
+
+    // Invalid role
+    const err = new Error(
+      'Invalid role. Must be student, faculty or admin'
+    );
+    err.status = 400;
+    throw err;
+
   } catch (error) {
+
+    // Duplicate email
     if (error.code === 'ER_DUP_ENTRY') {
       const err = new Error('Email already exists');
       err.status = 409;
       throw err;
     }
+
     throw error;
   }
-};
+}
 
-// Unified registration handler
-const registerUser = async (payload) => {
-  const { role } = payload;
+// ============================================
+// Login User
+// ============================================
 
-  if (!isValidRole(role)) {
-    const error = new Error('Invalid role. Must be student, faculty, or admin');
-    error.status = 400;
-    throw error;
+async function loginUser({ email, password, role }) {
+
+  if (!email || !password) {
+    const err = new Error(
+      'Email and password are required'
+    );
+
+    err.status = 400;
+    throw err;
   }
 
-  if (role === 'student') {
-    return registerStudent(payload);
-  } else if (role === 'faculty') {
-    return registerFaculty(payload);
-  } else if (role === 'admin') {
-    return registerAdmin(payload);
-  }
-};
+  // Find user
+  const userRow = await User.findByEmail(email);
 
-// Login user
-const loginUser = async ({ email, password, role }) => {
-  const missing = getMissingFields({ email, password }, ['email', 'password']);
-  if (missing.length) {
-    const error = new Error('Email and password are required');
-    error.status = 400;
-    throw error;
+  if (!userRow) {
+    const err = new Error(
+      'Invalid email or password'
+    );
+
+    err.status = 401;
+    throw err;
   }
 
-  const user = await User.findUserByEmail(email);
-  if (!user) {
-    const error = new Error('Invalid email or password');
-    error.status = 401;
-    throw error;
+  // Role validation
+  if (role && userRow.role !== role) {
+    const err = new Error(
+      'Invalid role for this account'
+    );
+
+    err.status = 403;
+    throw err;
   }
 
-  if (role && user.role !== role) {
-    const error = new Error('Invalid role for this account');
-    error.status = 403;
-    throw error;
-  }
+  // Password compare
+  const isPasswordValid = await bcrypt.compare(
+    password,
+    userRow.password
+  );
 
-  const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
-    const error = new Error('Invalid email or password');
-    error.status = 401;
-    throw error;
+    const err = new Error(
+      'Invalid email or password'
+    );
+
+    err.status = 401;
+    throw err;
   }
 
   // Update last login
-  await User.updateLastLogin(user.id);
+  await User.updateLastLogin(userRow.id);
 
-  // Get role-specific details
-  const roleDetails = await getUserDetails(user);
+  // Attach profile
+  const user = await attachRoleProfile(userRow);
 
-  const userResponse = {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    phone: user.phone,
-    ...(roleDetails || {})
-  };
+  // Generate token
+  const token = generateToken({
+    id: userRow.id,
+    role: userRow.role
+  });
 
   return {
-    token: generateToken({ id: user.id, role: user.role }),
-    user: userResponse
+    token,
+    user
   };
-};
+}
 
-// Refresh token
-const refreshToken = async (token) => {
+// ============================================
+// Refresh Token
+// ============================================
+
+async function refreshToken(token) {
+
   if (!token) {
-    const error = new Error('Token is required');
-    error.status = 400;
-    throw error;
+    const err = new Error('Token required');
+
+    err.status = 400;
+    throw err;
   }
 
   const decoded = verifyToken(token);
-  const newToken = generateToken({ id: decoded.id, role: decoded.role });
-  return { token: newToken };
-};
+
+  const newToken = generateToken({
+    id: decoded.id,
+    role: decoded.role
+  });
+
+  return {
+    token: newToken
+  };
+}
+
+// ============================================
+// Exports
+// ============================================
 
 module.exports = {
   registerUser,

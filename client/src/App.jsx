@@ -1,32 +1,34 @@
 // import { AnimatePresence, motion } from 'framer-motion';
+// Debug helper: safe console logging for development
 import { Suspense } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { ToasterProvider } from './components/ui/Toaster';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+// debugConsole removed: see commit history
 import { lazyLoad } from './utils/routeLoader';
 
 // Lazy load all pages
 const LandingPage = lazyLoad('LandingPage');
-const Login = lazyLoad('Login');
-const Register = lazyLoad('Register');
-const AdminDashboard = lazyLoad('AdminDashboard');
-const StudentDashboard = lazyLoad('StudentDashboard');
-const FacultyDashboard = lazyLoad('FacultyDashboard');
-const StudentsManagement = lazyLoad('StudentsManagement');
-const FacultyManagement = lazyLoad('FacultyManagement');
-const AttendanceSheet = lazyLoad('AttendanceSheet');
+const Login = lazyLoad('auth/Login');
+const Register = lazyLoad('auth/Register');
+const AdminDashboard = lazyLoad('admin/AdminDashboard');
+const StudentDashboard = lazyLoad('student/StudentDashboard');
+const FacultyDashboard = lazyLoad('faculty/FacultyDashboard');
+const StudentsManagement = lazyLoad('admin/StudentsManagement');
+const FacultyManagement = lazyLoad('admin/FacultyManagement');
+const AttendanceSheet = lazyLoad('faculty/AttendancePage');
 // Exams disabled
 // const ExamManagement = lazyLoad('ExamManagement');
-const LeaveRequests = lazyLoad('LeaveRequests');
-const FacultyProfile = lazyLoad('FacultyProfile');
-const AttendanceView = lazyLoad('AttendanceView');
-const LeaveRequest = lazyLoad('LeaveRequest');
+const LeaveRequests = lazyLoad('faculty/LeaveRequests');
+const FacultyProfile = lazyLoad('faculty/FacultyProfile');
+const AttendanceView = lazyLoad('student/AttendanceView');
+const LeaveRequest = lazyLoad('student/LeaveRequest');
 // Exams disabled
 // const ExamView = lazyLoad('ExamView');
-const StudentProfile = lazyLoad('StudentProfile');
+const StudentProfile = lazyLoad('student/StudentProfile');
 
 // Handles route transitions and lazy-loaded pages.
 function AppContent() {

@@ -2,99 +2,93 @@ const { query } = require('../config/db');
 const bcrypt = require('bcryptjs');
 
 class User {
-  // Create a new user
-  static async createUser(name, email, password, role, phone = null) {
-    // Validate email domain
-    if (!email.endsWith('@ietdavv.edu.in')) {
-      throw new Error('Email must end with @ietdavv.edu.in');
+  // Create a new user and return the inserted id
+  static async create({ name, email, password, role = 'student', phone = null }) {
+    if (!email || !email.endsWith('@ietdavv.edu.in')) {
+      const err = new Error('Email must be a valid @ietdavv.edu.in address');
+      err.status = 400;
+      throw err;
     }
 
-    // Validate role
     const validRoles = ['student', 'faculty', 'admin'];
     if (!validRoles.includes(role)) {
-      throw new Error('Invalid role. Must be student, faculty, or admin');
+      const err = new Error('Invalid role');
+      err.status = 400;
+      throw err;
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt.hash(password, 10);
     try {
-      return await query(
+      const result = await query(
         'INSERT INTO users (name, email, password, role, phone, is_active) VALUES (?, ?, ?, ?, ?, ?)',
-        [name, email, hashedPassword, role, phone, true]
+        [name, email, hashed, role, phone, true]
       );
+      return { insertId: result.insertId };
     } catch (error) {
       if (error.code === 'ER_DUP_ENTRY') {
-        throw new Error('Email already exists');
+        const err = new Error('Email already exists');
+        err.status = 409;
+        throw err;
       }
       throw error;
     }
   }
 
-  // Find user by email (for login or forgot password)
-  static async findUserByEmail(email) {
-    const rows = await query(
-      'SELECT id, name, email, password, role, phone, created_at, updated_at, last_login, is_active FROM users WHERE email = ?',
-      [email]
-    );
-    return rows[0];
+  static async findByEmail(email) {
+    const rows = await query('SELECT * FROM users WHERE email = ?', [email]);
+    return rows[0] || null;
   }
 
-  // Find user by ID (for profile or admin access)
-  static async findUserById(id) {
-    const rows = await query(
-      'SELECT id, name, email, role, phone, created_at, updated_at, last_login, is_active FROM users WHERE id = ?',
-      [id]
-    );
-    return rows[0];
+  static async findById(id) {
+    const rows = await query('SELECT id, name, email, role, phone, created_at, updated_at, last_login, is_active FROM users WHERE id = ?', [id]);
+    return rows[0] || null;
   }
 
-  // Get all users (admin only)
-  static async getAllUsers() {
-    return query(
-      'SELECT id, name, email, role, phone, created_at, updated_at, last_login, is_active FROM users'
-    );
-  }
-
-  // Update user profile
-  static async updateUser(id, name, email, phone = null, is_active = true) {
-    if (!email.endsWith('@ietdavv.edu.in')) {
-      throw new Error('Email must end with @ietdavv.edu.in');
-    }
-
-    try {
-      return await query(
-        'UPDATE users SET name = ?, email = ?, phone = ?, is_active = ? WHERE id = ?',
-        [name, email, phone, is_active, id]
-      );
-    } catch (error) {
-      if (error.code === 'ER_DUP_ENTRY') {
-        throw new Error('Email already exists');
-      }
-      throw error;
-    }
-  }
-
-  // Update user role (admin only)
-  static async updateUserRole(id, role) {
-    const validRoles = ['student', 'faculty', 'admin'];
-    if (!validRoles.includes(role)) {
-      throw new Error('Invalid role. Must be student, faculty, or admin');
-    }
-
-    return query('UPDATE users SET role = ? WHERE id = ?', [role, id]);
-  }
-
-  // Update last login timestamp
   static async updateLastLogin(id) {
     return query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [id]);
   }
 
-  // Delete user (admin only)
+  static async getAllUsers() {
+    return query('SELECT id, name, email, role, phone, created_at, updated_at, last_login, is_active FROM users');
+  }
+
+  static async updateUser(id, name, email, phone = null, is_active = true) {
+    if (!email || !email.endsWith('@ietdavv.edu.in')) {
+      const err = new Error('Email must be a valid @ietdavv.edu.in address');
+      err.status = 400;
+      throw err;
+    }
+
+    try {
+      return await query('UPDATE users SET name = ?, email = ?, phone = ?, is_active = ? WHERE id = ?', [name, email, phone, is_active, id]);
+    } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+        const err = new Error('Email already exists');
+        err.status = 409;
+        throw err;
+      }
+      throw error;
+    }
+  }
+
+  static async updateUserRole(id, role) {
+    const validRoles = ['student', 'faculty', 'admin'];
+    if (!validRoles.includes(role)) {
+      const err = new Error('Invalid role');
+      err.status = 400;
+      throw err;
+    }
+    return query('UPDATE users SET role = ? WHERE id = ?', [role, id]);
+  }
+
   static async deleteUser(id) {
     try {
       return await query('DELETE FROM users WHERE id = ?', [id]);
     } catch (error) {
       if (error.code === 'ER_ROW_IS_REFERENCED_2') {
-        throw new Error('Cannot delete user: referenced in other tables (e.g., students, faculty)');
+        const err = new Error('Cannot delete user: referenced in other tables');
+        err.status = 400;
+        throw err;
       }
       throw error;
     }

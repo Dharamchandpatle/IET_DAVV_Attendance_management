@@ -1,21 +1,17 @@
-import { lazy } from 'react';
+import React from 'react';
 
-// Map of page modules for lazy loading.
-const pages = import.meta.glob('../pages/**/*.jsx');
+// Use Vite's import.meta.glob to build a map of available page modules.
+// This avoids dynamic-import restrictions and supports nested folders.
+const modules = import.meta.glob('../pages/**/*.jsx');
 
-// Resolves a page component by name for route-based lazy loading.
-export const lazyLoad = (componentPath) => {
-  const normalized = componentPath.endsWith('.jsx') ? componentPath : `${componentPath}.jsx`;
-  const exportName = normalized.split('/').pop().replace('.jsx', '');
-  const importer = pages[`../pages/${normalized}`];
-
+export function lazyLoad(name) {
+  const path = `../pages/${name}.jsx`;
+  const importer = modules[path];
   if (!importer) {
-    throw new Error(`Unknown page: ${componentPath}`);
+    throw new Error(`Unknown page import: ${path}`);
   }
+  // importer is a function that returns a promise resolving the module
+  return React.lazy(() => importer());
+}
 
-  return lazy(() =>
-    importer().then((module) => ({
-      default: module[exportName] || module.default
-    }))
-  );
-};
+export default lazyLoad;

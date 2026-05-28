@@ -1,54 +1,35 @@
-import { gsap } from 'gsap';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 const ThemeContext = createContext();
 
-// Provides theme state and toggle action.
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    // Fix theme initialization
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') || 
-        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    try {
+      return localStorage.getItem('theme') || 'light';
+    } catch (e) {
+      return 'light';
     }
-    return 'light';
   });
 
   useEffect(() => {
-    // Fix theme application
-    const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(theme);
-    localStorage.setItem('theme', theme);
-
-    // Add transition class for smooth theme changes
-    root.style.setProperty('--transition-duration', '0.3s');
-    root.classList.add('transition-colors');
+    const root = document.documentElement;
+    if (theme === 'dark') root.classList.add('dark'); else root.classList.remove('dark');
+    try { localStorage.setItem('theme', theme); } catch (e) {}
   }, [theme]);
 
-  // Animates and toggles between light and dark themes.
-  const toggleTheme = () => {
-    gsap.to('body', {
-      backgroundColor: theme === 'light' ? '#1a1b1e' : '#ffffff',
-      duration: 0.3,
-      onComplete: () => {
-        setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-      }
-    });
-  };
+  const toggle = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'));
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, toggle }}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
-// Hook for consuming theme context.
 export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
+  const ctx = useContext(ThemeContext);
+  if (!ctx) throw new Error('useTheme must be used within ThemeProvider');
+  return ctx;
 };
+
+export default ThemeProvider;

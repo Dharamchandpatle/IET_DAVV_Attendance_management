@@ -1,9 +1,9 @@
 // import { motion } from 'framer-motion';
-import { Check, Clock, Download, EyeIcon, Paperclip, Search, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Check, Clock, Download, Eye, Paperclip, Search, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { getApiErrorMessage } from '../../services/api';
 import { listLeaveRequests, updateLeaveStatus } from '../../services/leaveService';
-import { LoadingSpinner } from '../ui/LoadingSpinner';
+// loader removed per UX request — avoid blocking spinner
 import { useToast } from '../ui/toast';
 
 const mockStats = {
@@ -19,6 +19,10 @@ export function LeaveRequestsSection() {
   const [requests, setRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('pending');
+  const tabs = ['pending', 'approved', 'rejected', 'all'];
+  const tabContainerRef = useRef(null);
+  const tabRefs = useRef([]);
+  const [sliderStyle, setSliderStyle] = useState({ left: 0, width: 0, opacity: 0 });
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [search, setSearch] = useState('');
@@ -28,18 +32,25 @@ export function LeaveRequestsSection() {
     hasAttachments: false
   });
   const [comment, setComment] = useState('');
+  const [loadError, setLoadError] = useState(null);
 
-  useEffect(() => {
-    let isActive = true;
+  // Loads leave requests and derives summary stats.
+  const loadLeaveRequests = async () => {
+    let isActive = true; // scoped to this invocation
+    setLoadError(null);
+    try {
+      setIsLoading(true);
+      console.debug('LeaveRequestsSection: loading leave requests...');
+      // Add a timeout so the UI doesn't hang indefinitely if the API is unreachable
+      const data = await Promise.race([
+        listLeaveRequests(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), 10000))
+      ]).catch(err => { throw err; });
+      if (!isActive) return;
 
-    // Loads leave requests and derives summary stats.
-    const loadLeaveRequests = async () => {
-      try {
-        setIsLoading(true);
-        const data = await listLeaveRequests();
-        if (!isActive) return;
+      const safeData = Array.isArray(data) ? data : [];
 
-        const mapped = data.map((request) => ({
+      const mapped = safeData.map((request) => ({
           id: request.id,
           studentName: request.student_name,
           studentId: request.roll_number,
@@ -50,9 +61,9 @@ export function LeaveRequestsSection() {
           status: request.status,
           attachments: (request.document_urls || []).map((name, index) => ({
             id: index + 1,
-            name,
-            type: 'application/pdf',
-            url: '#'
+            name: (name && name.split('/').pop()) || `attachment-${index + 1}`,
+            type: (name && name.endsWith && name.endsWith('.pdf')) ? 'application/pdf' : 'image',
+            url: name
           })),
           comments: request.review_comment
             ? [{ text: request.review_comment, date: request.reviewed_at || new Date().toISOString() }]
@@ -68,28 +79,49 @@ export function LeaveRequestsSection() {
           { pending: 0, approved: 0, rejected: 0 }
         );
         setStats(nextStats);
-      } catch (error) {
-        if (isActive) {
-          console.error('Error loading leave requests:', error);
-          show({
-            title: "Error",
-            description: getApiErrorMessage(error, "Failed to load leave requests"),
-            type: "error"
-          });
-          setRequests([]);
-          setStats(mockStats);
-        }
-      } finally {
-        if (isActive) setIsLoading(false);
-      }
-    };
+    } catch (error) {
+      console.error('Error loading leave requests:', error);
+      setLoadError(getApiErrorMessage(error, 'Failed to load leave requests'));
+      show({
+        title: "Error",
+        description: getApiErrorMessage(error, "Failed to load leave requests"),
+        type: "error"
+      });
+      setRequests([]);
+      setStats(mockStats);
+    } finally {
+      if (isActive) setIsLoading(false);
+    }
+  };
 
-    loadLeaveRequests();
-
-    return () => {
-      isActive = false;
-    };
+  useEffect(() => {
+    let mounted = true;
+    if (mounted) loadLeaveRequests();
+    return () => { mounted = false; };
   }, [show]);
+
+  // Update the slider position under the active tab
+  useEffect(() => {
+    const updateSlider = () => {
+      const container = tabContainerRef.current;
+      const refs = tabRefs.current || [];
+      const idx = tabs.indexOf(activeTab);
+      if (!container || !refs[idx]) {
+        setSliderStyle(s => ({ ...s, opacity: 0 }));
+        return;
+      }
+      const containerRect = container.getBoundingClientRect();
+      const btnRect = refs[idx].getBoundingClientRect();
+      const left = btnRect.left - containerRect.left + container.scrollLeft + 8;
+      const width = Math.max(24, btnRect.width - 16);
+      setSliderStyle({ left: `${left}px`, width: `${width}px`, opacity: 1 });
+    };
+
+    // Defer to next frame to ensure layout is ready
+    requestAnimationFrame(updateSlider);
+    window.addEventListener('resize', updateSlider);
+    return () => window.removeEventListener('resize', updateSlider);
+  }, [activeTab, tabs]);
 
   // Approves or rejects a leave request with optional comments.
   const handleStatusChange = async (requestId, newStatus) => {
@@ -156,29 +188,29 @@ export function LeaveRequestsSection() {
   };
 
   const filteredRequests = requests.filter(request => {
-    const matchesSearch = request.studentName.toLowerCase().includes(search.toLowerCase()) ||
-      request.studentId.toLowerCase().includes(search.toLowerCase());
+    const nameText = (request.studentName || '').toString();
+    const idText = (request.studentId || '').toString();
+    const q = (search || '').toString().toLowerCase();
+    const matchesSearch = nameText.toLowerCase().includes(q) || idText.toLowerCase().includes(q);
     
-    const matchesType = filters.type === 'all' || request.type === filters.type;
+    const matchesType = filters.type === 'all' || (request.type || '').toString() === filters.type;
     const matchesAttachments = !filters.hasAttachments || 
       (request.attachments && request.attachments.length > 0);
     
     let matchesDate = true;
     if (filters.date === 'today') {
-      matchesDate = request.startDate === new Date().toISOString().split('T')[0];
+      matchesDate = (request.startDate || '') === new Date().toISOString().split('T')[0];
     } else if (filters.date === 'week') {
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
-      matchesDate = new Date(request.startDate) >= weekAgo;
+      matchesDate = new Date(request.startDate || 0) >= weekAgo;
     }
 
     return matchesSearch && matchesType && matchesAttachments && matchesDate &&
       (activeTab === 'all' || request.status === activeTab);
   });
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
+  // Non-blocking load state: show inline spinner and error banner instead of blocking the entire page
 
   return (
     <div className="space-y-6">
@@ -197,6 +229,25 @@ export function LeaveRequestsSection() {
           <p className="text-2xl font-bold">{stats.rejected}</p>
         </div>
       </div>
+
+      {loadError && (
+        <div className="p-4 rounded-md bg-red-50 text-red-700 border border-red-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">Failed to load leave requests</p>
+              <p className="text-sm text-red-600 mt-1">{loadError}</p>
+            </div>
+            <div>
+              <button
+                onClick={() => loadLeaveRequests()}
+                className="px-3 py-1 bg-blue-600 text-white rounded-md"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Search and Filters */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -243,19 +294,31 @@ export function LeaveRequestsSection() {
 
       {/* Requests List */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-        <div className="flex gap-2 p-4 border-b dark:border-gray-700">
-          {['pending', 'approved', 'rejected', 'all'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg capitalize transition-colors
-                ${activeTab === tab 
-                  ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' 
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-            >
-              {tab}
-            </button>
-          ))}
+        <div className="relative" ref={tabContainerRef}>
+          <div className="flex gap-2 p-4 border-b dark:border-gray-700">
+            {tabs.map((tab, idx) => (
+              <button
+                key={tab}
+                ref={(el) => (tabRefs.current[idx] = el)}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded-lg capitalize transition-colors relative z-10
+                  ${activeTab === tab 
+                    ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' 
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          <div
+            aria-hidden
+            className="absolute bottom-0 h-1 bg-blue-600 dark:bg-blue-400 rounded transition-all"
+            style={{
+              left: sliderStyle.left,
+              width: sliderStyle.width,
+              opacity: sliderStyle.opacity
+            }}
+          />
         </div>
 
         <div className="divide-y dark:divide-gray-700">
@@ -310,7 +373,7 @@ export function LeaveRequestsSection() {
                         onClick={() => setSelectedRequest(request)}
                         className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-transform hover:scale-105"
                       >
-                        <EyeIcon className="w-5 h-5" />
+                        <Eye className="w-5 h-5" />
                       </button>
                     </div>
                   ) : (
@@ -336,20 +399,21 @@ export function LeaveRequestsSection() {
                           {file.name}
                         </span>
                         <div className="flex gap-1">
-                          <button
+                            <button
                             onClick={() => window.open(file.url, '_blank')}
                             className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full"
                             title="View"
                           >
-                            <EyeIcon className="w-4 h-4" />
+                            <Eye className="w-4 h-4" />
                           </button>
-                          <button
-                            onClick={() => {/* Download logic */}}
+                          <a
+                            href={file.url}
+                            download
                             className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full"
                             title="Download"
                           >
                             <Download className="w-4 h-4" />
-                          </button>
+                          </a>
                         </div>
                       </div>
                     ))}
@@ -418,20 +482,21 @@ export function LeaveRequestsSection() {
                           <span className="text-sm font-medium">{file.name}</span>
                         </div>
                         <div className="flex gap-2">
-                          <button
+                            <button
                             onClick={() => window.open(file.url, '_blank')}
                             className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg flex items-center gap-2 text-sm"
                           >
-                            <EyeIcon className="w-4 h-4" />
+                            <Eye className="w-4 h-4" />
                             <span>View</span>
                           </button>
-                          <button
-                            onClick={() => {/* Download logic */}}
+                          <a
+                            href={file.url}
+                            download
                             className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg flex items-center gap-2 text-sm"
                           >
                             <Download className="w-4 h-4" />
                             <span>Download</span>
-                          </button>
+                          </a>
                         </div>
                       </div>
                     ))}

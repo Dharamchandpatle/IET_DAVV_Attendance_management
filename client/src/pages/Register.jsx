@@ -41,7 +41,7 @@ export function Register() {
           ease: 'none'
         });
       }
-    }, containerRef);
+    }, containerRef.current);
 
     return () => ctx.revert();
   }, []);
@@ -104,6 +104,7 @@ export function Register() {
     }
 
     if (role === 'student') {
+      if (!formData.get('enrollment_no')) errors.enrollment_no = 'Enrollment number is required';
       if (!formData.get('roll_number')) errors.roll_number = 'Roll number is required';
       if (!formData.get('department_id')) errors.department_id = 'Department is required';
       if (!formData.get('semester')) errors.semester = 'Semester is required';
@@ -145,6 +146,7 @@ export function Register() {
       };
 
       if (role === 'student') {
+        payload.enrollment_no = formData.get('enrollment_no');
         payload.roll_number = formData.get('roll_number');
         payload.department_id = Number(formData.get('department_id'));
         payload.semester = Number(formData.get('semester'));
@@ -273,6 +275,19 @@ export function Register() {
 
             {selectedRole === 'student' && (
               <>
+                <div>
+                  <input
+                    type="text"
+                    name="enrollment_no"
+                    placeholder="Enrollment Number"
+                    className={`w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 transition-colors
+                      ${validationErrors.enrollment_no ? 'border-red-500' : 'border-gray-300'}`}
+                    required
+                  />
+                  {validationErrors.enrollment_no && (
+                    <p className="mt-1 text-sm text-red-500">{validationErrors.enrollment_no}</p>
+                  )}
+                </div>
                 <div>
                   <input
                     type="text"
