@@ -1,0 +1,1 @@
+import{i as e,o as t}from"./LoadingSpinner-Ce3GYFul.js";var n=async()=>t(await e.get(`/api/departments`)).data||[];export{n as t};

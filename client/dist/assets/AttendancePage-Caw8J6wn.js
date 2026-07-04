@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-B2blhw7D.js";import{t}from"./DashboardLayout-Dnl3ukgZ.js";import{t as n}from"./AttendanceSection-BqshtTxF.js";var r=e();function i(){return(0,r.jsx)(t,{userRole:`faculty`,children:(0,r.jsx)(n,{})})}export{i as default};

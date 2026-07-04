@@ -10,18 +10,18 @@ import { HeroShape } from '../components/ui/HeroShape';
 gsap.registerPlugin(ScrollTrigger);
 
 const features = [
-  // {
-  //   title: 'Smart Attendance Tracking',
-  //   description: 'Automated attendance tracking with real-time updates and analytics dashboards for better insights.'
-  // },
-  // {
-  //   title: 'Seamless Integration',
-  //   description: 'Works perfectly with existing academic systems and provides easy export options for reports.'
-  // },
-  // {
-  //   title: 'Mobile Friendly',
-  //   description: 'Mark and track attendance from any device with our responsive mobile-first design.'
-  // }
+  {
+    title: 'Smart Attendance Tracking',
+    description: 'Automated attendance tracking with real-time updates and analytics dashboards for better insights.'
+  },
+  {
+    title: 'Seamless Integration',
+    description: 'Works perfectly with existing academic systems and provides easy export options for reports.'
+  },
+  {
+    title: 'Mobile Friendly',
+    description: 'Mark and track attendance from any device with our responsive mobile-first design.'
+  }
 ];
 
 export default function LandingPage() {
@@ -101,7 +101,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div ref={rootRef} className="relative min-h-screen font-['Inter']">
+    <div ref={rootRef} className="relative min-h-screen overflow-hidden bg-white font-['Inter']">
       {/* Background wrapper */}
       <div className="absolute inset-0 overflow-hidden">
         <HeroShape />

@@ -1,0 +1,1 @@
+import{i as e,o as t}from"./LoadingSpinner-Ce3GYFul.js";var n=async()=>t(await e.get(`/api/students`)).data||[],r=async n=>t(await e.post(`/api/students`,n)).data,i=async n=>t(await e.delete(`/api/students/${n}`)).data;export{i as n,n as r,r as t};
