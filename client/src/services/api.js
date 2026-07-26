@@ -3,7 +3,7 @@ import { clearAuth, getToken } from './authStorage';
 
 // Shared Axios instance for API calls.
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://iet-davv-attendance-management.onrender.com',
   headers: {
     'Content-Type': 'application/json'
   }
