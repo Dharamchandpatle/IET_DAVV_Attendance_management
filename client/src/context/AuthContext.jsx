@@ -27,6 +27,19 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  useEffect(() => {
+    const handleAuthCleared = () => {
+      setUser(null);
+      clearAuth();
+    };
+
+    window.addEventListener('auth:cleared', handleAuthCleared);
+
+    return () => {
+      window.removeEventListener('auth:cleared', handleAuthCleared);
+    };
+  }, []);
+
   // Registers a user and redirects to login.
   const register = useCallback(async (userData) => {
     try {

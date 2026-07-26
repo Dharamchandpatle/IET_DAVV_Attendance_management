@@ -13,9 +13,23 @@ class AuthController {
 
   static async login(req, res) {
     try {
+      console.log('[auth:login] incoming body:', {
+        ...req.body,
+        password: req.body?.password ? '[redacted]' : undefined
+      });
+
       const result = await loginUser(req.body);
+      console.log('[auth:login] final response user:', {
+        id: result?.user?.id,
+        email: result?.user?.email,
+        role: result?.user?.role
+      });
       return sendSuccess(res, 'Login successful', result, 200);
     } catch (err) {
+      console.log('[auth:login] error:', {
+        message: err.message,
+        status: err.status
+      });
       return sendError(res, err.message || 'Login failed', err.status || 401);
     }
   }

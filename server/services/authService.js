@@ -171,7 +171,16 @@ async function registerUser(payload) {
 
 async function loginUser({ email, password, role }) {
 
-  if (!email || !password) {
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : email;
+  const normalizedRole = typeof role === 'string' ? role.trim().toLowerCase() : role;
+
+  console.log('[auth:login] normalized input:', {
+    email: normalizedEmail,
+    role: normalizedRole,
+    hasPassword: Boolean(password)
+  });
+
+  if (!normalizedEmail || !password) {
     const err = new Error(
       'Email and password are required'
     );
@@ -181,23 +190,38 @@ async function loginUser({ email, password, role }) {
   }
 
   // Find user
-  const userRow = await User.findByEmail(email);
+  const userRow = await User.findByEmail(normalizedEmail);
+
+  console.log('[auth:login] sql user lookup result:', userRow ? {
+    id: userRow.id,
+    name: userRow.name,
+    email: userRow.email,
+    role: userRow.role,
+    is_active: userRow.is_active,
+    password: '[redacted]'
+  } : null);
 
   if (!userRow) {
     const err = new Error(
-      'Invalid email or password'
+      'No account found for this email'
     );
 
-    err.status = 401;
+    err.status = 404;
     throw err;
   }
 
   // Role validation
-  if (role && userRow.role !== role) {
+  if (normalizedRole && userRow.role !== normalizedRole) {
     const err = new Error(
       'Invalid role for this account'
     );
 
+    err.status = 403;
+    throw err;
+  }
+
+  if (Number(userRow.is_active) === 0) {
+    const err = new Error('Account is disabled');
     err.status = 403;
     throw err;
   }
@@ -207,6 +231,11 @@ async function loginUser({ email, password, role }) {
     password,
     userRow.password
   );
+
+  console.log('[auth:login] password comparison result:', {
+    userId: userRow.id,
+    isPasswordValid
+  });
 
   if (!isPasswordValid) {
     const err = new Error(
@@ -229,10 +258,23 @@ async function loginUser({ email, password, role }) {
     role: userRow.role
   });
 
-  return {
+  console.log('[auth:login] generated jwt:', {
+    userId: userRow.id,
+    role: userRow.role,
+    tokenPreview: token.slice(0, 20) + '...'
+  });
+
+  const response = {
     token,
     user
   };
+
+  console.log('[auth:login] final payload:', {
+    userId: response.user?.id,
+    role: response.user?.role
+  });
+
+  return response;
 }
 
 // ============================================
