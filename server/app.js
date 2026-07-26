@@ -32,40 +32,10 @@ console.log("====================================");
 // ---------------------------
 // CORS
 // ---------------------------
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      console.log("Incoming Origin:", origin);
-
-      // Allow Postman, curl, server-side requests
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      const normalizedOrigin = origin.replace(/\/$/, "");
-
-      if (allowedOrigins.includes(normalizedOrigin)) {
-        console.log("CORS Allowed:", normalizedOrigin);
-        return callback(null, true);
-      }
-
-      console.log("CORS Blocked:", normalizedOrigin);
-
-      return callback(new Error("Not allowed by CORS"));
-    },
-
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: [
-      "Origin",
-      "Content-Type",
-      "Authorization",
-      "Accept",
-    ],
-  })
-);
-
-app.options("*", cors());
+app.use(cors({
+  origin: true,
+  credentials: true,
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
