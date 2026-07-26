@@ -7,26 +7,20 @@ import { getApiErrorMessage } from '../../services/api';
 import { getDepartments } from '../../services/departmentService';
 import { createStudent, deleteStudent, listStudents } from '../../services/studentService';
 
-// Mock data for students
-const SAMPLE_DEPARTMENTS = ['CSE', 'ECE', 'ME', 'IT'];
-const mockStudents = Array.from({ length: 20 }, (_, i) => ({
-  id: i + 1,
-  name: `Student ${i + 1}`,
-  rollNo: `CS21B${String(i + 1).padStart(3, '0')}`,
-  semester: Math.ceil(Math.random() * 8),
-  department: SAMPLE_DEPARTMENTS[Math.floor(Math.random() * SAMPLE_DEPARTMENTS.length)],
-  email: `student${i + 1}@iet.davv.ac.in`,
-  attendance: Math.floor(Math.random() * (100 - 75) + 75)
-}));
+const fallbackDepartments = [
+  { id: 1, name: 'Computer Engineering', code: 'CE' },
+  { id: 2, name: 'Information Technology', code: 'IT' },
+  { id: 3, name: 'Electronics Engineering', code: 'EC' },
+  { id: 4, name: 'Mechanical Engineering', code: 'ME' }
+];
 
 export default function StudentsManagement() {
   const [isLoading, setIsLoading] = useState(true);
-  // simplified add flow uses prompts
-  const [students, setStudents] = useState(mockStudents);
+  const [students, setStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const { show } = useToast();
-  const [departments, setDepartments] = useState([]);
+  const [departments, setDepartments] = useState(fallbackDepartments);
 
   useEffect(() => {
     let isActive = true;
@@ -37,17 +31,18 @@ export default function StudentsManagement() {
         const data = await listStudents();
         if (!isActive) return;
 
-        const mapped = data.map((student) => ({
+        const mapped = (data || []).map((student) => ({
           id: student.id,
           name: student.name,
           rollNo: student.roll_number,
           semester: student.semester,
-          department: student.department_code || student.department_name,
+          department: student.department_name || student.department_code || 'Department',
+          departmentId: student.department_id || null,
           email: student.email,
           attendance: student.attendance_percentage || 0
         }));
 
-        setStudents(mapped.length ? mapped : mockStudents);
+        setStudents(mapped);
       } catch (error) {
         if (isActive) {
           show({
@@ -55,25 +50,31 @@ export default function StudentsManagement() {
             description: getApiErrorMessage(error, 'Please try again later.'),
             type: 'error'
           });
-          setStudents(mockStudents);
+          setStudents([]);
         }
       } finally {
         if (isActive) setIsLoading(false);
       }
     };
 
-    loadStudents();
-
     const loadDepartments = async () => {
       try {
         const data = await getDepartments();
         if (!isActive) return;
-        setDepartments(data.map(d => d.name || d.department_name || d.code || d.id));
+
+        const nextDepartments = (data || []).map((department) => ({
+          id: department.id,
+          name: department.name || department.department_name || department.code || 'Department',
+          code: department.code || department.department_code || ''
+        }));
+
+        setDepartments(nextDepartments.length ? nextDepartments : fallbackDepartments);
       } catch (error) {
-        // ignore departments error for now
+        setDepartments(fallbackDepartments);
       }
     };
 
+    loadStudents();
     loadDepartments();
 
     return () => {
@@ -83,54 +84,52 @@ export default function StudentsManagement() {
 
   const departmentOptions = useMemo(() => {
     if (departments && departments.length) return departments;
-    const values = students.map((student) => student.department).filter(Boolean);
-    return Array.from(new Set(values));
-  }, [students, departments]);
+    return fallbackDepartments;
+  }, [departments]);
 
   const query = searchQuery.trim().toLowerCase();
   const matchesQuery = (value) => value?.toLowerCase().includes(query);
 
   const filteredStudents = students.filter((student) => {
     const matchesSearch = !query || [student.name, student.rollNo, student.email].some(matchesQuery);
-    const matchesDepartment = selectedDepartment === 'all' || student.department === selectedDepartment;
+    const matchesDepartment = selectedDepartment === 'all' || student.departmentId === Number(selectedDepartment) || student.department === selectedDepartment;
     return matchesSearch && matchesDepartment;
   });
 
-  const handleAddStudent = (formData) => {
-    (async () => {
-      try {
-        const payload = {
-          name: formData.name,
-          enrollment_no: formData.enrollment_no,
-          roll_number: formData.roll_number,
-          department_id: Number(formData.department_id),
-          semester: Number(formData.semester),
-          section: formData.section,
-          admission_year: Number(formData.admission_year),
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-          password: 'TempPass@123'
-        };
+  const handleAddStudent = async (formData) => {
+    try {
+      const department = departmentOptions.find((item) => item.id === Number(formData.department_id)) || departmentOptions[0] || fallbackDepartments[0];
+      const payload = {
+        name: formData.name,
+        enrollment_no: formData.enrollment_no,
+        roll_number: formData.roll_number,
+        department_id: Number(department?.id || formData.department_id),
+        semester: Number(formData.semester || 1),
+        section: formData.section || 'A',
+        admission_year: Number(formData.admission_year || new Date().getFullYear()),
+        email: formData.email,
+        phone: formData.phone || '',
+        address: formData.address || '',
+        password: 'TempPass@123'
+      };
 
-        const created = await createStudent(payload);
-        const mapped = {
-          id: created.id,
-          name: created.name,
-          rollNo: created.roll_number,
-          semester: created.semester,
-          department: created.department_name || created.department_code || formData.department_id,
-          email: created.email,
-          attendance: 100
-        };
+      const created = await createStudent(payload);
+      const mapped = {
+        id: created.id,
+        name: created.name,
+        rollNo: created.roll_number,
+        semester: created.semester,
+        department: department?.name || created.department_name || 'Department',
+        departmentId: department?.id || created.department_id || null,
+        email: created.email,
+        attendance: 100
+      };
 
-        setStudents(prev => [...prev, mapped]);
-        setShowAddModal(false);
-        show({ title: 'Success', description: 'Student created', type: 'success' });
-      } catch (error) {
-        show({ title: 'Error', description: getApiErrorMessage(error), type: 'error' });
-      }
-    })();
+      setStudents(prev => [...prev, mapped]);
+      show({ title: 'Success', description: 'Student created', type: 'success' });
+    } catch (error) {
+      show({ title: 'Error', description: getApiErrorMessage(error), type: 'error' });
+    }
   };
 
   const handleDeleteStudent = async (row) => {
@@ -159,8 +158,19 @@ export default function StudentsManagement() {
               const name = window.prompt('Student name');
               if (!name) return;
               const email = window.prompt('Student email');
-              const dept = departmentOptions[0] || 'CSE';
-              const formData = { name, email, enrollment_no: `ENR${Date.now()%100000}`, roll_number: `R${Date.now()%10000}`, department_id: dept, semester: 1 };
+              const departmentId = departmentOptions[0]?.id || 1;
+              const formData = {
+                name,
+                email,
+                enrollment_no: `ENR${Date.now() % 100000}`,
+                roll_number: `R${Date.now() % 10000}`,
+                department_id: departmentId,
+                semester: 1,
+                section: 'A',
+                admission_year: new Date().getFullYear(),
+                phone: '',
+                address: ''
+              };
               await handleAddStudent(formData);
             }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:scale-102 transition-transform"
@@ -189,17 +199,11 @@ export default function StudentsManagement() {
               className="p-2 rounded-lg border dark:border-gray-700 dark:bg-gray-800"
             >
               <option value="all">All Departments</option>
-              {departmentOptions.length
-                ? departmentOptions.map((department) => (
-                    <option key={department} value={department}>
-                      {department}
-                    </option>
-                  ))
-                : DEPARTMENTS.map((department) => (
-                    <option key={department.value} value={department.value}>
-                      {department.label}
-                    </option>
-                  ))}
+              {departmentOptions.map((department) => (
+                <option key={department.id} value={department.id}>
+                  {department.name}
+                </option>
+              ))}
             </select>
           </div>
 

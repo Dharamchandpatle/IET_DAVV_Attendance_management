@@ -71,8 +71,19 @@
   * {
     @apply border-border;
   }
-  body {
+
+  html {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  body {
+    @apply min-h-screen bg-background text-foreground antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  #root {
+    @apply min-h-screen bg-background text-foreground;
   }
 }
 

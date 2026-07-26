@@ -1,6 +1,6 @@
 // import { motion } from 'framer-motion';
 import gsap from 'gsap';
-import { Eye, EyeOff, LucideLoader2 } from 'lucide-react';
+import { Eye, EyeOff, LucideLoader2, Moon, Sun } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -8,11 +8,13 @@ import davvlogo from '../assets/images/davvlogo.png';
 import { HeroShape } from '../components/ui/HeroShape';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { getDepartments } from '../services/departmentService';
 
 export function Register() {
   const navigate = useNavigate();
   const { register } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const containerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -191,6 +193,14 @@ export function Register() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 relative overflow-hidden" ref={containerRef}>
       <div className="absolute inset-0 bg-grid-pattern animate-grid opacity-10" />
       <HeroShape />
+
+      <button
+        onClick={toggleTheme}
+        className="absolute top-4 right-4 z-20 p-2.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-200 shadow-sm hover:scale-105 transition-transform"
+        aria-label="Toggle theme"
+      >
+        {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+      </button>
       
       <div
         className="register-card max-w-md w-full space-y-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-8 rounded-xl shadow-xl relative z-10"

@@ -1,11 +1,13 @@
 // import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowDown } from 'lucide-react';
+import { ArrowDown, Moon, Sun } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import davvlogo from '../assets/images/davvlogo.png';
 import { HeroShape } from '../components/ui/HeroShape';
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -29,6 +31,8 @@ export default function LandingPage() {
   const headerRef = useRef(null);
   const featuresRef = useRef(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { theme, toggleTheme } = useTheme();
+  const { user } = useAuth();
 
   const rootRef = useRef(null);
 
@@ -100,8 +104,16 @@ export default function LandingPage() {
     });
   };
 
+  const goToDashboard = () => {
+    if (!user?.role) return navigate('/login');
+
+    if (user.role === 'admin') navigate('/admin');
+    else if (user.role === 'faculty') navigate('/faculty');
+    else navigate('/student');
+  };
+
   return (
-    <div ref={rootRef} className="relative min-h-screen overflow-hidden bg-white font-['Inter']">
+    <div ref={rootRef} className="relative min-h-screen overflow-hidden bg-background text-foreground transition-colors duration-300 font-['Inter']">
       {/* Background wrapper */}
       <div className="absolute inset-0 overflow-hidden">
         <HeroShape />
@@ -126,19 +138,53 @@ export default function LandingPage() {
                 IET DAVV AMS
               </h1>
             </div>
-            <div className="flex gap-4">
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => navigate('/login')}
-                className="px-6 py-2 rounded-lg text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition-colors shadow-sm"
+                onClick={toggleTheme}
+                className="p-2.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-200 shadow-sm hover:scale-105 transition-transform"
+                aria-label="Toggle theme"
               >
-                Login
+                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
-              <button
-                onClick={() => navigate('/register')}
-                className="px-6 py-2 rounded-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-colors shadow-md"
-              >
-                Register
-              </button>
+
+              {user ? (
+                <>
+                  <button
+                    onClick={goToDashboard}
+                    className="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition-colors shadow-sm"
+                  >
+                    Dashboard
+                  </button>
+                  <button
+                    onClick={goToDashboard}
+                    className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:scale-105 transition-transform"
+                    aria-label="Open profile"
+                  >
+                    {user.profile_image ? (
+                      <img src={user.profile_image} alt={user.name || 'Profile'} className="w-8 h-8 rounded-full object-cover" />
+                    ) : (
+                      <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                        {(user.name || 'U').charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="px-6 py-2 rounded-lg text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition-colors shadow-sm"
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={() => navigate('/register')}
+                    className="px-6 py-2 rounded-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-colors shadow-md"
+                  >
+                    Register
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </nav>

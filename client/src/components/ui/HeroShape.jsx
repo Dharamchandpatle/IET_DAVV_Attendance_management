@@ -4,10 +4,10 @@ export function HeroShape({ className = '', ...props }) {
       {...props}
       className={`absolute inset-0 z-0 ${className}`.trim()}
       style={{
-        backgroundColor: '#ffffff',
-        backgroundImage: `radial-gradient(circle at center, #FFF991 0%, transparent 70%)`,
-        opacity: 0.6,
-        mixBlendMode: 'multiply',
+        backgroundColor: 'hsl(var(--background))',
+        backgroundImage: 'radial-gradient(circle at center, rgba(59, 130, 246, 0.18) 0%, transparent 70%)',
+        opacity: 1,
+        mixBlendMode: 'normal',
         ...props.style,
       }}
     />
