@@ -1,46 +1,120 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
+
 const apiRoutes = require("./routes");
 const { sendError } = require("./utils/response");
-const path = require('path');
-const { corsOrigins, frontendOrigin, nodeEnv } = require('./config/env');
+const {
+  corsOrigins,
+  frontendOrigin,
+  nodeEnv,
+} = require("./config/env");
 
 const app = express();
-const allowedOrigins = [...new Set([frontendOrigin, ...corsOrigins].filter(Boolean))];
 
-// Global middleware for JSON and form payloads.
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || nodeEnv === 'development') {
-      callback(null, true);
-      return;
-    }
+// ---------------------------
+// Allowed Origins
+// ---------------------------
+const allowedOrigins = [
+  "https://iet-davv-attendance-management.vercel.app",
+  "http://localhost:5173",
+  frontendOrigin,
+  ...corsOrigins,
+]
+  .filter(Boolean)
+  .map((origin) => origin.replace(/\/$/, ""));
 
-    callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true
-}));
+console.log("====================================");
+console.log("NODE_ENV:", nodeEnv);
+console.log("Allowed Origins:", allowedOrigins);
+console.log("====================================");
+
+// ---------------------------
+// CORS
+// ---------------------------
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      console.log("Incoming Origin:", origin);
+
+      // Allow Postman, curl, server-side requests
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const normalizedOrigin = origin.replace(/\/$/, "");
+
+      if (allowedOrigins.includes(normalizedOrigin)) {
+        console.log("CORS Allowed:", normalizedOrigin);
+        return callback(null, true);
+      }
+
+      console.log("CORS Blocked:", normalizedOrigin);
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Origin",
+      "Content-Type",
+      "Authorization",
+      "Accept",
+    ],
+  })
+);
+
+app.options("*", cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health check to verify server is up.
+// ---------------------------
+// Root
+// ---------------------------
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
 app.get("/health", (req, res) => {
-  res.json({ status: 'ok', environment: nodeEnv });
+  res.json({
+    status: "ok",
+    environment: nodeEnv,
+    allowedOrigins,
+  });
 });
 
-// API entrypoint: all routes are mounted under /api.
+// ---------------------------
+// API
+// ---------------------------
 app.use("/api", apiRoutes);
 
-// Serve uploaded files statically from /uploads
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+// ---------------------------
+// Static Uploads
+// ---------------------------
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "public", "uploads"))
+);
 
-// Fallback for unknown routes.
+// ---------------------------
+// 404
+// ---------------------------
 app.use((req, res) => {
   return sendError(res, "Route not found", 404);
+});
+
+// ---------------------------
+// Error Handler
+// ---------------------------
+app.use((err, req, res, next) => {
+  console.error(err);
+
+  return res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
 });
 
 module.exports = app;
