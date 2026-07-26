@@ -1,0 +1,1 @@
+import{i as e,o as t}from"./AuthContext-Cv4WKvPK.js";var n=async()=>t(await e.get(`/api/departments`)).data||[];export{n as t};

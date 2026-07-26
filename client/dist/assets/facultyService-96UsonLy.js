@@ -1,1 +1,0 @@
-import{i as e,o as t}from"./AuthContext-CmrdLbgC.js";var n=async()=>t(await e.get(`/api/faculty`)).data||[],r=async()=>t(await e.get(`/api/faculty/me`)).data||null,i=async n=>t(await e.post(`/api/faculty`,n)).data,a=async n=>t(await e.delete(`/api/faculty/${n}`)).data;export{n as i,a as n,r,i as t};

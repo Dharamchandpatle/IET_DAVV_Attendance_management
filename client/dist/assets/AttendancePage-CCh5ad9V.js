@@ -1,0 +1,1 @@
+import{r as e}from"./AuthContext-Cv4WKvPK.js";import{t}from"./DashboardLayout-BS1qmimu.js";import{t as n}from"./AttendanceSection-DSgYbjXF.js";var r=e();function i(){return(0,r.jsx)(t,{userRole:`faculty`,children:(0,r.jsx)(n,{})})}export{i as default};

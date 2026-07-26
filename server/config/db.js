@@ -1,15 +1,17 @@
 const mysql = require('mysql2/promise');
-const { dbHost, dbUser, dbPass, dbName } = require('./env');
+const { dbHost, dbUser, dbPass, dbName, dbPort } = require('./env');
 
 // Shared MySQL connection pool for the app.
 const pool = mysql.createPool({
     host: dbHost,
+    port: dbPort,
     user: dbUser,
     password: dbPass,
     database: dbName,
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    connectTimeout: 10000
 });
 
 // Executes a prepared statement and returns result rows.
@@ -37,6 +39,7 @@ const withTransaction = async (work) => {
 // Verifies the database connection during startup.
 const testConnection = async () => {
     const connection = await pool.getConnection();
+    await connection.ping();
     connection.release();
 };
 
