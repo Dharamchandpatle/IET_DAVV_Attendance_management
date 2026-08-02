@@ -121,12 +121,18 @@ CREATE TABLE IF NOT EXISTS leave_requests (
  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Optional: sample departments
-INSERT IGNORE INTO departments (name, code) VALUES
-  ('Computer Engineering','CE'),
-  ('Information Technology','IT'),
-  ('Electronics Engineering','EC'),
-  ('Mechanical Engineering','ME');
+INSERT INTO departments (name, code) VALUES
+('Computer Engineering', 'CSE'),
+('Information Technology', 'IT'),
+('Electronics & Instrumentation Engineering', 'EI'),
+('Electronics & Telecommunication Engineering', 'ETC'),
+('Mechanical Engineering', 'ME'),
+('Civil Engineering', 'CE'),
+('Applied Science', 'AS'),
+('Computer Science & Business Systems', 'CSBS')
+ON DUPLICATE KEY UPDATE
+name = VALUES(name),
+code = VALUES(code);
+
 
 SET FOREIGN_KEY_CHECKS = 1;
-
-
